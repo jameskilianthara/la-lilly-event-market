@@ -1,0 +1,123 @@
+{
+  "eventType": "Corporate",
+  "displayName": "Corporate Forge Blueprint",
+  "version": "2025-09-01",
+  "forgeComplexity": "craftsman",
+  "sections": [
+    {
+      "id": "business_foundation",
+      "title": "Business Foundation",
+      "description": "Professional event requirements and objectives",
+      "items": [
+        {
+          "id": "business_objective",
+          "label": "Primary business objective for this event?",
+          "required": true
+        },
+        {
+          "id": "brand_representation",
+          "label": "Brand guidelines and corporate identity requirements?",
+          "required": true
+        },
+        {
+          "id": "networking_goals",
+          "label": "Networking and engagement objectives?",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "professional_elements",
+      "title": "Professional Craft Elements",
+      "description": "Corporate-specific forge requirements",
+      "items": [
+        {
+          "id": "av_requirements",
+          "label": "Audio-visual and presentation technology needs",
+          "required": true
+        },
+        {
+          "id": "stage_branding",
+          "label": "Stage design and corporate branding setup",
+          "required": true
+        },
+        {
+          "id": "signage_wayfinding",
+          "label": "Professional signage and wayfinding",
+          "required": true
+        },
+        {
+          "id": "catering_style",
+          "label": "Professional catering preferences (buffet, plated, stations)",
+          "required": true
+        },
+        {
+          "id": "accessibility",
+          "label": "Accessibility and accommodation needs",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "technical_forge",
+      "title": "Technical Forge Setup",
+      "description": "Technology and AV specifications",
+      "items": [
+        {
+          "id": "presentation_equipment",
+          "label": "Presentation equipment (projectors, screens, LED walls)",
+          "required": true
+        },
+        {
+          "id": "sound_system",
+          "label": "Sound system specifications",
+          "required": true
+        },
+        {
+          "id": "lighting_design",
+          "label": "Professional lighting design",
+          "required": true
+        },
+        {
+          "id": "live_streaming",
+          "label": "Live streaming and recording requirements",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "documentation",
+      "title": "Corporate Documentation",
+      "description": "Photography and content capture",
+      "items": [
+        {
+          "id": "photography",
+          "label": "Corporate photography requirements",
+          "required": true
+        },
+        {
+          "id": "videography",
+          "label": "Professional videography and editing",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "logistics_permits",
+      "title": "Logistics & Permits",
+      "description": "Operational requirements",
+      "items": [
+        {
+          "id": "venue_permits",
+          "label": "Required venue permits and clearances",
+          "required": true
+        },
+        {
+          "id": "insurance",
+          "label": "Event insurance requirements",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

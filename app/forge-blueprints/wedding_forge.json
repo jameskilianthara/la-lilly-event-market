@@ -1,0 +1,211 @@
+{
+  "eventType": "Wedding",
+  "displayName": "Wedding Forge Blueprint",
+  "version": "2025-09-01",
+  "forgeComplexity": "master",
+  "sections": [
+    {
+      "id": "foundation_specs",
+      "title": "Foundation Specifications",
+      "description": "Core structural requirements for your wedding forge",
+      "items": [
+        {
+          "id": "ceremony_tradition",
+          "label": "Cultural traditions and customs to honor?",
+          "required": true
+        },
+        {
+          "id": "ceremony_type",
+          "label": "Type of wedding ceremony (customs of bride and groom)",
+          "required": true
+        },
+        {
+          "id": "celebration_style",
+          "label": "Wedding style and aesthetic vision?",
+          "required": true
+        },
+        {
+          "id": "guest_experience",
+          "label": "Special moments to craft for guests?",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "venue_logistics",
+      "title": "Venue & Logistics Forge",
+      "description": "Venue arrangements and foundry logistics",
+      "items": [
+        {
+          "id": "venue_preference",
+          "label": "Indoor or outdoor preference?",
+          "required": true
+        },
+        {
+          "id": "venue_booking",
+          "label": "Venue booking and banquet arrangements",
+          "required": true
+        },
+        {
+          "id": "accommodation",
+          "label": "Accommodation for guests/family",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "craft_elements",
+      "title": "Craft Elements",
+      "description": "Artistic and aesthetic specifications",
+      "items": [
+        {
+          "id": "decor_style",
+          "label": "Decorative style and theme preferences",
+          "required": true
+        },
+        {
+          "id": "theme_selection",
+          "label": "Theme selection (Traditional, Modern, Fusion, etc.)",
+          "required": true
+        },
+        {
+          "id": "floral_vision",
+          "label": "Floral arrangements and natural elements",
+          "required": true
+        },
+        {
+          "id": "lighting_mood",
+          "label": "Lighting atmosphere and ambiance",
+          "required": true
+        },
+        {
+          "id": "stage_decoration",
+          "label": "Stage decoration requirements",
+          "required": true
+        },
+        {
+          "id": "entry_decoration",
+          "label": "Entry decoration (mandap, archway)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "master_craftsmen_services",
+      "title": "Master Craftsmen Services",
+      "description": "Professional artisan requirements",
+      "items": [
+        {
+          "id": "invitations",
+          "label": "Customized invitation requirements",
+          "required": true
+        },
+        {
+          "id": "traditional_arrival",
+          "label": "Traditional arrival arrangements",
+          "required": false
+        },
+        {
+          "id": "escort_arrangements",
+          "label": "Escort arrangements (dancers, musicians, etc.)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "entertainment_forge",
+      "title": "Entertainment Forge",
+      "description": "Music, dance, and performance specifications",
+      "items": [
+        {
+          "id": "music_preferences",
+          "label": "Music preferences (singers, instrumental, DJ, etc.)",
+          "required": true
+        },
+        {
+          "id": "dance_performances",
+          "label": "Dance performances (Bollywood, traditional, international)",
+          "required": false
+        },
+        {
+          "id": "special_entertainment",
+          "label": "Special entertainment (karaoke, magic, fire performers, etc.)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "culinary_forge",
+      "title": "Culinary Forge",
+      "description": "Food and beverage crafting",
+      "items": [
+        {
+          "id": "catering_style",
+          "label": "Catering style and menu preferences",
+          "required": true
+        },
+        {
+          "id": "beverage_requirements",
+          "label": "Beverage requirements (alcoholic/non-alcoholic)",
+          "required": true
+        },
+        {
+          "id": "dietary_requirements",
+          "label": "Special dietary requirements",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "documentation_forge",
+      "title": "Documentation Forge",
+      "description": "Photography and videography mastery",
+      "items": [
+        {
+          "id": "photography_videography",
+          "label": "Photography and videography requirements",
+          "required": true
+        },
+        {
+          "id": "drone_photography",
+          "label": "Drone photography needs",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "transport_forge",
+      "title": "Transport Forge",
+      "description": "Transportation and logistics",
+      "items": [
+        {
+          "id": "guest_travel",
+          "label": "Travel arrangements for guests",
+          "required": false
+        },
+        {
+          "id": "bridal_transport",
+          "label": "Bridal party transportation",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "legal_administrative",
+      "title": "Legal & Administrative",
+      "description": "Permits, permissions, and compliance",
+      "items": [
+        {
+          "id": "permits_permissions",
+          "label": "Required permits and permissions",
+          "required": true
+        },
+        {
+          "id": "insurance",
+          "label": "Insurance requirements",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

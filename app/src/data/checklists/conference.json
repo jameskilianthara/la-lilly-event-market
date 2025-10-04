@@ -1,0 +1,156 @@
+{
+  "eventType": "conference",
+  "displayName": "Conference/Meeting Event Checklist",
+  "categories": [
+    {
+      "id": "venue_logistics",
+      "title": "Venue & Logistics",
+      "icon": "🏢",
+      "items": [
+        {
+          "id": "venue_booking",
+          "question": "Venue booking and banquet hall requirements",
+          "type": "checkbox",
+          "options": ["Main conference hall", "Breakout rooms", "Exhibition area", "Networking space", "Registration area", "Storage space"]
+        },
+        {
+          "id": "accommodation",
+          "question": "Accommodation arrangements for delegates/participants",
+          "type": "checkbox",
+          "options": ["Hotel bookings", "Group rates negotiation", "Transportation from hotels", "Welcome packages"]
+        },
+        {
+          "id": "participant_demographics",
+          "question": "Target participant demographics and age group",
+          "type": "text",
+          "placeholder": "Describe your target audience, age group, professional background, etc."
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "materials_branding",
+      "title": "Materials & Branding",
+      "icon": "📚",
+      "items": [
+        {
+          "id": "conference_kit",
+          "question": "Conference kit requirements",
+          "type": "checkbox",
+          "options": ["Writing pads", "Branded pens", "Product booklets", "Conference agenda", "USB drives", "Lanyards", "Badge holders"]
+        },
+        {
+          "id": "invitations",
+          "question": "Customized invitation design",
+          "type": "checkbox",
+          "options": ["Digital invitations", "Printed invitations", "Save the date", "Agenda cards", "Sponsor acknowledgments"]
+        },
+        {
+          "id": "venue_branding",
+          "question": "Venue branding requirements",
+          "type": "checkbox",
+          "options": ["Company banners", "Sponsor boards", "Directional signage", "Welcome boards", "Stage branding"]
+        },
+        {
+          "id": "name_tags",
+          "question": "Name tags and badges",
+          "type": "checkbox",
+          "options": ["Participant badges", "Speaker badges", "VIP badges", "Staff identification", "Sponsor badges"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "technology_equipment",
+      "title": "Technology & Equipment",
+      "icon": "🎤",
+      "items": [
+        {
+          "id": "av_equipment",
+          "question": "Audio-visual equipment requirements",
+          "type": "checkbox",
+          "options": ["Projectors", "Sound system", "Microphones", "LED screens", "Lighting setup", "Live streaming equipment"]
+        },
+        {
+          "id": "registration_desk",
+          "question": "Registration and help desk setup",
+          "type": "checkbox",
+          "options": ["Registration software", "Check-in kiosks", "Help desk stations", "Information boards"]
+        },
+        {
+          "id": "backdrop",
+          "question": "Backdrop for presentations",
+          "type": "checkbox",
+          "options": ["Main stage backdrop", "Registration backdrop", "Photo booth backdrop", "Sponsor backdrops"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "food_beverage",
+      "title": "Food & Beverage",
+      "icon": "☕",
+      "items": [
+        {
+          "id": "beverage_service",
+          "question": "Beverage service requirements",
+          "type": "checkbox",
+          "options": ["Welcome drinks", "Tea/coffee breaks", "Networking cocktails", "Lunch beverages", "Continuous beverage stations"]
+        },
+        {
+          "id": "meal_arrangements",
+          "question": "Meal arrangements",
+          "type": "checkbox",
+          "options": ["Welcome breakfast", "Working lunch", "Gala dinner", "Networking snacks", "Dietary accommodations"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "support_services",
+      "title": "Support Services",
+      "icon": "🤝",
+      "items": [
+        {
+          "id": "travel_assistance",
+          "question": "Travel arrangement assistance",
+          "type": "checkbox",
+          "options": ["Airport transfers", "Local transportation", "Travel booking support", "Visa assistance"]
+        },
+        {
+          "id": "publicity",
+          "question": "Publicity and pre-promotion activities",
+          "type": "checkbox",
+          "options": ["Social media promotion", "Press releases", "Industry publications", "Email campaigns", "Website promotion"]
+        },
+        {
+          "id": "registration_management",
+          "question": "Registration desk management",
+          "type": "checkbox",
+          "options": ["Online registration platform", "On-site registration", "Payment processing", "Attendee management"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "budget_planning",
+      "title": "Budget Planning",
+      "icon": "💰",
+      "items": [
+        {
+          "id": "budget_allocation",
+          "question": "Overall budget allocation",
+          "type": "text",
+          "placeholder": "Enter your estimated budget or budget range"
+        },
+        {
+          "id": "cost_breakdown",
+          "question": "Cost breakdown requirements",
+          "type": "checkbox",
+          "options": ["Venue costs", "Catering costs", "Technology costs", "Marketing costs", "Speaker fees", "Travel expenses"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

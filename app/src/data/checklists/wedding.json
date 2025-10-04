@@ -1,0 +1,194 @@
+{
+  "eventType": "wedding",
+  "displayName": "Wedding Event Checklist",
+  "categories": [
+    {
+      "id": "venue_logistics",
+      "title": "Venue & Logistics",
+      "icon": "🏛️",
+      "items": [
+        {
+          "id": "indoor_outdoor",
+          "question": "Indoor or outdoor preference?",
+          "type": "radio",
+          "options": ["Indoor", "Outdoor", "Both"]
+        },
+        {
+          "id": "ceremony_type",
+          "question": "Type of wedding ceremony (customs of bride and groom)",
+          "type": "select",
+          "options": ["Hindu Traditional", "Christian", "Muslim", "Sikh", "Inter-faith", "Civil", "Destination", "Other"]
+        },
+        {
+          "id": "venue_booking",
+          "question": "Venue booking and banquet arrangements",
+          "type": "checkbox",
+          "options": ["Main ceremony venue", "Reception venue", "Backup venue for weather", "Bridal suite", "Groom's preparation room"]
+        },
+        {
+          "id": "accommodation",
+          "question": "Accommodation for guests/family",
+          "type": "checkbox",
+          "options": ["Family accommodation", "Out-of-town guest hotels", "Bridal party accommodation", "Vendor accommodation"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "design_decoration",
+      "title": "Design & Decoration",
+      "icon": "🎨",
+      "items": [
+        {
+          "id": "invitations",
+          "question": "Customized invitation requirements",
+          "type": "checkbox",
+          "options": ["Save the date cards", "Wedding invitations", "RSVP cards", "Digital invitations", "Menu cards", "Thank you cards"]
+        },
+        {
+          "id": "theme_preferences",
+          "question": "Theme preferences for decoration",
+          "type": "select",
+          "options": ["Traditional Kerala theme", "North Indian theme", "Rajasthani theme", "Mughal theme", "Beach theme", "Ballroom theme", "Cinderella theme", "Peacock theme", "Flavours of India", "Underwater theme", "Garden theme", "Vintage theme"]
+        },
+        {
+          "id": "stage_decoration",
+          "question": "Stage decoration requirements",
+          "type": "checkbox",
+          "options": ["Main ceremony stage", "Reception stage", "Photo booth backdrop", "Seating area decoration", "Lighting setup"]
+        },
+        {
+          "id": "entry_decoration",
+          "question": "Entry decoration (mandap, archway)",
+          "type": "checkbox",
+          "options": ["Main entrance arch", "Mandap decoration", "Pathway decoration", "Welcome signage", "Flower arrangements"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "entertainment_activities",
+      "title": "Entertainment & Activities",
+      "icon": "🎭",
+      "items": [
+        {
+          "id": "traditional_arrival",
+          "question": "Traditional arrival arrangements",
+          "type": "select",
+          "options": ["Elephant", "Palanquin", "Horse", "Decorated car", "Boat", "Vintage car", "None required"]
+        },
+        {
+          "id": "escort_arrangements",
+          "question": "Escort arrangements",
+          "type": "checkbox",
+          "options": ["Traditional dancers", "Flower girls", "Ring bearer", "Page boys", "Live musicians"]
+        },
+        {
+          "id": "music_preferences",
+          "question": "Music preferences",
+          "type": "checkbox",
+          "options": ["Professional singers/gazals", "Instrumental music", "Fusion bands", "DJ services", "Live orchestra", "Traditional music"]
+        },
+        {
+          "id": "dance_performances",
+          "question": "Dance performances",
+          "type": "checkbox",
+          "options": ["Bollywood dance troupes", "International dance troupes", "Kerala traditional performances", "Wing dancers", "Folk dance", "Classical dance"]
+        },
+        {
+          "id": "special_entertainment",
+          "question": "Special entertainment",
+          "type": "checkbox",
+          "options": ["Karaoke setup", "Bar jugglers", "Magic show", "Fire performers", "LED dancers", "Photo booth"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "food_beverage",
+      "title": "Food & Beverage",
+      "icon": "🍽️",
+      "items": [
+        {
+          "id": "catering_style",
+          "question": "Catering style and menu preferences",
+          "type": "checkbox",
+          "options": ["Traditional Indian cuisine", "Multi-cuisine buffet", "Live cooking stations", "Regional specialties", "International cuisine", "Fusion menu"]
+        },
+        {
+          "id": "beverage_requirements",
+          "question": "Beverage requirements",
+          "type": "radio",
+          "options": ["Alcoholic and non-alcoholic", "Non-alcoholic only", "Limited alcoholic selection"]
+        },
+        {
+          "id": "dietary_requirements",
+          "question": "Special dietary requirements",
+          "type": "checkbox",
+          "options": ["Vegetarian options", "Vegan options", "Jain food", "Gluten-free options", "Diabetic-friendly options", "Children's menu"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "photography_documentation",
+      "title": "Photography & Documentation",
+      "icon": "📸",
+      "items": [
+        {
+          "id": "photography_videography",
+          "question": "Photography and videography requirements",
+          "type": "checkbox",
+          "options": ["Wedding photographer", "Videographer", "Pre-wedding shoot", "Engagement photography", "Candid photography", "Traditional photography"]
+        },
+        {
+          "id": "drone_photography",
+          "question": "Drone photography needs",
+          "type": "radio",
+          "options": ["Yes, with permits", "Yes, if venue allows", "No, not required"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "transportation",
+      "title": "Transportation",
+      "icon": "🚗",
+      "items": [
+        {
+          "id": "guest_travel",
+          "question": "Travel arrangements for guests",
+          "type": "checkbox",
+          "options": ["Airport transfers", "Hotel to venue transport", "Shuttle services", "Parking arrangements", "Valet service"]
+        },
+        {
+          "id": "bridal_transport",
+          "question": "Bridal party transportation",
+          "type": "checkbox",
+          "options": ["Bridal car", "Groom's transport", "Family transport", "VIP guest transport"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "legal_administrative",
+      "title": "Legal & Administrative",
+      "icon": "📋",
+      "items": [
+        {
+          "id": "permits_permissions",
+          "question": "Required permits and permissions",
+          "type": "checkbox",
+          "options": ["Venue permits", "Music/sound permits", "Parking permits", "Fire safety clearance", "Alcohol license"]
+        },
+        {
+          "id": "insurance",
+          "question": "Insurance requirements",
+          "type": "checkbox",
+          "options": ["Event insurance", "Vendor insurance", "Weather insurance", "Cancellation insurance"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

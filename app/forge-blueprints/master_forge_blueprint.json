@@ -1,0 +1,150 @@
+{
+  "eventType": "Universal",
+  "displayName": "Master Forge Blueprint - Universal Event Template",
+  "version": "2025-09-01",
+  "forgeComplexity": "master",
+  "sections": [
+    {
+      "id": "universal_foundation",
+      "title": "Universal Foundation",
+      "description": "Core requirements for any event type",
+      "items": [
+        {
+          "id": "event_vision",
+          "label": "Overall vision and objectives for your event?",
+          "required": true
+        },
+        {
+          "id": "guest_experience",
+          "label": "Experience you want to create for guests?",
+          "required": true
+        },
+        {
+          "id": "success_metrics",
+          "label": "How will you measure success?",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "craft_specifications",
+      "title": "Craft Specifications",
+      "description": "Detailed event specifications",
+      "items": [
+        {
+          "id": "venue_requirements",
+          "label": "Specific venue and space requirements",
+          "required": true
+        },
+        {
+          "id": "decor_style",
+          "label": "Decoration style and aesthetic preferences",
+          "required": true
+        },
+        {
+          "id": "service_needs",
+          "label": "Services and master craftsmen needed",
+          "required": true
+        },
+        {
+          "id": "timeline_constraints",
+          "label": "Timeline and scheduling constraints",
+          "required": true
+        },
+        {
+          "id": "budget_considerations",
+          "label": "Budget priorities and considerations",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "technical_forge",
+      "title": "Technical Forge Requirements",
+      "description": "AV and technical specifications",
+      "items": [
+        {
+          "id": "av_equipment",
+          "label": "Audio-visual equipment needs",
+          "required": false
+        },
+        {
+          "id": "lighting_requirements",
+          "label": "Lighting design requirements",
+          "required": false
+        },
+        {
+          "id": "sound_system",
+          "label": "Sound system specifications",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "culinary_hospitality",
+      "title": "Culinary & Hospitality",
+      "description": "Food, beverage, and guest services",
+      "items": [
+        {
+          "id": "catering_preferences",
+          "label": "Catering style and menu preferences",
+          "required": true
+        },
+        {
+          "id": "beverage_service",
+          "label": "Beverage service requirements",
+          "required": false
+        },
+        {
+          "id": "guest_services",
+          "label": "Additional guest services needed",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "entertainment_documentation",
+      "title": "Entertainment & Documentation",
+      "description": "Entertainment and capture requirements",
+      "items": [
+        {
+          "id": "entertainment_needs",
+          "label": "Entertainment requirements (music, performances, activities)",
+          "required": false
+        },
+        {
+          "id": "photography",
+          "label": "Photography coverage needs",
+          "required": true
+        },
+        {
+          "id": "videography",
+          "label": "Videography requirements",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "logistics_compliance",
+      "title": "Logistics & Compliance",
+      "description": "Operational and legal requirements",
+      "items": [
+        {
+          "id": "permits",
+          "label": "Required permits and licenses",
+          "required": true
+        },
+        {
+          "id": "insurance",
+          "label": "Insurance requirements",
+          "required": false
+        },
+        {
+          "id": "transportation",
+          "label": "Transportation and logistics",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

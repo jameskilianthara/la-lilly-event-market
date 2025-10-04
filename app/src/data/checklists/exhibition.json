@@ -1,0 +1,168 @@
+{
+  "eventType": "exhibition",
+  "displayName": "Exhibition Event Checklist",
+  "categories": [
+    {
+      "id": "exhibition_details",
+      "title": "Exhibition Details",
+      "icon": "🏢",
+      "items": [
+        {
+          "id": "exhibition_theme",
+          "question": "Exhibition theme and objective",
+          "type": "text",
+          "placeholder": "Describe the theme, purpose, and main objectives of your exhibition"
+        },
+        {
+          "id": "target_audience",
+          "question": "Target audience and purpose",
+          "type": "checkbox",
+          "options": ["Industry professionals", "General public", "Students", "Business leaders", "Government officials", "Media personnel"]
+        },
+        {
+          "id": "area_requirements",
+          "question": "Area requirements and space planning",
+          "type": "text",
+          "placeholder": "Specify total area needed, layout preferences, special space requirements"
+        },
+        {
+          "id": "stall_count",
+          "question": "Number of stalls needed",
+          "type": "select",
+          "options": ["10-25 stalls", "26-50 stalls", "51-100 stalls", "101-200 stalls", "200+ stalls"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "venue_logistics",
+      "title": "Venue & Logistics",
+      "icon": "📍",
+      "items": [
+        {
+          "id": "venue_booking",
+          "question": "Venue booking arrangements",
+          "type": "checkbox",
+          "options": ["Main exhibition hall", "Registration area", "Conference rooms", "Storage space", "Food court area", "Parking facilities"]
+        },
+        {
+          "id": "layout_planning",
+          "question": "Layout and floor plan requirements",
+          "type": "checkbox",
+          "options": ["Stall layout design", "Visitor flow planning", "Emergency exits", "Accessibility features", "Information desks"]
+        },
+        {
+          "id": "registration_setup",
+          "question": "Registration and help desk setup",
+          "type": "checkbox",
+          "options": ["Online registration system", "On-site registration", "Visitor badges", "Information brochures", "Help desk stations"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "setup_requirements",
+      "title": "Setup Requirements",
+      "icon": "🔧",
+      "items": [
+        {
+          "id": "stall_design",
+          "question": "Stall design and setup specifications",
+          "type": "checkbox",
+          "options": ["Standard stall packages", "Custom stall designs", "Display equipment", "Lighting for stalls", "Power connections", "Internet connectivity"]
+        },
+        {
+          "id": "display_arrangements",
+          "question": "Display arrangements",
+          "type": "checkbox",
+          "options": ["Product display stands", "Interactive screens", "Demonstration areas", "Brochure displays", "Digital presentations"]
+        },
+        {
+          "id": "infrastructure",
+          "question": "Infrastructure requirements",
+          "type": "checkbox",
+          "options": ["Audio system", "Public address system", "Wi-Fi setup", "Security systems", "Air conditioning", "Cleaning services"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "marketing_promotion",
+      "title": "Marketing & Promotion",
+      "icon": "📢",
+      "items": [
+        {
+          "id": "promotional_activities",
+          "question": "Promotional activities planned",
+          "type": "checkbox",
+          "options": ["Social media campaigns", "Print advertisements", "Email marketing", "Industry publications", "Radio/TV promotions", "Influencer partnerships"]
+        },
+        {
+          "id": "branding_requirements",
+          "question": "Branding requirements",
+          "type": "checkbox",
+          "options": ["Exhibition banners", "Entrance branding", "Directional signage", "Sponsor boards", "Digital displays"]
+        },
+        {
+          "id": "publicity_strategies",
+          "question": "Publicity strategies",
+          "type": "checkbox",
+          "options": ["Press releases", "Media kits", "Blogger outreach", "Industry partnerships", "Preview events"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "support_services",
+      "title": "Support Services",
+      "icon": "🤝",
+      "items": [
+        {
+          "id": "inaugural_function",
+          "question": "Inaugural function requirements",
+          "type": "checkbox",
+          "options": ["Chief guest arrangements", "Opening ceremony", "Ribbon cutting", "Media coverage", "VIP seating"]
+        },
+        {
+          "id": "guest_management",
+          "question": "Guest management",
+          "type": "checkbox",
+          "options": ["VIP guest services", "General visitor management", "Group bookings", "Student visits", "Industry delegations"]
+        },
+        {
+          "id": "staff_coordination",
+          "question": "Staff coordination",
+          "type": "checkbox",
+          "options": ["Event staff", "Security personnel", "Technical support", "Registration staff", "Cleaning crew"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "budget_planning",
+      "title": "Budget Planning",
+      "icon": "💰",
+      "items": [
+        {
+          "id": "budget_allocation",
+          "question": "Budget allocation",
+          "type": "text",
+          "placeholder": "Enter your total exhibition budget or budget range"
+        },
+        {
+          "id": "cost_per_stall",
+          "question": "Cost per stall",
+          "type": "text",
+          "placeholder": "Specify pricing for different stall types and sizes"
+        },
+        {
+          "id": "additional_service_costs",
+          "question": "Additional service costs",
+          "type": "checkbox",
+          "options": ["Setup and breakdown", "Marketing and promotion", "Catering services", "Technical support", "Security services", "Insurance"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

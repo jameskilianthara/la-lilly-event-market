@@ -1,0 +1,10 @@
+{
+  "wedding_forge": ["wedding", "marriage", "nikah", "shaadi", "matrimony", "vivah"],
+  "corporate_forge": ["corporate", "business", "conference", "meeting", "seminar", "workshop", "summit"],
+  "celebration_forge": ["birthday", "anniversary", "milestone", "achievement", "celebration", "party"],
+  "product_launch_forge": ["launch", "product launch", "unveiling", "reveal", "premiere"],
+  "exhibition_forge": ["exhibition", "expo", "trade show", "showcase", "fair"],
+  "cultural_forge": ["cultural", "festival", "tradition", "ceremony", "religious"],
+  "entertainment_forge": ["concert", "show", "performance", "entertainment", "gala"],
+  "social_forge": ["party", "gathering", "social", "mixer", "networking", "reception"]
+}

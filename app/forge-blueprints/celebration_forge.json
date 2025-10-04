@@ -1,0 +1,130 @@
+{
+  "eventType": "Celebration",
+  "displayName": "Celebration Forge Blueprint",
+  "version": "2025-09-01",
+  "forgeComplexity": "craftsman",
+  "sections": [
+    {
+      "id": "celebration_vision",
+      "title": "Celebration Vision",
+      "description": "Personal celebration requirements and goals",
+      "items": [
+        {
+          "id": "celebration_theme",
+          "label": "Theme and style for the celebration?",
+          "required": true
+        },
+        {
+          "id": "special_moments",
+          "label": "Key moments to highlight and craft?",
+          "required": true
+        },
+        {
+          "id": "guest_experience",
+          "label": "Experience you want guests to have?",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "decor_craft",
+      "title": "Decorative Craftsmanship",
+      "description": "Theme-based decoration forge",
+      "items": [
+        {
+          "id": "theme_decoration",
+          "label": "Theme-based venue decoration requirements",
+          "required": true
+        },
+        {
+          "id": "stage_setup",
+          "label": "Stage and performance area crafting",
+          "required": true
+        },
+        {
+          "id": "photo_booth",
+          "label": "Photo booth and backdrop setup",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "party_elements",
+      "title": "Party Forge Elements",
+      "description": "Fun and entertainment specifications",
+      "items": [
+        {
+          "id": "entertainment",
+          "label": "Entertainment and activities planned (DJ, MC, performers)",
+          "required": true
+        },
+        {
+          "id": "music_preferences",
+          "label": "Music style and preferences",
+          "required": true
+        },
+        {
+          "id": "special_activities",
+          "label": "Special activities or interactive elements",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "culinary",
+      "title": "Culinary Craft",
+      "description": "Food and beverage forge",
+      "items": [
+        {
+          "id": "food_beverage",
+          "label": "Food and beverage preferences (buffet, stations, plated)",
+          "required": true
+        },
+        {
+          "id": "bar_setup",
+          "label": "Bar setup and beverage selection",
+          "required": false
+        },
+        {
+          "id": "cake_desserts",
+          "label": "Cake and dessert requirements",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "documentation_forge",
+      "title": "Documentation Forge",
+      "description": "Capture the celebration",
+      "items": [
+        {
+          "id": "photography",
+          "label": "Photography coverage requirements",
+          "required": true
+        },
+        {
+          "id": "videography",
+          "label": "Videography and highlights reel",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "logistics",
+      "title": "Event Logistics",
+      "description": "Operational requirements",
+      "items": [
+        {
+          "id": "invitations",
+          "label": "Invitation design and distribution",
+          "required": true
+        },
+        {
+          "id": "guest_favors",
+          "label": "Guest welcome gifts and party favors",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

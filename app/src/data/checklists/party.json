@@ -1,0 +1,124 @@
+{
+  "eventType": "party",
+  "displayName": "Birthday/Theme Party Event Checklist",
+  "categories": [
+    {
+      "id": "party_specifications",
+      "title": "Party Specifications",
+      "icon": "🎉",
+      "items": [
+        {
+          "id": "party_type",
+          "question": "Type of party",
+          "type": "select",
+          "options": ["Cruise party", "Pool party", "Indoor party", "Beach party", "Birthday party", "Bachelor party", "Theme party", "House party"]
+        },
+        {
+          "id": "target_crowd",
+          "question": "Target crowd",
+          "type": "radio",
+          "options": ["Open invitation", "Closed/Private", "Semi-private"]
+        },
+        {
+          "id": "age_group",
+          "question": "Age group focus",
+          "type": "select",
+          "options": ["Kids (5-12)", "Teens (13-17)", "Young adults (18-25)", "Adults (26-40)", "Mixed age group", "Senior adults (40+)"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "venue_setup",
+      "title": "Venue & Setup",
+      "icon": "🏠",
+      "items": [
+        {
+          "id": "venue_booking",
+          "question": "Venue booking and banquet arrangements",
+          "type": "checkbox",
+          "options": ["Main party area", "Dance floor space", "Bar area", "Lounge area", "Outdoor space", "Parking area"]
+        },
+        {
+          "id": "terms_conditions",
+          "question": "Terms and conditions for venue usage",
+          "type": "checkbox",
+          "options": ["Noise restrictions", "Time limitations", "Decoration guidelines", "Cleanup requirements", "Security deposits"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "entertainment",
+      "title": "Entertainment",
+      "icon": "🎵",
+      "items": [
+        {
+          "id": "dj_requirements",
+          "question": "DJ requirements and music preferences",
+          "type": "checkbox",
+          "options": ["Professional DJ", "Sound system", "Bollywood music", "International hits", "Electronic/EDM", "Retro music", "Live band"]
+        },
+        {
+          "id": "dance_floor",
+          "question": "Dance floor setup",
+          "type": "checkbox",
+          "options": ["LED dance floor", "Traditional dance floor", "Outdoor dance area", "Stage for performances"]
+        },
+        {
+          "id": "special_entertainment",
+          "question": "Special entertainment requests",
+          "type": "checkbox",
+          "options": ["Karaoke setup", "Photo booth", "Games and activities", "Live performances", "Magic show", "Stand-up comedy"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "food_beverage",
+      "title": "Food & Beverage",
+      "icon": "🍹",
+      "items": [
+        {
+          "id": "beverage_requirements",
+          "question": "Beverage requirements",
+          "type": "radio",
+          "options": ["Alcoholic and non-alcoholic", "Non-alcoholic only", "BYOB (Bring Your Own Bottle)"]
+        },
+        {
+          "id": "catering_preferences",
+          "question": "Catering preferences",
+          "type": "checkbox",
+          "options": ["Finger foods", "Full meal", "Snacks and appetizers", "Dessert station", "Birthday cake", "Live food counters"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "special_requirements",
+      "title": "Special Requirements",
+      "icon": "✨",
+      "items": [
+        {
+          "id": "theme_decoration",
+          "question": "Theme-specific decoration needs",
+          "type": "text",
+          "placeholder": "Describe your theme and decoration requirements"
+        },
+        {
+          "id": "lighting_requirements",
+          "question": "Lighting requirements",
+          "type": "checkbox",
+          "options": ["Disco lights", "LED lighting", "Ambient lighting", "Neon lights", "String lights", "Spotlights"]
+        },
+        {
+          "id": "sound_system",
+          "question": "Sound system specifications",
+          "type": "checkbox",
+          "options": ["High-quality speakers", "Wireless microphones", "Mixing console", "Outdoor sound system", "Background music system"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}
