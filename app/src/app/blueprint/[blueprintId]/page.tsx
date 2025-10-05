@@ -17,7 +17,9 @@ import {
   MusicalNoteIcon,
   CakeIcon,
   CameraIcon,
-  TruckIcon
+  TruckIcon,
+  HashtagIcon,
+  DocumentDuplicateIcon
 } from '@heroicons/react/24/outline';
 
 interface EventMemory {
@@ -45,10 +47,19 @@ export default function BlueprintReviewPage() {
   const [saving, setSaving] = useState(false);
   const [posting, setPosting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [eventId, setEventId] = useState<string>('');
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Generate unique event ID
+  const generateEventId = (eventType: string, date: string) => {
+    const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
+    const randomStr = Math.random().toString(36).substring(2, 7);
+    return `evt_${timestamp}_${randomStr}`;
+  };
 
   const loadData = () => {
     // Get event type from URL params or localStorage
@@ -58,16 +69,29 @@ export default function BlueprintReviewPage() {
     // Load event memory
     const savedMemory = localStorage.getItem('lalilly-event-memory');
     let memoryEventType = 'wedding';
+    let memoryDate = '';
 
     if (savedMemory) {
       const memory = JSON.parse(savedMemory);
       setEventMemory(memory);
       memoryEventType = memory.event_type || 'wedding';
+      memoryDate = memory.date || '';
     }
 
     // Use URL type if available, otherwise use memory type
     const finalEventType = typeFromUrl || memoryEventType;
     setEventType(finalEventType);
+
+    // Load or generate event ID
+    const eventIdKey = `event_id_${finalEventType}_${memoryDate}`;
+    let savedEventId = localStorage.getItem(eventIdKey);
+
+    if (!savedEventId) {
+      savedEventId = generateEventId(finalEventType, memoryDate);
+      localStorage.setItem(eventIdKey, savedEventId);
+    }
+
+    setEventId(savedEventId);
 
     // Load checklist data with correct event type
     const checklistKey = `checklist_${finalEventType.toLowerCase()}`;
@@ -88,9 +112,27 @@ export default function BlueprintReviewPage() {
     setExpandedCategories(newExpanded);
   };
 
+  const handleCopyEventId = async () => {
+    try {
+      await navigator.clipboard.writeText(eventId);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   const handleSaveDraft = () => {
     setSaving(true);
-    // Simulate save
+    // Include event ID in saved data
+    const draftData = {
+      eventId,
+      eventMemory,
+      checklistData,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem(`event_draft_${eventId}`, JSON.stringify(draftData));
+
     setTimeout(() => {
       setSaving(false);
       setShowSuccess(true);
@@ -100,9 +142,18 @@ export default function BlueprintReviewPage() {
 
   const handlePostToVendors = () => {
     setPosting(true);
-    // Save project and navigate
+    // Save project with event ID and navigate
+    const projectData = {
+      eventId,
+      eventMemory,
+      checklistData,
+      status: 'posted_to_vendors',
+      postedAt: new Date().toISOString()
+    };
+    localStorage.setItem(`lalilly-project-${eventId}`, JSON.stringify(projectData));
+    localStorage.setItem('lalilly-project-generated', 'true');
+
     setTimeout(() => {
-      localStorage.setItem('lalilly-project-generated', 'true');
       router.push('/dashboard');
     }, 1500);
   };
@@ -240,6 +291,35 @@ export default function BlueprintReviewPage() {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
+          {/* Event ID Card */}
+          {eventId && (
+            <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-700/50 shadow-2xl p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <HashtagIcon className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-slate-400 mb-1">Event ID</p>
+                    <code className="text-base sm:text-lg font-mono font-semibold text-white bg-slate-700/50 px-3 py-1 rounded border border-slate-600/50 inline-block break-all">
+                      {eventId}
+                    </code>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCopyEventId}
+                  className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 hover:border-blue-500/50 rounded-lg text-blue-400 font-medium transition-all duration-200 flex-shrink-0"
+                >
+                  <DocumentDuplicateIcon className="h-4 w-4" />
+                  <span className="text-sm">{copySuccess ? 'Copied!' : 'Copy ID'}</span>
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 mt-3 ml-13">
+                This unique ID tracks your event through the vendor bidding process
+              </p>
+            </div>
+          )}
+
           {/* Core Event Details */}
           <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-700/50 shadow-2xl p-6 sm:p-8">
             <div className="flex items-center space-x-3 mb-6">

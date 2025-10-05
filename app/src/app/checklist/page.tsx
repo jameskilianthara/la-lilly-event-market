@@ -16,7 +16,10 @@ import {
   MegaphoneIcon,
   WrenchScrewdriverIcon,
   SparklesIcon,
-  HomeIcon
+  HomeIcon,
+  ArrowTopRightOnSquareIcon,
+  XMarkIcon,
+  PhotoIcon
 } from '@heroicons/react/24/outline';
 
 interface ChecklistItem {
@@ -73,6 +76,8 @@ export default function ChecklistPage() {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [selections, setSelections] = useState<Record<string, any>>({});
   const [categoryNotes, setCategoryNotes] = useState<Record<string, string>>({});
+  const [imageReferences, setImageReferences] = useState<Record<string, string[]>>({});
+  const [imageInputs, setImageInputs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -109,16 +114,18 @@ export default function ChecklistPage() {
   const loadFromLocalStorage = () => {
     const saved = localStorage.getItem(`checklist_${eventType}`);
     if (saved) {
-      const { selections: savedSelections, notes: savedNotes } = JSON.parse(saved);
+      const { selections: savedSelections, notes: savedNotes, images: savedImages } = JSON.parse(saved);
       setSelections(savedSelections || {});
       setCategoryNotes(savedNotes || {});
+      setImageReferences(savedImages || {});
     }
   };
 
-  const saveToLocalStorage = (newSelections: Record<string, any>, newNotes: Record<string, string>) => {
+  const saveToLocalStorage = (newSelections: Record<string, any>, newNotes: Record<string, string>, newImages?: Record<string, string[]>) => {
     localStorage.setItem(`checklist_${eventType}`, JSON.stringify({
       selections: newSelections,
-      notes: newNotes
+      notes: newNotes,
+      images: newImages || imageReferences
     }));
   };
 
@@ -185,6 +192,69 @@ export default function ChecklistPage() {
       if (Array.isArray(value)) return value.length > 0;
       return value && value.length > 0;
     });
+  };
+
+  // Helper: Check if item needs image references
+  const isVisualItem = (itemId: string, question: string) => {
+    const visualKeywords = ['decoration', 'stage', 'theme', 'design', 'setup', 'venue', 'entry', 'decor', 'style', 'appearance'];
+    const lowerQuestion = question.toLowerCase();
+    const lowerId = itemId.toLowerCase();
+    return visualKeywords.some(keyword => lowerQuestion.includes(keyword) || lowerId.includes(keyword));
+  };
+
+  // Generate Google Images search URL
+  const generateImageSearchURL = (question: string) => {
+    // Extract keywords from question
+    let keywords = question
+      .replace(/\?/g, '')
+      .replace(/preference|requirements|needs|style/gi, '')
+      .trim();
+
+    // Add event type for context
+    keywords = `${eventType} ${keywords}`;
+
+    const searchQuery = encodeURIComponent(keywords);
+    return `https://www.google.com/search?tbm=isch&q=${searchQuery}`;
+  };
+
+  // Handle "Find Images" button click
+  const handleFindImages = (itemId: string, question: string) => {
+    const url = generateImageSearchURL(question);
+    window.open(url, '_blank');
+  };
+
+  // Handle adding image URL
+  const handleAddImageURL = (itemId: string) => {
+    const url = imageInputs[itemId]?.trim();
+    if (!url) return;
+
+    const newImages = { ...imageReferences };
+    if (!newImages[itemId]) {
+      newImages[itemId] = [];
+    }
+    newImages[itemId] = [...newImages[itemId], url];
+
+    setImageReferences(newImages);
+    setImageInputs({ ...imageInputs, [itemId]: '' });
+    saveToLocalStorage(selections, categoryNotes, newImages);
+  };
+
+  // Handle removing image URL
+  const handleRemoveImage = (itemId: string, urlIndex: number) => {
+    const newImages = { ...imageReferences };
+    newImages[itemId] = newImages[itemId].filter((_, idx) => idx !== urlIndex);
+
+    if (newImages[itemId].length === 0) {
+      delete newImages[itemId];
+    }
+
+    setImageReferences(newImages);
+    saveToLocalStorage(selections, categoryNotes, newImages);
+  };
+
+  // Handle image input change
+  const handleImageInputChange = (itemId: string, value: string) => {
+    setImageInputs({ ...imageInputs, [itemId]: value });
   };
 
   if (loading) {
@@ -313,8 +383,11 @@ export default function ChecklistPage() {
                       <div className="space-y-6">
                         {category.items.map((item) => (
                           <div key={item.id} className="space-y-3">
-                            <label className="block text-sm sm:text-base font-semibold text-slate-200">
-                              {item.question}
+                            <label className="flex items-center space-x-2 text-sm sm:text-base font-semibold text-slate-200">
+                              <span>{item.question}</span>
+                              {isVisualItem(item.id, item.question) && (
+                                <CameraIcon className="h-4 w-4 text-blue-400 flex-shrink-0" title="Visual item - you can add reference images" />
+                              )}
                             </label>
 
                             {/* Radio Buttons */}
@@ -392,6 +465,87 @@ export default function ChecklistPage() {
                                     </label>
                                   );
                                 })}
+                              </div>
+                            )}
+
+                            {/* Image References for Visual Items */}
+                            {isVisualItem(item.id, item.question) && (
+                              <div className="mt-4 p-4 bg-slate-900/40 rounded-xl border border-slate-600/30">
+                                <div className="flex items-center space-x-2 mb-3">
+                                  <PhotoIcon className="h-4 w-4 text-blue-400" />
+                                  <span className="text-sm font-medium text-blue-400">Reference Images (Optional)</span>
+                                </div>
+
+                                {/* Find Images Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleFindImages(item.id, item.question)}
+                                  className="flex items-center space-x-2 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 rounded-lg text-slate-300 text-sm transition-all duration-200 mb-3"
+                                >
+                                  <CameraIcon className="h-4 w-4" />
+                                  <span>Find Images</span>
+                                  <ArrowTopRightOnSquareIcon className="h-3 w-3" />
+                                </button>
+
+                                {/* Image URL Input */}
+                                <div className="flex space-x-2">
+                                  <input
+                                    type="url"
+                                    value={imageInputs[item.id] || ''}
+                                    onChange={(e) => handleImageInputChange(item.id, e.target.value)}
+                                    onKeyPress={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddImageURL(item.id);
+                                      }
+                                    }}
+                                    placeholder="Paste image URL here..."
+                                    className="flex-1 px-3 py-2 bg-slate-800/60 border border-slate-600/50 rounded-lg text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddImageURL(item.id)}
+                                    className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 rounded-lg text-orange-400 text-sm font-medium transition-all duration-200"
+                                  >
+                                    Add
+                                  </button>
+                                </div>
+
+                                {/* Image Thumbnails */}
+                                {imageReferences[item.id] && imageReferences[item.id].length > 0 && (
+                                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    {imageReferences[item.id].map((url, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="relative group aspect-video bg-slate-800/60 rounded-lg border border-slate-600/50 overflow-hidden hover:border-orange-500/50 transition-all duration-200"
+                                      >
+                                        <img
+                                          src={url}
+                                          alt={`Reference ${idx + 1}`}
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => {
+                                            (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23334155" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12"%3EImage%3C/text%3E%3C/svg%3E';
+                                          }}
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveImage(item.id, idx)}
+                                          className="absolute top-1 right-1 w-6 h-6 bg-red-500/80 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                        >
+                                          <XMarkIcon className="h-4 w-4 text-white" />
+                                        </button>
+                                        <a
+                                          href={url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="absolute bottom-1 right-1 w-6 h-6 bg-blue-500/80 hover:bg-blue-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                        >
+                                          <ArrowTopRightOnSquareIcon className="h-3 w-3 text-white" />
+                                        </a>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
