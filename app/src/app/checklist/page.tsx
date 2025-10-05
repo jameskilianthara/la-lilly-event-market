@@ -435,7 +435,10 @@ export default function ChecklistPage() {
         {hasAnySelections() && (
           <div className="mt-10 flex justify-center">
             <button
-              onClick={() => router.push('/blueprint/review')}
+              onClick={() => {
+                const blueprintId = eventType.toLowerCase().replace(/\s+/g, '_') + '_forge';
+                router.push(`/blueprint/${blueprintId}?type=${eventType}`);
+              }}
               className="group flex items-center space-x-3 px-10 py-5 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-bold rounded-2xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105 border border-orange-400/50"
             >
               <span className="text-lg">Continue to Blueprint Review</span>
