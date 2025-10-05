@@ -1,0 +1,160 @@
+{
+  "eventType": "conference",
+  "displayName": "Conference Event Checklist",
+  "categories": [
+    {
+      "id": "venue_setup",
+      "title": "Venue & Setup",
+      "icon": "🏢",
+      "items": [
+        {
+          "id": "venue_type",
+          "question": "Preferred venue type",
+          "type": "select",
+          "options": ["Convention center", "Hotel conference facility", "Auditorium", "Outdoor venue", "Hybrid/Virtual setup"]
+        },
+        {
+          "id": "seating_arrangement",
+          "question": "Seating arrangement style",
+          "type": "radio",
+          "options": ["Theater style", "Classroom style", "Banquet rounds", "U-shape", "Boardroom"]
+        },
+        {
+          "id": "room_requirements",
+          "question": "Room and space needs",
+          "type": "checkbox",
+          "options": ["Main conference hall", "Breakout rooms", "Exhibition area", "Registration desk area", "VIP lounge", "Networking space"]
+        },
+        {
+          "id": "accessibility",
+          "question": "Accessibility requirements",
+          "type": "checkbox",
+          "options": ["Wheelchair access", "Hearing assistance", "Sign language interpreters", "Accessible parking"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "materials_branding",
+      "title": "Materials & Branding",
+      "icon": "🎯",
+      "items": [
+        {
+          "id": "branding_materials",
+          "question": "Branding and signage needs",
+          "type": "checkbox",
+          "options": ["Event banners", "Stage backdrop", "Registration signage", "Directional signs", "Sponsor branding", "Photo wall/backdrop"]
+        },
+        {
+          "id": "attendee_materials",
+          "question": "Attendee materials required",
+          "type": "checkbox",
+          "options": ["Name badges", "Conference kits/bags", "Notepads and pens", "Event schedule booklets", "Certificates"]
+        },
+        {
+          "id": "promotional_items",
+          "question": "Promotional materials",
+          "type": "select",
+          "options": ["Branded merchandise", "Digital materials only", "Mix of physical and digital", "None required"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "technology_av",
+      "title": "Technology & AV",
+      "icon": "🎤",
+      "items": [
+        {
+          "id": "av_equipment",
+          "question": "Audio-visual equipment needs",
+          "type": "checkbox",
+          "options": ["Projectors and screens", "Microphones (wireless/wired)", "Sound system", "Stage lighting", "Podium/lectern", "Confidence monitors"]
+        },
+        {
+          "id": "presentation_tech",
+          "question": "Presentation technology",
+          "type": "checkbox",
+          "options": ["Laptop/computer setup", "Clicker/remote", "Teleprompter", "Document camera", "Video recording"]
+        },
+        {
+          "id": "internet_connectivity",
+          "question": "Internet and connectivity",
+          "type": "radio",
+          "options": ["High-speed WiFi required", "Wired connections needed", "Both WiFi and wired", "Basic WiFi sufficient"]
+        },
+        {
+          "id": "virtual_hybrid",
+          "question": "Virtual/hybrid event support",
+          "type": "checkbox",
+          "options": ["Live streaming setup", "Virtual platform integration", "Remote speaker support", "Interactive polling tools", "Hybrid Q&A system"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "food_beverage_conf",
+      "title": "Food & Beverage",
+      "icon": "☕",
+      "items": [
+        {
+          "id": "meal_service",
+          "question": "Meal service requirements",
+          "type": "checkbox",
+          "options": ["Breakfast", "Lunch", "Dinner", "Coffee breaks", "Networking reception", "Cocktail hour"]
+        },
+        {
+          "id": "service_style",
+          "question": "Food service style",
+          "type": "radio",
+          "options": ["Buffet", "Plated meals", "Food stations", "Boxed meals"]
+        },
+        {
+          "id": "dietary_options",
+          "question": "Dietary accommodations",
+          "type": "checkbox",
+          "options": ["Vegetarian", "Vegan", "Halal", "Kosher", "Gluten-free", "Nut-free"]
+        },
+        {
+          "id": "beverage_service",
+          "question": "Beverage service needs",
+          "type": "checkbox",
+          "options": ["Coffee and tea stations", "Soft drinks", "Juice bar", "Water stations", "Alcoholic beverages"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "support_services",
+      "title": "Support Services",
+      "icon": "👥",
+      "items": [
+        {
+          "id": "staffing",
+          "question": "Staffing requirements",
+          "type": "checkbox",
+          "options": ["Registration staff", "AV technicians", "Event coordinators", "Security personnel", "Ushers/guides"]
+        },
+        {
+          "id": "registration_system",
+          "question": "Registration and check-in",
+          "type": "select",
+          "options": ["Digital check-in system", "Manual registration", "Self-service kiosks", "Mobile app check-in"]
+        },
+        {
+          "id": "transportation_parking",
+          "question": "Transportation and parking",
+          "type": "checkbox",
+          "options": ["Parking arrangements", "Shuttle service", "Valet parking", "Signage for directions"]
+        },
+        {
+          "id": "documentation",
+          "question": "Event documentation needs",
+          "type": "checkbox",
+          "options": ["Professional photography", "Video recording", "Session recording", "Live note-taking", "Post-event report"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

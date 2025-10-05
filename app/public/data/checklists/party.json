@@ -1,0 +1,166 @@
+{
+  "eventType": "party",
+  "displayName": "Party Event Checklist",
+  "categories": [
+    {
+      "id": "party_specifications",
+      "title": "Party Specifications",
+      "icon": "🎉",
+      "items": [
+        {
+          "id": "party_type",
+          "question": "Type of party",
+          "type": "select",
+          "options": ["Birthday party", "Anniversary celebration", "Graduation party", "Holiday party", "Corporate party", "Cocktail party", "Theme party", "Other celebration"]
+        },
+        {
+          "id": "party_theme",
+          "question": "Party theme preference",
+          "type": "select",
+          "options": ["No specific theme", "Bollywood", "Retro/Vintage", "Garden party", "Beach party", "Masquerade", "Black tie", "Casual festive", "Custom theme"]
+        },
+        {
+          "id": "atmosphere",
+          "question": "Desired atmosphere",
+          "type": "radio",
+          "options": ["Formal and elegant", "Casual and fun", "Energetic and lively", "Intimate and cozy"]
+        },
+        {
+          "id": "age_group",
+          "question": "Primary age group",
+          "type": "select",
+          "options": ["Children (under 12)", "Teenagers", "Young adults (20s-30s)", "Adults (40s-50s)", "Seniors (60+)", "Mixed ages"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "venue_decor",
+      "title": "Venue & Decoration",
+      "icon": "🏠",
+      "items": [
+        {
+          "id": "venue_preference",
+          "question": "Venue preference",
+          "type": "radio",
+          "options": ["Indoor venue", "Outdoor venue", "Home/private property", "Flexible"]
+        },
+        {
+          "id": "decoration_elements",
+          "question": "Decoration elements needed",
+          "type": "checkbox",
+          "options": ["Balloons and streamers", "Floral arrangements", "Lighting effects", "Backdrop/photo wall", "Table centerpieces", "Entrance decoration"]
+        },
+        {
+          "id": "seating_arrangement",
+          "question": "Seating arrangement",
+          "type": "select",
+          "options": ["Formal seated dinner", "Cocktail style (standing)", "Lounge seating", "Mix of seated and standing", "Open dance floor focus"]
+        },
+        {
+          "id": "special_installations",
+          "question": "Special installations or features",
+          "type": "checkbox",
+          "options": ["Dance floor", "Stage/performance area", "Bar setup", "Lounge area", "Kids' play zone", "Photo booth"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "entertainment_party",
+      "title": "Entertainment & Activities",
+      "icon": "🎪",
+      "items": [
+        {
+          "id": "music_entertainment",
+          "question": "Music and entertainment",
+          "type": "checkbox",
+          "options": ["DJ services", "Live band", "Playlist/background music", "Karaoke setup", "Dance performances"]
+        },
+        {
+          "id": "activities",
+          "question": "Party activities and games",
+          "type": "checkbox",
+          "options": ["Interactive games", "Photo booth with props", "Magic show", "Casino tables", "Outdoor games", "Craft activities (for kids)"]
+        },
+        {
+          "id": "special_moments",
+          "question": "Special moments to plan",
+          "type": "checkbox",
+          "options": ["Cake cutting ceremony", "Toast/speech time", "Award/recognition segment", "Surprise element", "Fireworks/sparklers"]
+        },
+        {
+          "id": "kids_entertainment",
+          "question": "Kids' entertainment (if applicable)",
+          "type": "checkbox",
+          "options": ["Face painting", "Balloon artist", "Clown/entertainer", "Bouncy castle", "Kids' games coordinator"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "food_beverage_party",
+      "title": "Food & Beverage",
+      "icon": "🍰",
+      "items": [
+        {
+          "id": "meal_type",
+          "question": "Meal/food service type",
+          "type": "radio",
+          "options": ["Full meal service", "Heavy appetizers/tapas", "Light snacks and finger food", "Dessert focused", "Custom menu"]
+        },
+        {
+          "id": "food_stations",
+          "question": "Food service style",
+          "type": "checkbox",
+          "options": ["Buffet setup", "Passed appetizers", "Food stations (live counters)", "Plated service", "Dessert bar", "Grazing table"]
+        },
+        {
+          "id": "beverage_options",
+          "question": "Beverage service",
+          "type": "checkbox",
+          "options": ["Open bar", "Limited bar", "Signature cocktails", "Mocktails/non-alcoholic", "Soft drinks and juice", "Coffee and tea"]
+        },
+        {
+          "id": "special_items",
+          "question": "Special food items",
+          "type": "checkbox",
+          "options": ["Birthday/celebration cake", "Themed desserts", "Late-night snacks", "Kids' menu", "Dietary accommodations"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "additional_services",
+      "title": "Additional Services",
+      "icon": "✨",
+      "items": [
+        {
+          "id": "photography_video",
+          "question": "Photography and videography",
+          "type": "checkbox",
+          "options": ["Professional photographer", "Videographer", "Candid photography", "Photo booth with prints", "Drone coverage"]
+        },
+        {
+          "id": "guest_services",
+          "question": "Guest services and amenities",
+          "type": "checkbox",
+          "options": ["Valet parking", "Coat check", "Welcome drinks", "Party favors/gifts", "Transportation arrangement"]
+        },
+        {
+          "id": "party_coordination",
+          "question": "Party coordination support",
+          "type": "radio",
+          "options": ["Full event planner", "Day-of coordinator", "Setup and breakdown only", "Self-managed"]
+        },
+        {
+          "id": "cleanup_requirements",
+          "question": "Cleanup and breakdown",
+          "type": "select",
+          "options": ["Full cleanup service", "Venue cleanup only", "Rental pickup coordination", "Self-managed cleanup"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

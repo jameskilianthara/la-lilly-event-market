@@ -1,0 +1,166 @@
+{
+  "eventType": "exhibition",
+  "displayName": "Exhibition Event Checklist",
+  "categories": [
+    {
+      "id": "exhibition_details",
+      "title": "Exhibition Details",
+      "icon": "🎨",
+      "items": [
+        {
+          "id": "exhibition_type",
+          "question": "Type of exhibition",
+          "type": "select",
+          "options": ["Trade show/B2B", "Art exhibition", "Product launch", "Industry expo", "Educational exhibition", "Cultural showcase", "Technology showcase", "Other"]
+        },
+        {
+          "id": "exhibition_scale",
+          "question": "Exhibition scale",
+          "type": "radio",
+          "options": ["Small (10-30 booths)", "Medium (30-100 booths)", "Large (100+ booths)", "Mega event"]
+        },
+        {
+          "id": "booth_requirements",
+          "question": "Booth/stall requirements",
+          "type": "checkbox",
+          "options": ["Standard exhibition booths", "Custom designed booths", "Premium/corner booths", "Demo/presentation areas", "Meeting rooms", "Storage areas"]
+        },
+        {
+          "id": "duration_format",
+          "question": "Exhibition duration",
+          "type": "select",
+          "options": ["Single day", "2-3 days", "4-7 days", "Multiple weeks", "Traveling exhibition"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "venue_infrastructure",
+      "title": "Venue & Infrastructure",
+      "icon": "🏗️",
+      "items": [
+        {
+          "id": "venue_type",
+          "question": "Preferred venue type",
+          "type": "select",
+          "options": ["Exhibition center/hall", "Convention center", "Hotel ballroom", "Outdoor fairground", "Gallery space", "Warehouse/industrial space"]
+        },
+        {
+          "id": "floor_plan",
+          "question": "Floor plan requirements",
+          "type": "checkbox",
+          "options": ["Aisle layout design", "Registration/entry area", "Main exhibition floor", "Networking zones", "Food court area", "VIP lounge"]
+        },
+        {
+          "id": "infrastructure_needs",
+          "question": "Infrastructure and utilities",
+          "type": "checkbox",
+          "options": ["Electrical connections", "High-speed internet/WiFi", "Water connections", "Compressed air supply", "HVAC/climate control", "Loading dock access"]
+        },
+        {
+          "id": "accessibility_safety",
+          "question": "Accessibility and safety",
+          "type": "checkbox",
+          "options": ["Wheelchair accessibility", "Emergency exits clearly marked", "First aid station", "Security coverage", "Fire safety compliance"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "setup_design",
+      "title": "Setup & Design",
+      "icon": "🛠️",
+      "items": [
+        {
+          "id": "booth_fabrication",
+          "question": "Booth fabrication and setup",
+          "type": "checkbox",
+          "options": ["Booth construction/fabrication", "Graphics and branding", "Lighting installation", "Furniture and fixtures", "Product display systems", "Audio-visual integration"]
+        },
+        {
+          "id": "signage_wayfinding",
+          "question": "Signage and wayfinding",
+          "type": "checkbox",
+          "options": ["Main entrance branding", "Directional signage", "Booth numbers/labels", "Sponsor branding", "Digital displays", "Information kiosks"]
+        },
+        {
+          "id": "technology_integration",
+          "question": "Technology and AV setup",
+          "type": "checkbox",
+          "options": ["Projection systems", "LED walls/screens", "Interactive displays", "Demo equipment setup", "Virtual reality/AR stations", "Live streaming capability"]
+        },
+        {
+          "id": "flooring_finishing",
+          "question": "Flooring and finishing",
+          "type": "select",
+          "options": ["Carpet/flooring installation", "Custom platform/stage", "Standard venue floor", "Mixed flooring solutions"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "marketing_engagement",
+      "title": "Marketing & Engagement",
+      "icon": "📢",
+      "items": [
+        {
+          "id": "promotional_materials",
+          "question": "Promotional materials needed",
+          "type": "checkbox",
+          "options": ["Brochures and flyers", "Banners and posters", "Digital marketing content", "Press kits", "Giveaways/merchandise", "Exhibitor directories"]
+        },
+        {
+          "id": "visitor_engagement",
+          "question": "Visitor engagement tools",
+          "type": "checkbox",
+          "options": ["Mobile event app", "Lead capture system", "Interactive games/contests", "Product demos", "Workshop/seminar sessions", "Networking sessions"]
+        },
+        {
+          "id": "registration_system",
+          "question": "Registration and ticketing",
+          "type": "select",
+          "options": ["Online pre-registration", "On-site registration", "QR code/digital tickets", "Badge printing system", "VIP/exhibitor passes"]
+        },
+        {
+          "id": "communication",
+          "question": "Event communication",
+          "type": "checkbox",
+          "options": ["Public announcement system", "Mobile notifications", "Event schedule displays", "Social media integration", "Live updates/alerts"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "services_logistics",
+      "title": "Services & Logistics",
+      "icon": "📦",
+      "items": [
+        {
+          "id": "catering_hospitality",
+          "question": "Catering and hospitality",
+          "type": "checkbox",
+          "options": ["Food court/cafeteria", "Coffee and refreshment stations", "VIP hospitality suite", "Exhibitor meals", "Networking reception"]
+        },
+        {
+          "id": "logistics_support",
+          "question": "Logistics and support services",
+          "type": "checkbox",
+          "options": ["Freight and shipping", "Storage facilities", "Material handling equipment", "Setup/breakdown crew", "Cleaning services", "Waste management"]
+        },
+        {
+          "id": "staffing_services",
+          "question": "Staffing requirements",
+          "type": "checkbox",
+          "options": ["Registration staff", "Information desk staff", "Security personnel", "Technical support team", "Show management team", "Hostess/promotional staff"]
+        },
+        {
+          "id": "documentation_reporting",
+          "question": "Documentation and reporting",
+          "type": "checkbox",
+          "options": ["Professional photography", "Video documentation", "Visitor analytics/tracking", "Lead generation reports", "Post-event survey", "ROI analysis"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}
