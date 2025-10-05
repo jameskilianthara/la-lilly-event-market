@@ -153,7 +153,7 @@ export const useForgeChat = () => {
           action: {
             type: 'navigate',
             label: 'Open Event Checklist →',
-            href: `/checklist?type=${updatedBrief.event_type || 'wedding'}`
+            href: `/blueprint/${selectedBlueprint.id}?event_type=${updatedBrief.event_type}&date=${updatedBrief.date}&city=${updatedBrief.city}&guest_count=${updatedBrief.guest_count}&venue_status=${updatedBrief.venue_status}`
           },
           metadata: {
             blueprintId: selectedBlueprint.id,
