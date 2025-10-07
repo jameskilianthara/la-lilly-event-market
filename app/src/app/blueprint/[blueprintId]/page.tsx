@@ -56,7 +56,15 @@ export default function BlueprintReviewPage() {
 
   // Generate unique event ID
   const generateEventId = (eventType: string, date: string) => {
-    const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
+    const now = new Date();
+    const timestamp = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+      String(now.getHours()).padStart(2, '0'),
+      String(now.getMinutes()).padStart(2, '0'),
+      String(now.getSeconds()).padStart(2, '0')
+    ].join('');
     const randomStr = Math.random().toString(36).substring(2, 7);
     return `evt_${timestamp}_${randomStr}`;
   };
