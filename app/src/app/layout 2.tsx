@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import Navbar from "../components/Navbar";
 
 export const metadata: Metadata = {
-  title: "EventFoundry - Forge Extraordinary Events",
-  description: "Forge extraordinary events with master craftsmen. Plan in minutes, compare bids, book with confidence.",
+  title: "La-Lilly - We are the Craftsmen",
+  description: "Craftsmen behind your dream events. Plan in minutes, transparent bidding, trusted vendors.",
 };
 
 export default function RootLayout({
@@ -16,9 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-white text-neutral-900 antialiased font-sans">
         <Navbar />
-        <main>
-          {children}
-        </main>
+        {children}
       </body>
     </html>
   );

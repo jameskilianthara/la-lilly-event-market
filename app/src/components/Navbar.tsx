@@ -3,306 +3,205 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Menu, 
-  X, 
-  User, 
-  Building2,
-  CheckSquare,
-  FileText,
-  Home,
-  ChevronDown,
-  LogOut,
-  Settings
-} from 'lucide-react';
-import LaLillyLogoNew from './LaLillyLogoNew';
-
-interface NavItem {
-  name: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  description?: string;
-}
-
-const clientNavItems: NavItem[] = [
-  { name: 'Home', href: '/', icon: Home, description: 'Homepage' },
-  { name: 'Plan Event', href: '/plan', icon: FileText, description: 'Start planning' },
-  { name: 'My Checklist', href: '/checklist', icon: CheckSquare, description: 'Requirements' },
-  { name: 'Event Companies', href: '/vendor-profiles', icon: Building2, description: 'Browse event management companies' },
-  { name: 'Find Vendors', href: '/vendor-proposals', icon: Building2, description: 'Browse proposals' }
-];
-
-const vendorNavItems: NavItem[] = [
-  { name: 'Home', href: '/', icon: Home, description: 'Homepage' },
-  { name: 'Dashboard', href: '/vendor-dashboard', icon: Building2, description: 'Vendor portal' },
-  { name: 'Join as Partner', href: '/vendor-auth', icon: User, description: 'Event company registration' }
-];
+import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isVendorMode, setIsVendorMode] = useState(false);
-  const [vendorSession, setVendorSession] = useState(null);
-  const [showVendorMenu, setShowVendorMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const pathname = usePathname();
 
+  // Close mobile menu when route changes
   useEffect(() => {
-    // Check if user is in vendor mode or has vendor session
-    const session = localStorage.getItem('lalilly-vendor-session');
-    const isVendorPath = pathname.startsWith('/vendor');
-    
-    setIsVendorMode(isVendorPath);
-    setVendorSession(session ? JSON.parse(session) : null);
+    setMobileMenuOpen(false);
   }, [pathname]);
 
-  const navItems = isVendorMode || vendorSession ? vendorNavItems : clientNavItems;
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (loginDropdownOpen) setLoginDropdownOpen(false);
+    };
+    if (loginDropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [loginDropdownOpen]);
 
-  const isActivePath = (href: string) => {
-    if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
+  const isActivePath = (path: string) => {
+    if (path === '/') return pathname === '/';
+    return pathname.startsWith(path);
   };
 
-  const handleVendorLogout = () => {
-    localStorage.removeItem('lalilly-vendor-session');
-    setVendorSession(null);
-    setShowVendorMenu(false);
-    window.location.href = '/';
-  };
+  const navLinks = [
+    { name: 'For Clients', href: '/' },
+    { name: 'For Event Managers', href: '/craftsmen' },
+    { name: 'How It Works', href: '/how-it-works' },
+    { name: 'About', href: '/about' }
+  ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-neutral-200/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link
-              href="/"
-              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-md"
-              aria-label="La-Lilly homepage"
-            >
-              <LaLillyLogoNew size="sm" variant="gradient" />
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-50 h-[72px] bg-slate-900/95 backdrop-blur-lg border-b border-slate-800 shadow-lg shadow-black/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex items-center justify-between h-full">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2 group">
+              <div className="text-2xl font-bold">
+                <span className="text-white">Event</span>
+                <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent group-hover:from-orange-400 group-hover:to-orange-500 transition-all duration-300">
+                  Foundry
+                </span>
+              </div>
             </Link>
-          </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
-              {navItems.map((item) => {
-                const isActive = isActivePath(item.href);
+            {/* Desktop Navigation - Center */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navLinks.map((link) => {
+                const isActive = isActivePath(link.href);
                 return (
                   <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`group relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
+                    key={link.name}
+                    href={link.href}
+                    className={`relative text-sm font-medium transition-colors duration-200 ${
                       isActive
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-neutral-600 hover:text-blue-600 hover:bg-blue-50'
+                        ? 'text-orange-500'
+                        : 'text-slate-300 hover:text-orange-500'
                     }`}
-                    aria-label={item.description}
                   >
-                    <div className="flex items-center gap-2">
-                      <item.icon className="w-4 h-4" />
-                      {item.name}
-                    </div>
+                    {link.name}
                     {isActive && (
-                      <motion.div
-                        layoutId="navbar-active-bg"
-                        className="absolute inset-0 bg-blue-100 rounded-lg -z-10"
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                      />
+                      <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full" />
                     )}
                   </Link>
                 );
               })}
             </div>
-          </div>
 
-          {/* Desktop Right Section */}
-          <div className="hidden md:flex items-center space-x-4">
-            {vendorSession ? (
-              // Vendor Profile Menu
+            {/* Desktop Navigation - Right */}
+            <div className="hidden md:flex items-center space-x-4">
+              {/* Login Dropdown */}
               <div className="relative">
                 <button
-                  onClick={() => setShowVendorMenu(!showVendorMenu)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-neutral-300 hover:border-blue-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLoginDropdownOpen(!loginDropdownOpen);
+                  }}
+                  className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    {vendorSession.companyName?.charAt(0) || 'V'}
-                  </div>
-                  <span className="text-sm font-medium text-neutral-700">
-                    {vendorSession.companyName || 'Vendor'}
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-neutral-500" />
+                  <span>Login</span>
+                  <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${loginDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
-                
-                <AnimatePresence>
-                  {showVendorMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-lg shadow-lg py-2"
-                    >
-                      <Link
-                        href="/vendor-dashboard"
-                        className="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-neutral-50 text-sm"
-                        onClick={() => setShowVendorMenu(false)}
-                      >
-                        <Building2 className="w-4 h-4" />
-                        Dashboard
-                      </Link>
-                      <Link
-                        href="/vendor-dashboard"
-                        className="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-neutral-50 text-sm"
-                        onClick={() => setShowVendorMenu(false)}
-                      >
-                        <Settings className="w-4 h-4" />
-                        Profile Settings
-                      </Link>
-                      <hr className="my-2" />
-                      <button
-                        onClick={handleVendorLogout}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-neutral-50 text-red-600 text-sm"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Logout
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <>
-                {!isVendorMode && (
-                  <Link
-                    href="/vendor-auth"
-                    className="text-neutral-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-md"
-                  >
-                    Company Login
-                  </Link>
-                )}
-                <Link
-                  href="/plan"
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 shadow-sm hover:shadow-md transform hover:scale-105"
-                >
-                  Start Planning
-                </Link>
-              </>
-            )}
-          </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-md text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
-              aria-label="Toggle mobile menu"
-              aria-expanded={isOpen}
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+                {loginDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden">
+                    <Link
+                      href="/login"
+                      className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
+                      onClick={() => setLoginDropdownOpen(false)}
+                    >
+                      <div className="font-medium">Client Login</div>
+                      <div className="text-xs text-slate-400 mt-0.5">Planning an event</div>
+                    </Link>
+                    <div className="border-t border-slate-700/50" />
+                    <Link
+                      href="/craftsmen/login"
+                      className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
+                      onClick={() => setLoginDropdownOpen(false)}
+                    >
+                      <div className="font-medium">Event Manager Login</div>
+                      <div className="text-xs text-slate-400 mt-0.5">Vendor portal</div>
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Get Started CTA */}
+              <Link
+                href="/forge"
+                className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105"
+              >
+                Get Started
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 text-slate-300 hover:text-white transition-colors duration-200"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? (
+                  <XMarkIcon className="w-6 h-6" />
+                ) : (
+                  <Bars3Icon className="w-6 h-6" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-neutral-200 bg-white/95 backdrop-blur-md"
-            >
-              <div className="px-2 pt-2 pb-3 space-y-1">
-                {navItems.map((item) => {
-                  const isActive = isActivePath(item.href);
+        {/* Mobile Menu Overlay */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 top-[72px] bg-slate-900/98 backdrop-blur-lg md:hidden z-40">
+            <div className="flex flex-col h-full">
+              {/* Mobile Navigation Links */}
+              <div className="flex-1 px-6 py-8 space-y-1 overflow-y-auto">
+                {navLinks.map((link) => {
+                  const isActive = isActivePath(link.href);
                   return (
                     <Link
-                      key={item.name}
-                      href={item.href}
-                      className={`group flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
+                      key={link.name}
+                      href={link.href}
+                      className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200 ${
                         isActive
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-neutral-600 hover:text-blue-600 hover:bg-blue-50'
+                          ? 'text-orange-500 bg-orange-500/10'
+                          : 'text-slate-300 hover:text-orange-500 hover:bg-slate-800/50'
                       }`}
-                      onClick={() => setIsOpen(false)}
-                      aria-label={item.description}
+                      onClick={() => setMobileMenuOpen(false)}
                     >
-                      <item.icon className="w-5 h-5" />
-                      <div>
-                        <div>{item.name}</div>
-                        {item.description && (
-                          <div className="text-xs text-neutral-500 mt-0.5">
-                            {item.description}
-                          </div>
-                        )}
-                      </div>
+                      {link.name}
                     </Link>
                   );
                 })}
 
-                {/* Mobile Vendor Session */}
-                {vendorSession ? (
-                  <div className="border-t border-neutral-200 pt-3 mt-3">
-                    <div className="flex items-center gap-3 px-3 py-2 text-sm text-neutral-600">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                        {vendorSession.companyName?.charAt(0) || 'V'}
-                      </div>
-                      <div>
-                        <div className="font-medium text-neutral-900">
-                          {vendorSession.companyName || 'Vendor'}
-                        </div>
-                        <div className="text-xs text-neutral-500">
-                          {vendorSession.ownerName || 'Vendor Account'}
-                        </div>
-                      </div>
-                    </div>
-                    <Link
-                      href="/vendor-dashboard"
-                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-neutral-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <Settings className="w-5 h-5" />
-                      Profile Settings
-                    </Link>
-                    <button
-                      onClick={() => {
-                        handleVendorLogout();
-                        setIsOpen(false);
-                      }}
-                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-red-600 hover:bg-red-50 transition-all duration-200 w-full text-left"
-                    >
-                      <LogOut className="w-5 h-5" />
-                      Logout
-                    </button>
+                <div className="pt-4 mt-4 border-t border-slate-800">
+                  <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Account
                   </div>
-                ) : (
-                  <div className="border-t border-neutral-200 pt-3 mt-3">
-                    {!isVendorMode && (
-                      <Link
-                        href="/vendor-auth"
-                        className="flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-neutral-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <User className="w-5 h-5" />
-                        Company Login
-                      </Link>
-                    )}
-                    <Link
-                      href="/plan"
-                      className="flex items-center justify-center gap-2 mx-3 mt-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <FileText className="w-5 h-5" />
-                      Start Planning
-                    </Link>
-                  </div>
-                )}
+                  <Link
+                    href="/login"
+                    className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-orange-500 hover:bg-slate-800/50 transition-colors duration-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Client Login
+                  </Link>
+                  <Link
+                    href="/craftsmen/login"
+                    className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-orange-500 hover:bg-slate-800/50 transition-colors duration-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Event Manager Login
+                  </Link>
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </nav>
+
+              {/* Mobile CTA */}
+              <div className="border-t border-slate-800 p-6">
+                <Link
+                  href="/forge"
+                  className="block w-full px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-base font-semibold rounded-lg shadow-lg shadow-orange-500/30 text-center transition-all duration-300"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Get Started
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* Spacer to prevent content from hiding under fixed navbar */}
+      <div className="h-[72px]" />
+    </>
   );
 }

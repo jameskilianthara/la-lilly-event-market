@@ -1,96 +1,120 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  SparklesIcon,
-  RocketLaunchIcon,
-  CheckCircleIcon,
+  BuildingOffice2Icon,
   BoltIcon,
-  ChartBarIcon,
-  UsersIcon,
+  CheckCircleIcon,
   CurrencyRupeeIcon,
-  ShieldCheckIcon,
-  PaintBrushIcon,
-  WrenchScrewdriverIcon,
+  UserGroupIcon,
+  ChartBarIcon,
   ArrowRightIcon,
-  FireIcon
+  ChevronDownIcon,
+  EnvelopeIcon,
+  HeartIcon,
+  SparklesIcon,
+  TrophyIcon,
+  GlobeAltIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 
-export default function CraftsmenLandingPage() {
+export default function KeralaVendorLandingPage() {
   const router = useRouter();
-
-  const benefits = [
-    {
-      icon: UsersIcon,
-      title: 'Qualified Leads Only',
-      description: 'Every event comes with complete requirements, budget range, and verified client details. No tire-kickers.'
-    },
-    {
-      icon: PaintBrushIcon,
-      title: 'AI Visual Toolkit',
-      description: 'Generate professional 3D renders and visualizations to showcase your vision. Stand out with stunning proposals.'
-    },
-    {
-      icon: ShieldCheckIcon,
-      title: 'Fair Bidding System',
-      description: 'Closed bidding ensures fair competition. Shortlisted vendors receive transparent pricing feedback.'
-    },
-    {
-      icon: CurrencyRupeeIcon,
-      title: 'Premium Pricing',
-      description: 'Clients come ready to invest. Average event budgets 40% higher than traditional platforms.'
-    },
-    {
-      icon: BoltIcon,
-      title: 'Instant Notifications',
-      description: 'Get notified the moment a relevant event is posted. Respond fast, win more projects.'
-    },
-    {
-      icon: WrenchScrewdriverIcon,
-      title: 'Complete Toolkit',
-      description: 'Contracts, invoicing, milestone tracking - everything you need to run your craft business.'
-    }
-  ];
-
-  const stats = [
-    { number: '₹2.4Cr+', label: 'Total Event Value' },
-    { number: '156', label: 'Active Events' },
-    { number: '89%', label: 'Vendor Win Rate' },
-    { number: '4.8★', label: 'Avg. Client Rating' }
-  ];
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const howItWorks = [
     {
       step: '01',
-      title: 'Create Your Forge Profile',
-      description: 'Showcase your craft specialties, past work, and service areas. Set your availability and pricing structure.'
+      title: 'Register Your Company',
+      description: 'Share your expertise, service capabilities, and event specialties. Quick 10-minute setup.'
     },
     {
       step: '02',
-      title: 'Receive Qualified Events',
-      description: 'Get notified when events matching your expertise are posted. Review complete requirements before bidding.'
+      title: 'Receive Qualified Leads',
+      description: 'We match you with clients planning Kerala events nationwide. Complete requirements provided.'
     },
     {
       step: '03',
-      title: 'Submit Smart Proposals',
-      description: 'Use our AI toolkit to create stunning visual proposals. Include itemized pricing and custom solutions.'
+      title: 'Submit Your Proposal',
+      description: 'Present your approach, timeline, and pricing. Showcase your track record and capabilities.'
     },
     {
       step: '04',
       title: 'Win & Execute',
-      description: 'Client reviews all bids, shortlists top 5. Win the project and get paid through secure milestones.'
+      description: 'Best proposal wins. You handle the event end-to-end. We take commission only when you succeed.'
+    }
+  ];
+
+  const valueProps = [
+    {
+      icon: UserGroupIcon,
+      title: 'Pre-qualified Clients',
+      description: 'Every lead comes with verified requirements, budget range, and timeline. No browsing or tire-kickers—clients ready to book.'
+    },
+    {
+      icon: CurrencyRupeeIcon,
+      title: 'Fair Commission',
+      description: 'Pay only when you win: 8-12% of project value. No subscriptions, no upfront fees, no hidden costs. Transparent pricing.'
+    },
+    {
+      icon: BuildingOffice2Icon,
+      title: 'You Control Everything',
+      description: 'Your brand, your pitch, your execution. We connect you with clients, you deliver the magic. Complete operational freedom.'
+    }
+  ];
+
+  const eventTypes = [
+    { icon: HeartIcon, label: 'Destination Weddings', color: 'text-pink-400' },
+    { icon: BuildingOffice2Icon, label: 'Corporate Events & Offsites', color: 'text-blue-400' },
+    { icon: SparklesIcon, label: 'Cultural Celebrations', color: 'text-orange-400' },
+    { icon: TrophyIcon, label: 'Product Launches', color: 'text-green-400' },
+    { icon: GlobeAltIcon, label: 'Social Events', color: 'text-purple-400' },
+    { icon: CalendarDaysIcon, label: 'Multi-day Events', color: 'text-yellow-400' }
+  ];
+
+  const simpleTerms = [
+    'No lock-ins or exclusivity—work with any client, any platform',
+    'Transparent commission structure—8-12% only when you win',
+    'Clear contract terms—no fine print, no surprises',
+    'Simple onboarding process—start receiving leads in 48 hours'
+  ];
+
+  const faqs = [
+    {
+      question: 'How does pricing work?',
+      answer: 'You pay nothing upfront. When you win a project through EventFoundry, we charge 8-12% commission based on the total project value. If you don\'t win, you don\'t pay. Simple.'
+    },
+    {
+      question: 'What types of events do you send?',
+      answer: 'We focus on Kerala-style events happening anywhere in India: destination weddings, corporate offsites, cultural celebrations, product launches, and multi-day social events. All leads are pre-qualified with complete requirements.'
+    },
+    {
+      question: 'Can I decline leads?',
+      answer: 'Absolutely. You\'re in full control. Review each event brief and choose which ones to bid on based on your capacity, expertise, and interest. No penalties for declining.'
+    },
+    {
+      question: 'What if client goes direct after introduction?',
+      answer: 'Our contracts protect you. If a client contacts you through EventFoundry and books within 12 months, the commission applies—even if they try to go direct. Legal safeguards in place.'
+    },
+    {
+      question: 'How many event companies compete per lead?',
+      answer: 'We invite 5-8 qualified companies per event to ensure fair competition and quality proposals. Clients review all submissions and shortlist their top choices.'
+    },
+    {
+      question: 'Do you provide payment protection?',
+      answer: 'Yes. All contracts include milestone-based payment terms. Clients deposit funds into escrow before event execution. You get paid securely as milestones complete.'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Navigation */}
       <nav className="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <FireIcon className="h-8 w-8 text-orange-500" />
+              <BuildingOffice2Icon className="h-8 w-8 text-orange-500" />
               <span className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
                 EventFoundry
               </span>
@@ -99,7 +123,7 @@ export default function CraftsmenLandingPage() {
               onClick={() => router.push('/craftsmen/signup')}
               className="px-6 py-2 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 rounded-lg text-orange-400 font-semibold transition-all duration-200"
             >
-              Join the Foundry
+              Register Your Company
             </button>
           </div>
         </div>
@@ -109,95 +133,61 @@ export default function CraftsmenLandingPage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-blue-500/10"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32 relative">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center space-x-2 px-4 py-2 bg-orange-500/20 border border-orange-500/30 rounded-full mb-6">
-                <SparklesIcon className="h-4 w-4 text-orange-400" />
-                <span className="text-orange-400 text-sm font-semibold">Founding Craftsmen Program Active</span>
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                Forge Your Future in
-                <span className="block bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-                  Event Mastery
-                </span>
-              </h1>
-
-              <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-                Join India's most premium event vendor platform. Get qualified leads, showcase your craft with AI-powered tools, and build the business you deserve.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={() => router.push('/craftsmen/signup')}
-                  className="group flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-bold rounded-xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105"
-                >
-                  <span>Start Your Craft Journey</span>
-                  <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-
-                <button
-                  onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 text-white font-semibold rounded-xl transition-all duration-200"
-                >
-                  See How It Works
-                </button>
-              </div>
-
-              <div className="mt-8 flex items-center space-x-6 text-sm text-slate-400">
-                <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-5 w-5 text-green-400" />
-                  <span>No signup fees</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircleIcon className="h-5 w-5 text-green-400" />
-                  <span>6 months free premium</span>
-                </div>
-              </div>
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full mb-6">
+              <GlobeAltIcon className="h-4 w-4 text-blue-400" />
+              <span className="text-blue-400 text-sm font-semibold">For Kerala Event Management Companies</span>
             </div>
 
-            {/* Hero Image Placeholder */}
-            <div className="hidden lg:block">
-              <div className="relative">
-                <div className="aspect-square bg-gradient-to-br from-orange-500/20 to-blue-500/20 rounded-2xl border border-slate-700/50 backdrop-blur-sm flex items-center justify-center">
-                  <div className="text-center">
-                    <WrenchScrewdriverIcon className="h-24 w-24 text-orange-400/50 mx-auto mb-4" />
-                    <p className="text-slate-400 text-lg">Master Craftsman Dashboard Preview</p>
-                  </div>
-                </div>
-                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl opacity-20 blur-2xl"></div>
-                <div className="absolute -top-6 -left-6 w-32 h-32 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl opacity-20 blur-2xl"></div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              Connect with Clients Planning
+              <span className="block bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+                Kerala Events Nationwide
+              </span>
+            </h1>
+
+            <p className="text-xl text-slate-300 mb-8 leading-relaxed max-w-3xl mx-auto">
+              Full-service event management companies in Kerala: Get qualified leads. Submit proposals. Win events.
+              Simple commission structure. No upfront fees.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => router.push('/craftsmen/signup')}
+                className="group flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-bold rounded-xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300"
+              >
+                <span>Register Your Event Company</span>
+                <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-slate-400">
+              <div className="flex items-center space-x-2">
+                <CheckCircleIcon className="h-5 w-5 text-green-400" />
+                <span>No setup fees</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircleIcon className="h-5 w-5 text-green-400" />
+                <span>Pay only when you win</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircleIcon className="h-5 w-5 text-green-400" />
+                <span>Start in 48 hours</span>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-12 bg-slate-800/50 border-y border-slate-700/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-slate-400 text-sm sm:text-base">{stat.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-20 sm:py-32">
+      <section className="py-20 sm:py-32 bg-slate-800/30 border-y border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-              How the Foundry Works
+              How It Works
             </h2>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-              Four simple steps from profile to payment. Built for master craftsmen.
+              Four straightforward steps from registration to revenue
             </p>
           </div>
 
@@ -218,31 +208,31 @@ export default function CraftsmenLandingPage() {
         </div>
       </section>
 
-      {/* Benefits */}
-      <section className="py-20 sm:py-32 bg-slate-800/30">
+      {/* Value Propositions */}
+      <section className="py-20 sm:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-              Why Master Craftsmen Choose Us
+              Why Event Companies Choose EventFoundry
             </h2>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-              Everything you need to grow your event craft business in one platform.
+              Clear value. Fair terms. Real results.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {benefits.map((benefit, index) => {
-              const IconComponent = benefit.icon;
+          <div className="grid md:grid-cols-3 gap-8">
+            {valueProps.map((prop, index) => {
+              const IconComponent = prop.icon;
               return (
                 <div
                   key={index}
-                  className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-8 hover:border-orange-500/30 transition-all duration-300 group"
+                  className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-8 hover:border-orange-500/30 transition-all duration-300"
                 >
-                  <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl flex items-center justify-center mb-6">
                     <IconComponent className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-3">{benefit.title}</h3>
-                  <p className="text-slate-300 leading-relaxed">{benefit.description}</p>
+                  <h3 className="text-xl font-bold text-white mb-3">{prop.title}</h3>
+                  <p className="text-slate-300 leading-relaxed">{prop.description}</p>
                 </div>
               );
             })}
@@ -250,85 +240,134 @@ export default function CraftsmenLandingPage() {
         </div>
       </section>
 
-      {/* Founding Craftsmen Offer */}
-      <section className="py-20 sm:py-32">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-orange-500/20 to-orange-700/20 backdrop-blur-sm rounded-3xl border-2 border-orange-500/30 p-8 sm:p-12 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent"></div>
-            <div className="relative">
-              <div className="flex items-center space-x-3 mb-6">
-                <FireIcon className="h-8 w-8 text-orange-400" />
-                <span className="text-orange-400 font-bold text-lg">Limited Time Offer</span>
-              </div>
+      {/* Event Types */}
+      <section className="py-20 bg-slate-800/30 border-y border-slate-700/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Event Types We Connect
+            </h2>
+            <p className="text-lg text-slate-300">
+              Kerala-style events happening across India and beyond
+            </p>
+          </div>
 
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                Founding Craftsmen Program
-              </h2>
-
-              <p className="text-xl text-slate-200 mb-8 leading-relaxed">
-                Join as a founding member and get <span className="text-orange-400 font-bold">6 months of Premium membership free</span>.
-                Plus exclusive benefits, priority support, and your profile featured to all clients.
-              </p>
-
-              <div className="grid sm:grid-cols-3 gap-4 mb-8">
-                <div className="bg-slate-900/50 rounded-xl p-4 border border-orange-500/20">
-                  <CheckCircleIcon className="h-6 w-6 text-orange-400 mb-2" />
-                  <div className="text-white font-semibold">₹12,000 Value</div>
-                  <div className="text-slate-400 text-sm">6 months premium free</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {eventTypes.map((event, index) => {
+              const IconComponent = event.icon;
+              return (
+                <div
+                  key={index}
+                  className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6 text-center hover:border-orange-500/30 transition-all duration-300"
+                >
+                  <IconComponent className={`h-10 w-10 mx-auto mb-3 ${event.color}`} />
+                  <p className="text-white text-sm font-medium leading-tight">{event.label}</p>
                 </div>
-                <div className="bg-slate-900/50 rounded-xl p-4 border border-orange-500/20">
-                  <CheckCircleIcon className="h-6 w-6 text-orange-400 mb-2" />
-                  <div className="text-white font-semibold">Featured Profile</div>
-                  <div className="text-slate-400 text-sm">Top placement forever</div>
-                </div>
-                <div className="bg-slate-900/50 rounded-xl p-4 border border-orange-500/20">
-                  <CheckCircleIcon className="h-6 w-6 text-orange-400 mb-2" />
-                  <div className="text-white font-semibold">Priority Access</div>
-                  <div className="text-slate-400 text-sm">See events 24hrs early</div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => router.push('/craftsmen/signup')}
-                className="group flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-bold rounded-xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto"
-              >
-                <span>Claim Your Founding Spot</span>
-                <RocketLaunchIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-
-              <p className="text-slate-400 text-sm mt-4">
-                ⏰ Only <span className="text-orange-400 font-semibold">23 spots remaining</span> in this cohort
-              </p>
-            </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-br from-slate-800 to-slate-900 border-t border-slate-700/50">
+      {/* Simple Terms */}
+      <section className="py-20 sm:py-32">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Simple, Fair Terms
+            </h2>
+            <p className="text-lg text-slate-300">
+              No complicated contracts. No hidden fees. Just straightforward business.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {simpleTerms.map((term, index) => (
+              <div
+                key={index}
+                className="flex items-start space-x-4 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6 hover:border-green-500/30 transition-all duration-300"
+              >
+                <CheckCircleIcon className="h-6 w-6 text-green-400 flex-shrink-0 mt-0.5" />
+                <p className="text-slate-200 text-lg leading-relaxed">{term}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 sm:py-32 bg-slate-800/30 border-y border-slate-700/50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-slate-300">
+              Clear answers to common questions
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700/50 overflow-hidden hover:border-orange-500/30 transition-all duration-300"
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                  className="w-full flex items-center justify-between p-6 text-left"
+                >
+                  <span className="text-lg font-semibold text-white pr-4">{faq.question}</span>
+                  <ChevronDownIcon
+                    className={`h-5 w-5 text-slate-400 flex-shrink-0 transition-transform duration-300 ${
+                      openFaq === index ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`transition-all duration-300 ease-in-out ${
+                    openFaq === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                  } overflow-hidden`}
+                >
+                  <div className="px-6 pb-6 text-slate-300 leading-relaxed border-t border-slate-700/50 pt-4">
+                    {faq.answer}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-20 sm:py-32">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-            Ready to Forge Your Event Empire?
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
+            Ready to grow your event management business?
           </h2>
-          <p className="text-xl text-slate-300 mb-8">
-            Join the future of event vendor business. Where master craftsmen meet premium clients.
+
+          <p className="text-xl text-slate-300 mb-10 leading-relaxed">
+            Join Kerala's leading event companies already winning projects through EventFoundry.
+            Registration takes 10 minutes. Start receiving leads in 48 hours.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => router.push('/craftsmen/signup')}
-              className="group flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-bold rounded-xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105"
-            >
-              <span>Join as Master Craftsman</span>
-              <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+          <button
+            onClick={() => router.push('/craftsmen/signup')}
+            className="group inline-flex items-center justify-center space-x-2 px-10 py-5 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-bold text-lg rounded-xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105"
+          >
+            <span>Register Your Event Company</span>
+            <ArrowRightIcon className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
+          </button>
 
-            <button
-              onClick={() => router.push('/')}
-              className="px-8 py-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 text-white font-semibold rounded-xl transition-all duration-200"
+          <div className="mt-8 flex items-center justify-center space-x-2 text-slate-400">
+            <EnvelopeIcon className="h-5 w-5" />
+            <span>Questions? Email:</span>
+            <a
+              href="mailto:kerala@eventfoundry.com"
+              className="text-orange-400 hover:text-orange-300 font-semibold transition-colors"
             >
-              I'm Looking for Vendors
-            </button>
+              kerala@eventfoundry.com
+            </a>
           </div>
         </div>
       </section>
@@ -339,29 +378,34 @@ export default function CraftsmenLandingPage() {
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <FireIcon className="h-6 w-6 text-orange-500" />
+                <BuildingOffice2Icon className="h-6 w-6 text-orange-500" />
                 <span className="text-xl font-bold text-white">EventFoundry</span>
               </div>
-              <p className="text-slate-400 text-sm">
-                Where extraordinary events are forged by master craftsmen.
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Connecting Kerala event management companies with clients nationwide.
+                Fair terms. Real results.
               </p>
             </div>
 
             <div>
-              <h3 className="text-white font-semibold mb-4">For Craftsmen</h3>
+              <h3 className="text-white font-semibold mb-4">For Event Companies</h3>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="/craftsmen/signup" className="hover:text-orange-400 transition-colors">Join the Foundry</a></li>
+                <li><a href="/craftsmen/signup" className="hover:text-orange-400 transition-colors">Register Company</a></li>
                 <li><a href="#" className="hover:text-orange-400 transition-colors">How It Works</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-orange-400 transition-colors">Pricing & Terms</a></li>
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Success Stories</a></li>
               </ul>
             </div>
 
             <div>
-              <h3 className="text-white font-semibold mb-4">Company</h3>
+              <h3 className="text-white font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-orange-400 transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-orange-400 transition-colors">Contact</a></li>
+                <li>
+                  <a href="mailto:kerala@eventfoundry.com" className="hover:text-orange-400 transition-colors">
+                    kerala@eventfoundry.com
+                  </a>
+                </li>
+                <li><a href="#" className="hover:text-orange-400 transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Terms of Service</a></li>
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Privacy Policy</a></li>
               </ul>
@@ -369,7 +413,7 @@ export default function CraftsmenLandingPage() {
           </div>
 
           <div className="border-t border-slate-700/50 pt-8 text-center text-slate-400 text-sm">
-            <p>&copy; 2025 EventFoundry. All rights reserved. Built with precision in Mumbai.</p>
+            <p>&copy; 2025 EventFoundry. Empowering Kerala event companies nationwide.</p>
           </div>
         </div>
       </footer>
