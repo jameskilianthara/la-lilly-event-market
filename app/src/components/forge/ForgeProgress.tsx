@@ -34,8 +34,8 @@ export const ForgeProgress: React.FC<ForgeProgressProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-800">Blueprint Progress</h3>
-          <p className="text-sm text-slate-600">
+          <h3 className="text-lg font-semibold text-slate-100">Blueprint Progress</h3>
+          <p className="text-sm text-slate-300">
             {isComplete
               ? '🔥 Blueprint ready!'
               : `Step ${currentStep} of ${totalSteps} - ${steps[currentStep - 1]?.description || 'In progress'}`
@@ -43,17 +43,17 @@ export const ForgeProgress: React.FC<ForgeProgressProps> = ({
           </p>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-slate-700">
+          <div className="text-2xl font-bold text-orange-400">
             {Math.round((currentStep / totalSteps) * 100)}%
           </div>
-          <div className="text-xs text-slate-600">Complete</div>
+          <div className="text-xs text-slate-400">Complete</div>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+      <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden border border-slate-600/50">
         <div
-          className="h-full bg-slate-700 transition-all duration-700 ease-out"
+          className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-700 ease-out shadow-lg"
           style={{ width: `${(currentStep / totalSteps) * 100}%` }}
         >
           <div className="h-full w-full bg-gradient-to-r from-white/20 to-transparent"></div>
@@ -72,10 +72,10 @@ export const ForgeProgress: React.FC<ForgeProgressProps> = ({
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
                     status === 'complete'
-                      ? 'bg-emerald-600 text-white'
+                      ? 'bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg'
                       : status === 'current'
-                      ? 'bg-slate-700 text-white'
-                      : 'bg-slate-200 text-slate-500 border border-slate-300'
+                      ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/50'
+                      : 'bg-slate-700/50 text-slate-500 border border-slate-600/50'
                   }`}
                 >
                   {status === 'complete' ? (
@@ -92,7 +92,7 @@ export const ForgeProgress: React.FC<ForgeProgressProps> = ({
               <div
                 className={`text-xs font-medium transition-colors duration-300 ${
                   status === 'complete' || status === 'current'
-                    ? 'text-slate-800'
+                    ? 'text-slate-200'
                     : 'text-slate-500'
                 }`}
               >
@@ -105,12 +105,12 @@ export const ForgeProgress: React.FC<ForgeProgressProps> = ({
 
       {/* Completion Message */}
       {isComplete && (
-        <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+        <div className="mt-4 p-3 bg-gradient-to-r from-emerald-900/40 to-green-900/40 border border-emerald-500/30 rounded-lg backdrop-blur-sm">
           <div className="flex items-center space-x-2">
-            <div className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center">
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
               <CheckIcon className="h-3 w-3 text-white" />
             </div>
-            <span className="text-sm font-medium text-emerald-700">
+            <span className="text-sm font-medium text-emerald-300">
               Blueprint created successfully! Ready for professional matching.
             </span>
           </div>

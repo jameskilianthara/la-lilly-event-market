@@ -45,6 +45,9 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-full">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 group">
+              <svg className="w-8 h-8 text-orange-500 animate-spin [animation-duration:3s]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
               <div className="text-2xl font-bold">
                 <span className="text-white">Event</span>
                 <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent group-hover:from-orange-400 group-hover:to-orange-500 transition-all duration-300">

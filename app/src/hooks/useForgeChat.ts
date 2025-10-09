@@ -32,7 +32,7 @@ export const useForgeChat = () => {
       setIsComplete(savedSession.isComplete || false);
       setBlueprintId(savedSession.blueprintId || null);
     } else {
-      // Initialize with welcome message
+      // Initialize with welcome message and first question together
       const welcomeMessage: ForgeMessageData = {
         id: 'welcome',
         type: 'assistant',
@@ -43,22 +43,19 @@ export const useForgeChat = () => {
           blueprintHint: "Your answers will help me create the perfect blueprint for your event."
         }
       };
-      setMessages([welcomeMessage]);
-      setCurrentStep(1);
 
-      // Send first question after welcome
-      setTimeout(() => {
-        const firstQuestion: ForgeMessageData = {
-          id: `question-1-${Date.now()}`,
-          type: 'assistant',
-          content: 'What type of event are you planning?',
-          timestamp: new Date(),
-          metadata: {
-            step: 1
-          }
-        };
-        setMessages(prev => [...prev, firstQuestion]);
-      }, 800);
+      const firstQuestion: ForgeMessageData = {
+        id: 'question-1-initial',
+        type: 'assistant',
+        content: 'What type of event are you planning?',
+        timestamp: new Date(),
+        metadata: {
+          step: 1
+        }
+      };
+
+      setMessages([welcomeMessage, firstQuestion]);
+      setCurrentStep(1);
     }
   }, [loadSession]);
 
@@ -114,7 +111,7 @@ export const useForgeChat = () => {
 
     // Add assistant response
     const assistantResponse: ForgeMessageData = {
-      id: `assistant-${Date.now()}`,
+      id: `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: 'assistant',
       content: generateAssistantResponse(currentStep, answer),
       timestamp: new Date(),
@@ -146,7 +143,7 @@ export const useForgeChat = () => {
         }));
 
         const completionMessage: ForgeMessageData = {
-          id: `completion-${Date.now()}`,
+          id: `completion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           type: 'assistant',
           content: `Perfect! I've gathered all your core event details.\n\nNow let's customize your event requirements with our interactive checklist. Click below to review and select exactly what you need:`,
           timestamp: new Date(),
@@ -177,7 +174,7 @@ export const useForgeChat = () => {
     setIsComplete(false);
     setBlueprintId(null);
 
-    // Re-initialize with welcome message
+    // Re-initialize with welcome message and first question together
     setTimeout(() => {
       const welcomeMessage: ForgeMessageData = {
         id: 'welcome-reset',
@@ -189,22 +186,19 @@ export const useForgeChat = () => {
           blueprintHint: "Your answers will help me create the perfect blueprint for your event."
         }
       };
-      setMessages([welcomeMessage]);
-      setCurrentStep(1);
 
-      // Send first question after welcome
-      setTimeout(() => {
-        const firstQuestion: ForgeMessageData = {
-          id: `question-reset-${Date.now()}`,
-          type: 'assistant',
-          content: 'What type of event are you planning?',
-          timestamp: new Date(),
-          metadata: {
-            step: 1
-          }
-        };
-        setMessages(prev => [...prev, firstQuestion]);
-      }, 900);
+      const firstQuestion: ForgeMessageData = {
+        id: 'question-reset-initial',
+        type: 'assistant',
+        content: 'What type of event are you planning?',
+        timestamp: new Date(),
+        metadata: {
+          step: 1
+        }
+      };
+
+      setMessages([welcomeMessage, firstQuestion]);
+      setCurrentStep(1);
     }, 100);
   }, [clearSession]);
 

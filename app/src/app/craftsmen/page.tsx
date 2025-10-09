@@ -32,7 +32,7 @@ export default function KeralaVendorLandingPage() {
     {
       step: '02',
       title: 'Receive Qualified Leads',
-      description: 'We match you with clients planning Kerala events nationwide. Complete requirements provided.'
+      description: 'We match you with clients planning events nationwide. Complete requirements provided.'
     },
     {
       step: '03',
@@ -87,7 +87,7 @@ export default function KeralaVendorLandingPage() {
     },
     {
       question: 'What types of events do you send?',
-      answer: 'We focus on Kerala-style events happening anywhere in India: destination weddings, corporate offsites, cultural celebrations, product launches, and multi-day social events. All leads are pre-qualified with complete requirements.'
+      answer: 'We connect you with all types of events across India: destination weddings, corporate offsites, cultural celebrations, product launches, and multi-day social events. All leads are pre-qualified with complete requirements.'
     },
     {
       question: 'Can I decline leads?',
@@ -109,26 +109,6 @@ export default function KeralaVendorLandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Navigation */}
-      <nav className="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <BuildingOffice2Icon className="h-8 w-8 text-orange-500" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-                EventFoundry
-              </span>
-            </div>
-            <button
-              onClick={() => router.push('/craftsmen/signup')}
-              className="px-6 py-2 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 rounded-lg text-orange-400 font-semibold transition-all duration-200"
-            >
-              Register Your Company
-            </button>
-          </div>
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-blue-500/10"></div>
@@ -136,18 +116,18 @@ export default function KeralaVendorLandingPage() {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full mb-6">
               <GlobeAltIcon className="h-4 w-4 text-blue-400" />
-              <span className="text-blue-400 text-sm font-semibold">For Kerala Event Management Companies</span>
+              <span className="text-blue-400 text-sm font-semibold">For Event Management Companies</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Connect with Clients Planning
               <span className="block bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-                Kerala Events Nationwide
+                Events Nationwide
               </span>
             </h1>
 
             <p className="text-xl text-slate-300 mb-8 leading-relaxed max-w-3xl mx-auto">
-              Full-service event management companies in Kerala: Get qualified leads. Submit proposals. Win events.
+              Full-service event management companies: Get qualified leads. Submit proposals. Win events.
               Simple commission structure. No upfront fees.
             </p>
 
@@ -248,7 +228,7 @@ export default function KeralaVendorLandingPage() {
               Event Types We Connect
             </h2>
             <p className="text-lg text-slate-300">
-              Kerala-style events happening across India and beyond
+              All types of events happening across India and beyond
             </p>
           </div>
 
@@ -347,7 +327,7 @@ export default function KeralaVendorLandingPage() {
           </h2>
 
           <p className="text-xl text-slate-300 mb-10 leading-relaxed">
-            Join Kerala's leading event companies already winning projects through EventFoundry.
+            Join professional event companies already winning projects through EventFoundry.
             Registration takes 10 minutes. Start receiving leads in 48 hours.
           </p>
 
@@ -363,10 +343,10 @@ export default function KeralaVendorLandingPage() {
             <EnvelopeIcon className="h-5 w-5" />
             <span>Questions? Email:</span>
             <a
-              href="mailto:kerala@eventfoundry.com"
+              href="mailto:contact@eventfoundry.com"
               className="text-orange-400 hover:text-orange-300 font-semibold transition-colors"
             >
-              kerala@eventfoundry.com
+              contact@eventfoundry.com
             </a>
           </div>
         </div>
@@ -382,7 +362,7 @@ export default function KeralaVendorLandingPage() {
                 <span className="text-xl font-bold text-white">EventFoundry</span>
               </div>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Connecting Kerala event management companies with clients nationwide.
+                Connecting event management companies with clients nationwide.
                 Fair terms. Real results.
               </p>
             </div>
@@ -401,8 +381,8 @@ export default function KeralaVendorLandingPage() {
               <h3 className="text-white font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-slate-400 text-sm">
                 <li>
-                  <a href="mailto:kerala@eventfoundry.com" className="hover:text-orange-400 transition-colors">
-                    kerala@eventfoundry.com
+                  <a href="mailto:contact@eventfoundry.com" className="hover:text-orange-400 transition-colors">
+                    contact@eventfoundry.com
                   </a>
                 </li>
                 <li><a href="#" className="hover:text-orange-400 transition-colors">Help Center</a></li>
@@ -413,7 +393,7 @@ export default function KeralaVendorLandingPage() {
           </div>
 
           <div className="border-t border-slate-700/50 pt-8 text-center text-slate-400 text-sm">
-            <p>&copy; 2025 EventFoundry. Empowering Kerala event companies nationwide.</p>
+            <p>&copy; 2025 EventFoundry. Empowering event companies nationwide.</p>
           </div>
         </div>
       </footer>

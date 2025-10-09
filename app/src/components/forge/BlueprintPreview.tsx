@@ -54,33 +54,33 @@ export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
   return (
     <div className="space-y-6">
       {/* Blueprint Status Card */}
-      <div className="bg-white backdrop-blur-sm rounded-xl border border-slate-200 shadow-lg overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50">
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 shadow-2xl overflow-hidden">
+        <div className="p-4 border-b border-slate-700/50 bg-slate-900/50">
           <div className="flex items-center space-x-2">
-            <DocumentTextIcon className="h-5 w-5 text-slate-600" />
-            <h3 className="font-semibold text-slate-800">Event Blueprint</h3>
+            <DocumentTextIcon className="h-5 w-5 text-orange-500" />
+            <h3 className="font-semibold text-slate-100">Event Blueprint</h3>
           </div>
         </div>
 
         <div className="p-4 space-y-4">
           {blueprint ? (
             <div className="space-y-3">
-              <div className={`bg-gradient-to-r ${blueprint.color} p-3 rounded-lg`}>
-                <div className="text-white font-medium text-sm">{blueprint.type}</div>
-                <div className="text-white/80 text-xs">Complexity: {blueprint.complexity}</div>
+              <div className={`bg-gradient-to-r ${blueprint.color} p-4 rounded-lg shadow-lg`}>
+                <div className="text-white font-semibold text-sm">{blueprint.type}</div>
+                <div className="text-white/90 text-xs mt-1">Complexity: {blueprint.complexity}</div>
               </div>
 
               {isComplete && (
-                <div className="flex items-center space-x-2 text-emerald-600 text-sm">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <div className="flex items-center space-x-2 text-emerald-400 text-sm bg-emerald-900/30 px-3 py-2 rounded-lg border border-emerald-500/30">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                   <span>Blueprint ready</span>
                 </div>
               )}
             </div>
           ) : (
             <div className="text-center py-8">
-              <div className="w-16 h-16 mx-auto bg-slate-700/50 rounded-full flex items-center justify-center mb-3">
-                <DocumentTextIcon className="h-8 w-8 text-slate-500" />
+              <div className="w-16 h-16 mx-auto bg-slate-700/50 rounded-full flex items-center justify-center mb-3 border border-slate-600/50">
+                <DocumentTextIcon className="h-8 w-8 text-slate-400" />
               </div>
               <p className="text-slate-400 text-sm">Blueprint will appear as you provide your event details</p>
             </div>
@@ -89,24 +89,24 @@ export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
       </div>
 
       {/* Client Brief Summary */}
-      <div className="bg-white backdrop-blur-sm rounded-xl border border-slate-200 shadow-lg overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50">
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 shadow-2xl overflow-hidden">
+        <div className="p-4 border-b border-slate-700/50 bg-slate-900/50">
           <div className="flex items-center space-x-2">
-            <EyeIcon className="h-5 w-5 text-slate-600" />
-            <h3 className="font-semibold text-slate-800">Your Vision</h3>
+            <EyeIcon className="h-5 w-5 text-orange-500" />
+            <h3 className="font-semibold text-slate-100">Your Vision</h3>
           </div>
         </div>
 
         <div className="p-4 space-y-3">
           {briefFields.map((field) => (
-            <div key={field.key} className="flex items-center justify-between">
+            <div key={field.key} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-700/30 transition-colors">
               <div className="flex items-center space-x-2">
                 <span className="text-lg">{field.icon}</span>
-                <span className="text-sm text-slate-400">{field.label}</span>
+                <span className="text-sm text-slate-300 font-medium">{field.label}</span>
               </div>
-              <div className="text-sm text-white font-medium">
+              <div className="text-sm text-slate-100 font-semibold">
                 {clientBrief[field.key] || (
-                  <span className="text-slate-500 italic">pending</span>
+                  <span className="text-slate-500 italic font-normal">pending</span>
                 )}
               </div>
             </div>
@@ -114,7 +114,7 @@ export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
 
           {Object.keys(clientBrief).length === 0 && (
             <div className="text-center py-4">
-              <p className="text-slate-500 text-sm">Your event details will appear here as you progress</p>
+              <p className="text-slate-400 text-sm">Your event details will appear here as you progress</p>
             </div>
           )}
         </div>
@@ -122,7 +122,7 @@ export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
 
       {/* Action Button */}
       {isComplete && blueprintId && (
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-green-500/20 overflow-hidden">
+        <div className="bg-gradient-to-br from-emerald-900/40 to-green-900/40 backdrop-blur-xl rounded-xl border border-emerald-500/30 overflow-hidden shadow-2xl">
           <div className="p-4">
             <button
               onClick={() => {
@@ -135,12 +135,12 @@ export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
                 });
                 router.push(`/blueprint/${blueprintId}?${params.toString()}`);
               }}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+              className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105"
             >
               <span>Review Blueprint</span>
               <ArrowRightIcon className="h-4 w-4" />
             </button>
-            <p className="text-xs text-slate-400 text-center mt-2">
+            <p className="text-xs text-slate-300 text-center mt-2">
               Preview your custom checklist and find industry professionals
             </p>
           </div>
@@ -148,11 +148,11 @@ export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
       )}
 
       {/* Forge Info */}
-      <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl border border-slate-700/30 p-4">
+      <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/40 backdrop-blur-xl rounded-xl border border-orange-500/30 p-4 shadow-2xl">
         <div className="text-center">
           <div className="text-2xl mb-2">⚒️</div>
-          <h4 className="font-medium text-white text-sm mb-1">EventFoundry Promise</h4>
-          <p className="text-xs text-slate-400 leading-relaxed">
+          <h4 className="font-semibold text-orange-300 text-sm mb-2">EventFoundry Promise</h4>
+          <p className="text-xs text-slate-300 leading-relaxed">
             Every event is crafted with precision by industry professionals. Your blueprint will be matched with verified experts in your area.
           </p>
         </div>
