@@ -117,12 +117,12 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* Get Started CTA */}
+              {/* Plan Event CTA */}
               <Link
                 href="/forge"
                 className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105"
               >
-                Get Started
+                Plan an Event
               </Link>
             </div>
 
@@ -195,7 +195,7 @@ export default function Navbar() {
                   className="block w-full px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-base font-semibold rounded-lg shadow-lg shadow-orange-500/30 text-center transition-all duration-300"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Get Started
+                  Plan an Event
                 </Link>
               </div>
             </div>

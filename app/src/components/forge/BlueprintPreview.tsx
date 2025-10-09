@@ -120,28 +120,18 @@ export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
         </div>
       </div>
 
-      {/* Action Button */}
+      {/* Next Step Info - No duplicate button, just guidance */}
       {isComplete && blueprintId && (
         <div className="bg-gradient-to-br from-emerald-900/40 to-green-900/40 backdrop-blur-xl rounded-xl border border-emerald-500/30 overflow-hidden shadow-2xl">
-          <div className="p-4">
-            <button
-              onClick={() => {
-                const params = new URLSearchParams({
-                  event_type: clientBrief.event_type || '',
-                  date: clientBrief.date || '',
-                  city: clientBrief.city || '',
-                  guest_count: clientBrief.guest_count || '',
-                  venue_status: clientBrief.venue_status || ''
-                });
-                router.push(`/blueprint/${blueprintId}?${params.toString()}`);
-              }}
-              className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105"
-            >
-              <span>Review Blueprint</span>
-              <ArrowRightIcon className="h-4 w-4" />
-            </button>
-            <p className="text-xs text-slate-300 text-center mt-2">
-              Preview your custom checklist and find industry professionals
+          <div className="p-4 text-center">
+            <div className="mb-2">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                <ArrowRightIcon className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <h4 className="font-semibold text-emerald-300 mb-2">Next Step</h4>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Click &quot;Open Event Checklist&quot; below to customize your event requirements
             </p>
           </div>
         </div>

@@ -98,11 +98,33 @@ export default function VendorDashboardPage() {
   }, [router]);
 
   const loadEvents = () => {
-    // For demo, create some sample events if none exist
-    let postedEvents = JSON.parse(localStorage.getItem('posted_events') || '[]');
+    console.log('Dashboard mounted - loading events');
 
-    if (postedEvents.length === 0) {
-      // Create sample events for demo
+    // Load real posted events from localStorage
+    let postedEvents = JSON.parse(localStorage.getItem('posted_events') || '[]');
+    console.log('Posted events from localStorage:', postedEvents);
+
+    // Transform real events to match dashboard schema
+    const transformedEvents = postedEvents.map((e: any) => ({
+      id: e.eventId,
+      title: `${e.eventMemory?.event_type || 'Event'} - ${e.eventMemory?.location || 'Location'}`,
+      eventType: e.eventMemory?.event_type || 'Event',
+      date: e.eventMemory?.date || new Date().toISOString(),
+      location: e.eventMemory?.location || 'India',
+      city: e.eventMemory?.location?.split(',')[0] || e.eventMemory?.location || 'India',
+      guestCount: parseInt(e.eventMemory?.guest_count) || 0,
+      budgetRange: 'Contact for quote',
+      status: e.status || 'open',
+      postedAt: e.postedAt || new Date().toISOString(),
+      bidsCount: e.bids?.length || 0,
+      description: `${e.eventMemory?.event_type} for ${e.eventMemory?.guest_count} guests`
+    }));
+
+    console.log('Transformed events:', transformedEvents);
+
+    // If no real events, create sample events for demo
+    if (transformedEvents.length === 0) {
+      console.log('No real events found - creating sample events');
       postedEvents = [
         {
           id: 'evt_001',
@@ -175,11 +197,16 @@ export default function VendorDashboardPage() {
           description: 'Multi-day cultural festival with traditional performances'
         }
       ];
-      localStorage.setItem('posted_events', JSON.stringify(postedEvents));
+      // Set sample events without saving to localStorage
+      setEvents(postedEvents.filter((e: Event) => e.status === 'open'));
+      setFilteredEvents(postedEvents.filter((e: Event) => e.status === 'open'));
+    } else {
+      // Use transformed real events
+      const openEvents = transformedEvents.filter((e: Event) => e.status === 'open');
+      console.log('Open events after filtering:', openEvents);
+      setEvents(openEvents);
+      setFilteredEvents(openEvents);
     }
-
-    setEvents(postedEvents.filter((e: Event) => e.status === 'open'));
-    setFilteredEvents(postedEvents.filter((e: Event) => e.status === 'open'));
   };
 
   const calculateStats = (vendorBids: any[]) => {
@@ -214,20 +241,24 @@ export default function VendorDashboardPage() {
   };
 
   const applyFilters = () => {
+    console.log('Applying filters...');
+    console.log('All events:', events);
     let filtered = [...events];
 
     // Event type filter
     if (eventTypeFilter !== 'All') {
       filtered = filtered.filter(e => e.eventType === eventTypeFilter);
+      console.log('After event type filter:', filtered);
     }
 
-    // Location filter
-    if (locationFilter !== 'All Kerala') {
-      filtered = filtered.filter(e => e.city === locationFilter);
-    }
+    // TEMPORARILY REMOVED: Location filter (show all locations for testing)
+    // if (locationFilter !== 'All Kerala') {
+    //   filtered = filtered.filter(e => e.city === locationFilter);
+    // }
 
     // Guest count filter
     filtered = filtered.filter(e => e.guestCount <= guestCountFilter);
+    console.log('After guest count filter:', filtered);
 
     // Date range filter
     const now = new Date();
@@ -241,6 +272,7 @@ export default function VendorDashboardPage() {
       filtered = filtered.filter(e => new Date(e.date) >= now);
     }
 
+    console.log('Filtered events (final):', filtered);
     setFilteredEvents(filtered);
   };
 
@@ -426,7 +458,7 @@ export default function VendorDashboardPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Event Type */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Event Type</label>
@@ -436,10 +468,9 @@ export default function VendorDashboardPage() {
                 className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option>All</option>
-                <option>Destination Wedding</option>
-                <option>Traditional Wedding</option>
+                <option>Wedding</option>
                 <option>Corporate Event</option>
-                <option>Cultural Event</option>
+                <option>Birthday Party</option>
                 <option>Product Launch</option>
               </select>
             </div>
@@ -456,22 +487,6 @@ export default function VendorDashboardPage() {
                 <option>This Month</option>
                 <option>Next 3 Months</option>
                 <option>All</option>
-              </select>
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Location</label>
-              <select
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <option>All Kerala</option>
-                <option>Kochi</option>
-                <option>Thiruvananthapuram</option>
-                <option>Kozhikode</option>
-                <option>Thrissur</option>
               </select>
             </div>
 

@@ -34,6 +34,7 @@ export const ForgeChat: React.FC<ForgeChatProps> = () => {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,6 +43,13 @@ export const ForgeChat: React.FC<ForgeChatProps> = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Auto-focus input on mount
+  useEffect(() => {
+    if (inputRef.current && !isComplete) {
+      inputRef.current.focus();
+    }
+  }, [isComplete]);
 
   // Remove automatic navigation - user must click the Review Blueprint button
 
@@ -176,6 +184,7 @@ export const ForgeChat: React.FC<ForgeChatProps> = () => {
 
                     <div className="flex space-x-3">
                       <input
+                        ref={inputRef}
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}

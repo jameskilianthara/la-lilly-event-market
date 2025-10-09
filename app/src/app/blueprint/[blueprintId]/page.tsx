@@ -47,6 +47,7 @@ export default function BlueprintReviewPage() {
   const [saving, setSaving] = useState(false);
   const [posting, setPosting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showPostSuccess, setShowPostSuccess] = useState(false);
   const [eventId, setEventId] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -150,19 +151,31 @@ export default function BlueprintReviewPage() {
 
   const handlePostToVendors = () => {
     setPosting(true);
-    // Save project with event ID and navigate
-    const projectData = {
+
+    // Create posted event object
+    const postedEvent = {
       eventId,
       eventMemory,
       checklistData,
-      status: 'posted_to_vendors',
-      postedAt: new Date().toISOString()
+      postedAt: new Date().toISOString(),
+      status: 'open',
+      bids: []
     };
-    localStorage.setItem(`lalilly-project-${eventId}`, JSON.stringify(projectData));
-    localStorage.setItem('lalilly-project-generated', 'true');
+
+    // Get existing posted events
+    const postedEventsStored = localStorage.getItem('posted_events');
+    const postedEvents = postedEventsStored ? JSON.parse(postedEventsStored) : [];
+
+    // Add new event
+    postedEvents.push(postedEvent);
+    localStorage.setItem('posted_events', JSON.stringify(postedEvents));
+
+    // Also save as project (for backward compatibility)
+    localStorage.setItem(`lalilly-project-${eventId}`, JSON.stringify(postedEvent));
 
     setTimeout(() => {
-      router.push('/dashboard');
+      setPosting(false);
+      setShowPostSuccess(true);
     }, 1500);
   };
 
@@ -251,20 +264,21 @@ export default function BlueprintReviewPage() {
   const hasChecklistData = checklistData && Object.keys(checklistData.selections).length > 0;
   const categoryDisplay = getCategoryDisplay();
 
-  if (!eventMemory || !hasChecklistData) {
+  // Don't show error if we have at least event memory - allow partial data
+  if (!eventMemory) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <SparklesIcon className="h-16 w-16 text-orange-400 mx-auto mb-6" />
-          <h2 className="text-2xl font-bold text-white mb-4">Complete Your Checklist First</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Start Planning Your Event</h2>
           <p className="text-slate-300 mb-8">
-            Fill out your event requirements checklist to see your complete blueprint summary.
+            Begin by answering a few quick questions about your event vision.
           </p>
           <button
-            onClick={() => router.push('/checklist?type=wedding')}
+            onClick={() => router.push('/forge')}
             className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105"
           >
-            Go to Checklist
+            Start Event Planning
           </button>
         </div>
       </div>
@@ -399,8 +413,28 @@ export default function BlueprintReviewPage() {
               <h2 className="text-2xl font-bold text-white">Requirements Summary</h2>
             </div>
 
-            <div className="space-y-4">
-              {categoryDisplay.map((category) => {
+            {!hasChecklistData ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircleIcon className="h-8 w-8 text-slate-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-300 mb-2">
+                  Complete your detailed checklist
+                </h3>
+                <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                  Add specific requirements for your event to see a comprehensive blueprint here
+                </p>
+                <button
+                  onClick={() => router.push(`/checklist?type=${eventType}`)}
+                  className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-orange-500/30 hover:scale-105"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                  <span>Complete Checklist</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {categoryDisplay.map((category) => {
                 const isExpanded = expandedCategories.has(category.id);
                 const IconComponent = category.icon;
 
@@ -460,7 +494,8 @@ export default function BlueprintReviewPage() {
                   </div>
                 );
               })}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -512,6 +547,49 @@ export default function BlueprintReviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showPostSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700/50 shadow-2xl max-w-lg w-full p-8 animate-fade-in">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/50">
+                <CheckCircleIcon className="h-10 w-10 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-3">Event Posted Successfully!</h2>
+              <p className="text-slate-300 mb-6">
+                Your event is now visible to master craftsmen across India
+              </p>
+
+              <div className="bg-slate-700/50 rounded-lg p-4 mb-6 border border-slate-600/50">
+                <p className="text-xs text-slate-400 mb-2">Event ID</p>
+                <code className="text-lg font-mono font-semibold text-orange-400">
+                  {eventId}
+                </code>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => router.push('/forge')}
+                  className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all duration-200 border border-slate-600"
+                >
+                  Post Another Event
+                </button>
+                <button
+                  onClick={() => setShowPostSuccess(false)}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-orange-500/30"
+                >
+                  Close
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-500 mt-6">
+                You will be notified when craftsmen submit proposals for your event
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

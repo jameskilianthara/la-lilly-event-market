@@ -57,46 +57,68 @@ export default function VendorLoginPage() {
       const normalizedMobile = mobile.replace(/\s/g, '').replace(/^\+91/, '');
       const normalizedEmail = email.toLowerCase().trim();
 
-      // Check active vendors (approved vendors)
+      // PRIORITY 1: Check active vendors (approved vendors) FIRST
       const activeVendors = JSON.parse(localStorage.getItem('active_vendors') || '[]');
-      const vendor = activeVendors.find((v: any) => {
-        const vendorMobile = v.contactInfo?.mobile?.replace(/\s/g, '').replace(/^\+91/, '');
-        const vendorEmail = v.contactInfo?.email?.toLowerCase().trim();
-        return vendorEmail === normalizedEmail && vendorMobile === normalizedMobile;
+
+      // Try to find by email first
+      const vendorByEmail = activeVendors.find((v: any) => {
+        const vendorEmail = (v.email || v.contactInfo?.email || '').toLowerCase().trim();
+        return vendorEmail === normalizedEmail;
       });
 
-      if (vendor) {
-        // Successful login - create session
-        const session = {
-          vendorId: vendor.id,
-          email: normalizedEmail,
-          companyName: vendor.companyInfo?.companyName,
-          loginTime: new Date().toISOString()
-        };
+      if (vendorByEmail) {
+        // Found by email - now verify phone
+        const vendorMobile = (vendorByEmail.phone || vendorByEmail.contactInfo?.phone || vendorByEmail.contactInfo?.mobile || '').replace(/\s/g, '').replace(/^\+91/, '');
 
-        localStorage.setItem('vendor_session', JSON.stringify(session));
+        if (vendorMobile === normalizedMobile) {
+          // Successful login - both email and phone match
+          const session = {
+            vendorId: vendorByEmail.id,
+            email: normalizedEmail,
+            businessName: vendorByEmail.businessName || vendorByEmail.companyInfo?.businessName,
+            loginTime: new Date().toISOString()
+          };
 
-        // Redirect to dashboard
-        router.push('/craftsmen/dashboard');
-        return;
+          localStorage.setItem('vendor_session', JSON.stringify(session));
+
+          // Redirect to dashboard
+          router.push('/craftsmen/dashboard');
+          return;
+        } else {
+          // Email found but phone doesn't match
+          setError('Phone number does not match our records. Please use the mobile number you registered with.');
+          setIsLoading(false);
+          return;
+        }
       }
 
-      // Check pending signups
+      // PRIORITY 2: Only check pending signups if not found in active vendors
       const pendingSignups = JSON.parse(localStorage.getItem('vendor_signups') || '[]');
-      const pendingVendor = pendingSignups.find((v: any) => {
-        const vendorMobile = v.contactInfo?.mobile?.replace(/\s/g, '').replace(/^\+91/, '');
-        const vendorEmail = v.contactInfo?.email?.toLowerCase().trim();
-        return vendorEmail === normalizedEmail && vendorMobile === normalizedMobile;
+
+      // Try to find by email in pending signups
+      const pendingByEmail = pendingSignups.find((v: any) => {
+        const vendorEmail = (v.email || v.contactInfo?.email || '').toLowerCase().trim();
+        return vendorEmail === normalizedEmail;
       });
 
-      if (pendingVendor) {
-        setError('Your registration is pending approval. We\'ll notify you within 24-48 hours. Please check your email for updates.');
-        setIsLoading(false);
-        return;
+      if (pendingByEmail) {
+        // Found in pending - verify phone
+        const vendorMobile = (pendingByEmail.phone || pendingByEmail.contactInfo?.phone || pendingByEmail.contactInfo?.mobile || '').replace(/\s/g, '').replace(/^\+91/, '');
+
+        if (vendorMobile === normalizedMobile) {
+          setError('Your registration is pending approval. We\'ll notify you within 24-48 hours. Please check your email for updates.');
+          setIsLoading(false);
+          return;
+        } else {
+          // Email found in pending but phone doesn't match
+          setError('Phone number does not match our records. Please use the mobile number you registered with.');
+          setIsLoading(false);
+          return;
+        }
       }
 
-      // No account found
-      setError('No account found. Please check your email and mobile number, or register if you\'re new to EventFoundry.');
+      // PRIORITY 3: No account found anywhere
+      setError('No account found with this email. Please check your email address or register if you\'re new to EventFoundry.');
       setIsLoading(false);
     }, 800);
   };
