@@ -583,15 +583,21 @@ export default function VendorDashboardPage() {
 
                   {/* Action Button */}
                   {alreadyBid ? (
-                    <button className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 font-semibold rounded-lg transition-all duration-300">
+                    <Link
+                      href={`/craftsmen/events/${event.id}`}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 font-semibold rounded-lg transition-all duration-300"
+                    >
                       <span>View Your Bid</span>
                       <ArrowRightIcon className="w-5 h-5" />
-                    </button>
+                    </Link>
                   ) : (
-                    <button className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 transform group-hover:scale-105">
+                    <Link
+                      href={`/craftsmen/events/${event.id}`}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 transform group-hover:scale-105"
+                    >
                       <span>View Details & Bid</span>
                       <ArrowRightIcon className="w-5 h-5" />
-                    </button>
+                    </Link>
                   )}
                 </div>
               );
