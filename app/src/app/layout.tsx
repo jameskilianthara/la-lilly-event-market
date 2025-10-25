@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import ScrollToTop from "@/components/ScrollToTop";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
   title: "EventFoundry - Forge Extraordinary Events",
@@ -15,10 +17,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-white text-neutral-900 antialiased font-sans">
-        <Navbar />
-        <main>
-          {children}
-        </main>
+        <AuthProvider>
+          <ScrollToTop />
+          <Navbar />
+          <main>
+            {children}
+          </main>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -527,15 +527,22 @@ export default function BlueprintReviewPage() {
                 {posting ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Posting to Forge...</span>
+                    <span>Posting Event...</span>
                   </>
                 ) : (
                   <>
                     <RocketLaunchIcon className="h-5 w-5" />
-                    <span>Post to Master Craftsmen</span>
+                    <span>Post Event & Get Proposals</span>
                   </>
                 )}
               </button>
+            </div>
+
+            {/* Helpful description */}
+            <div className="mt-3 text-center">
+              <p className="text-sm text-slate-400">
+                💡 Your event will be visible to verified vendors who can submit detailed proposals with pricing
+              </p>
             </div>
 
             {showSuccess && (

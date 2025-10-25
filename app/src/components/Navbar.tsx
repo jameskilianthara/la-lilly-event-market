@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { usePathname, useRouter } from 'next/navigation';
+import { Bars3Icon, XMarkIcon, ChevronDownIcon, ArrowRightOnRectangleIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -19,24 +23,39 @@ export default function Navbar() {
   useEffect(() => {
     const handleClickOutside = () => {
       if (loginDropdownOpen) setLoginDropdownOpen(false);
+      if (userMenuOpen) setUserMenuOpen(false);
     };
-    if (loginDropdownOpen) {
+    if (loginDropdownOpen || userMenuOpen) {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
-  }, [loginDropdownOpen]);
+  }, [loginDropdownOpen, userMenuOpen]);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
   const isActivePath = (path: string) => {
     if (path === '/') return pathname === '/';
     return pathname.startsWith(path);
   };
 
-  const navLinks = [
-    { name: 'For Clients', href: '/' },
-    { name: 'For Event Managers', href: '/craftsmen' },
-    { name: 'How It Works', href: '/how-it-works' },
-    { name: 'About', href: '/about' }
-  ];
+  // Smart navigation links based on user type
+  const getNavLinks = () => {
+    const baseLinks = [
+      { name: 'Plan Your Event', href: '/' },
+      // Show dashboard for logged-in vendors, onboarding for others
+      isAuthenticated && user?.userType === 'vendor'
+        ? { name: 'Vendor Dashboard', href: '/craftsmen/dashboard' }
+        : { name: 'For Event Managers', href: '/craftsmen' },
+      { name: 'Browse Vendors', href: '/vendors' },
+      { name: 'How It Works', href: '/how-it-works' }
+    ];
+    return baseLinks;
+  };
+
+  const navLinks = getNavLinks();
 
   return (
     <>
@@ -81,49 +100,101 @@ export default function Navbar() {
 
             {/* Desktop Navigation - Right */}
             <div className="hidden md:flex items-center space-x-4">
-              {/* Login Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLoginDropdownOpen(!loginDropdownOpen);
-                  }}
-                  className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200"
-                >
-                  <span>Login</span>
-                  <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${loginDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
+              {isAuthenticated ? (
+                <>
+                  {/* User Menu Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUserMenuOpen(!userMenuOpen);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200"
+                    >
+                      <UserCircleIcon className="w-5 h-5" />
+                      <span>{user?.userType === 'vendor' ? user.companyName : user?.name || user?.email}</span>
+                      <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
 
-                {loginDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden">
-                    <Link
-                      href="/login"
-                      className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
-                      onClick={() => setLoginDropdownOpen(false)}
-                    >
-                      <div className="font-medium">Client Login</div>
-                      <div className="text-xs text-slate-400 mt-0.5">Planning an event</div>
-                    </Link>
-                    <div className="border-t border-slate-700/50" />
-                    <Link
-                      href="/craftsmen/login"
-                      className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
-                      onClick={() => setLoginDropdownOpen(false)}
-                    >
-                      <div className="font-medium">Event Manager Login</div>
-                      <div className="text-xs text-slate-400 mt-0.5">Vendor portal</div>
-                    </Link>
+                    {userMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden">
+                        <Link
+                          href={user?.userType === 'vendor' ? '/craftsmen/dashboard' : '/dashboard/client'}
+                          className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <div className="font-medium">Dashboard</div>
+                          <div className="text-xs text-slate-400 mt-0.5">View your {user?.userType === 'vendor' ? 'projects' : 'events'}</div>
+                        </Link>
+                        <div className="border-t border-slate-700/50" />
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200 flex items-center space-x-2"
+                        >
+                          <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                          <span className="font-medium">Logout</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Plan Event CTA */}
-              <Link
-                href="/forge"
-                className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105"
-              >
-                Plan an Event
-              </Link>
+                  {/* Plan Event CTA (show for both vendor and client) */}
+                  {user?.userType === 'client' && (
+                    <Link
+                      href="/forge"
+                      className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105"
+                    >
+                      Plan an Event
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Login Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLoginDropdownOpen(!loginDropdownOpen);
+                      }}
+                      className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200"
+                    >
+                      <span>Login</span>
+                      <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${loginDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {loginDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden">
+                        <Link
+                          href="/login"
+                          className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
+                          onClick={() => setLoginDropdownOpen(false)}
+                        >
+                          <div className="font-medium">Client Login</div>
+                          <div className="text-xs text-slate-400 mt-0.5">Planning an event</div>
+                        </Link>
+                        <div className="border-t border-slate-700/50" />
+                        <Link
+                          href="/craftsmen/login"
+                          className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
+                          onClick={() => setLoginDropdownOpen(false)}
+                        >
+                          <div className="font-medium">Event Manager Login</div>
+                          <div className="text-xs text-slate-400 mt-0.5">Vendor portal</div>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Plan Event CTA */}
+                  <Link
+                    href="/forge"
+                    className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105"
+                  >
+                    Plan an Event
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -171,20 +242,48 @@ export default function Navbar() {
                   <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     Account
                   </div>
-                  <Link
-                    href="/login"
-                    className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-orange-500 hover:bg-slate-800/50 transition-colors duration-200"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Client Login
-                  </Link>
-                  <Link
-                    href="/craftsmen/login"
-                    className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-orange-500 hover:bg-slate-800/50 transition-colors duration-200"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Event Manager Login
-                  </Link>
+                  {isAuthenticated ? (
+                    <>
+                      <div className="px-4 py-3 text-base text-slate-300">
+                        <div className="font-medium text-orange-400">{user?.userType === 'vendor' ? user.companyName : user?.name || user?.email}</div>
+                        <div className="text-xs text-slate-400 mt-0.5">{user?.userType === 'vendor' ? 'Event Manager' : 'Client'}</div>
+                      </div>
+                      <Link
+                        href={user?.userType === 'vendor' ? '/craftsmen/dashboard' : '/dashboard/client'}
+                        className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-orange-500 hover:bg-slate-800/50 transition-colors duration-200"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-orange-500 hover:bg-slate-800/50 transition-colors duration-200 flex items-center space-x-2"
+                      >
+                        <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                        <span>Logout</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/login"
+                        className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-orange-500 hover:bg-slate-800/50 transition-colors duration-200"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Client Login
+                      </Link>
+                      <Link
+                        href="/craftsmen/login"
+                        className="block px-4 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-orange-500 hover:bg-slate-800/50 transition-colors duration-200"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Event Manager Login
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
 

@@ -22,6 +22,7 @@ import {
   BriefcaseIcon,
   GlobeAltIcon
 } from '@heroicons/react/24/outline';
+import ProfileCompletionWidget from '@/components/vendor/ProfileCompletionWidget';
 
 interface VendorSession {
   vendorId: string;
@@ -373,10 +374,16 @@ export default function VendorDashboardPage() {
                 My Bids
               </Link>
               <Link
-                href="/craftsmen/profile"
+                href="/craftsmen/dashboard/profile/edit"
                 className="hidden sm:block px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
               >
                 Profile
+              </Link>
+              <Link
+                href="/vendors"
+                className="hidden lg:block px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+              >
+                Browse Vendors
               </Link>
               <button
                 onClick={handleLogout}
@@ -440,6 +447,11 @@ export default function VendorDashboardPage() {
             </div>
             <p className="text-sm text-slate-400">Won This Month</p>
           </div>
+        </div>
+
+        {/* Profile Completion Widget */}
+        <div className="mb-8">
+          <ProfileCompletionWidget />
         </div>
 
         {/* Filters Bar */}

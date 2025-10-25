@@ -10,9 +10,11 @@ import {
   ArrowRightIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function VendorLoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [error, setError] = useState('');
@@ -72,14 +74,29 @@ export default function VendorLoginPage() {
 
         if (vendorMobile === normalizedMobile) {
           // Successful login - both email and phone match
-          const session = {
+          const userData = {
+            userId: vendorByEmail.id,
+            email: normalizedEmail,
+            userType: 'vendor' as const,
+            companyName: vendorByEmail.businessName || vendorByEmail.companyInfo?.businessName,
+            serviceType: vendorByEmail.serviceType || vendorByEmail.categories?.[0],
+            isAuthenticated: true as const,
+            persistent: true,
+            loginTime: new Date().toISOString(),
+            expiresAt: null as null
+          };
+
+          // Save using new auth system
+          login(userData, true);
+
+          // Keep legacy session for backward compatibility
+          const legacySession = {
             vendorId: vendorByEmail.id,
             email: normalizedEmail,
             businessName: vendorByEmail.businessName || vendorByEmail.companyInfo?.businessName,
             loginTime: new Date().toISOString()
           };
-
-          localStorage.setItem('vendor_session', JSON.stringify(session));
+          localStorage.setItem('vendor_session', JSON.stringify(legacySession));
 
           // Redirect to dashboard
           router.push('/craftsmen/dashboard');
