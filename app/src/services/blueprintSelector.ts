@@ -1,32 +1,12 @@
-interface ClientBrief {
-  event_type?: string;
-  date?: string;
-  city?: string;
-  guest_count?: string;
-  venue_status?: string;
-}
+import { ClientBrief, ForgeBlueprint, BlueprintSection, BlueprintItem } from '@/types/blueprint';
 
-interface ForgeBlueprint {
+interface BlueprintSelectorDeprecated {
   id: string;
   eventType: string;
   displayName: string;
   version: string;
   forgeComplexity: 'apprentice' | 'craftsman' | 'master';
   sections: BlueprintSection[];
-}
-
-interface BlueprintSection {
-  id: string;
-  title: string;
-  description: string;
-  items: BlueprintItem[];
-}
-
-interface BlueprintItem {
-  id: string;
-  label: string;
-  required?: boolean;
-  category?: string;
 }
 
 // Deterministic mapping table - as specified in CLAUDE.md

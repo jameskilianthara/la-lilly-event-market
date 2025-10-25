@@ -6,14 +6,7 @@ import { useForgeChat } from '../../hooks/useForgeChat';
 import { ForgeMessage } from './ForgeMessage';
 import { ForgeProgress } from './ForgeProgress';
 import { BlueprintPreview } from './BlueprintPreview';
-
-interface ClientBrief {
-  event_type?: string;
-  date?: string;
-  city?: string;
-  guest_count?: string;
-  venue_status?: string;
-}
+import { ClientBrief } from '@/types/blueprint';
 
 interface ForgeChatProps {
   onBlueprintReady?: (blueprintId: string, clientBrief: ClientBrief) => void;

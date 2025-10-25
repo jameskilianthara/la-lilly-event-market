@@ -135,17 +135,14 @@ export const useBlueprintReview = (blueprintId: string, clientBrief: ClientBrief
         reference_images: referenceImages,
         created_at: new Date()
       };
+
+      // Clear local storage since project is now saved
+      localStorage.removeItem(`blueprint-notes-${blueprintId}`);
+      localStorage.removeItem(`blueprint-images-${blueprintId}`);
+
+      console.log('Created forge project:', forgeProject);
       return forgeProject;
     }
-
-    // In production, save to database and return response
-    console.log('Created forge project:', forgeProject);
-
-    // Clear local storage since project is now saved
-    localStorage.removeItem(`blueprint-notes-${blueprintId}`);
-    localStorage.removeItem(`blueprint-images-${blueprintId}`);
-
-    return forgeProject;
   }, [blueprint, clientBrief, clientNotes, referenceImages, blueprintId]);
 
   return {

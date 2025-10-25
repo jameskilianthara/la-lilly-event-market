@@ -1,25 +1,11 @@
 'use client';
 
 import { useCallback } from 'react';
-
-interface ClientBrief {
-  event_type?: string;
-  date?: string;
-  city?: string;
-  guest_count?: string;
-  venue_status?: string;
-}
-
-interface MessageData {
-  id: string;
-  type: string;
-  content: string;
-  timestamp: Date;
-  metadata?: Record<string, string | number | boolean>;
-}
+import { ClientBrief } from '@/types/blueprint';
+import { ForgeMessageData } from '@/components/forge/ForgeMessage';
 
 interface ForgeSession {
-  messages: MessageData[];
+  messages: ForgeMessageData[];
   currentStep: number;
   clientBrief: ClientBrief;
   isComplete: boolean;

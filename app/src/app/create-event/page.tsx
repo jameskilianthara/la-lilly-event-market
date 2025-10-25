@@ -4,14 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Calendar, MapPin, Users, Building2, Sparkles, ArrowRight, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-interface ClientBrief {
-  event_type: string;
-  date: string;
-  city: string;
-  guest_count: string;
-  venue_status: string;
-}
+import { ClientBrief } from '@/types/blueprint';
 
 interface BlueprintItem {
   id: string;

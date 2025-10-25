@@ -90,7 +90,7 @@ export const ChecklistItem: React.FC<ChecklistItemProps> = ({ item, value, onCha
       case 'select':
         return (
           <select
-            value={value || ''}
+            value={typeof value === 'boolean' ? String(value) : (value || '')}
             onChange={(e) => onChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
           >
@@ -106,7 +106,7 @@ export const ChecklistItem: React.FC<ChecklistItemProps> = ({ item, value, onCha
       case 'text':
         return (
           <textarea
-            value={value || ''}
+            value={typeof value === 'boolean' ? String(value) : (value || '')}
             onChange={(e) => onChange(e.target.value)}
             placeholder={item.placeholder}
             rows={3}
@@ -118,7 +118,7 @@ export const ChecklistItem: React.FC<ChecklistItemProps> = ({ item, value, onCha
         return (
           <input
             type="text"
-            value={value || ''}
+            value={typeof value === 'boolean' ? String(value) : (value || '')}
             onChange={(e) => onChange(e.target.value)}
             placeholder={item.placeholder}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"

@@ -23,11 +23,12 @@ export interface BlueprintItem {
 }
 
 export interface ClientBrief {
-  event_type: string;
-  date: string;
-  city: string;
-  guest_count: string;
-  venue_status: string;
+  event_type?: string;
+  date?: string;
+  city?: string;
+  guest_count?: string;
+  venue_status?: string;
+  [key: string]: string | undefined;
 }
 
 export interface ClientNotes {

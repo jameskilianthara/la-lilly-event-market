@@ -3,15 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { DocumentTextIcon, EyeIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-
-interface ClientBrief {
-  event_type?: string;
-  date?: string;
-  city?: string;
-  guest_count?: string;
-  venue_status?: string;
-  [key: string]: string | undefined;
-}
+import { ClientBrief } from '@/types/blueprint';
 
 interface BlueprintPreviewProps {
   clientBrief: ClientBrief;

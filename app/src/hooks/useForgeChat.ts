@@ -4,14 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { ForgeMessageData } from '../components/forge/ForgeMessage';
 import { selectForgeBlueprint } from '../services/blueprintSelector';
 import { useForgeSession } from './useForgeSession';
-
-interface ClientBrief {
-  event_type?: string;
-  date?: string;
-  city?: string;
-  guest_count?: string;
-  venue_status?: string;
-}
+import { ClientBrief } from '@/types/blueprint';
 
 export const useForgeChat = () => {
   const [messages, setMessages] = useState<ForgeMessageData[]>([]);
