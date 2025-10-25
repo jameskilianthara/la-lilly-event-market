@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -11,6 +12,7 @@ import {
   Instagram,
   Linkedin
 } from "lucide-react";
+import { testDatabaseConnection } from '../../lib/database-test';
 
 const features = [
   {
@@ -36,6 +38,11 @@ const features = [
 ];
 
 export default function HomePage() {
+  // Temporary test: Check Supabase connection on page load
+  useEffect(() => {
+    testDatabaseConnection();
+  }, []);
+
   return (
     <div className="min-h-screen bg-black">
 
