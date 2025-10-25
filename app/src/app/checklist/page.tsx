@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   ChevronDownIcon,
@@ -67,10 +67,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   '📦': TruckIcon,
 };
 
-export default function ChecklistPage() {
+function ChecklistPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const eventType = searchParams.get('type') || 'wedding';
+  const eventType = searchParams?.get('type') || 'wedding';
 
   const [checklist, setChecklist] = useState<ChecklistData | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
@@ -612,5 +612,20 @@ export default function ChecklistPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ChecklistPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <SparklesIcon className="h-12 w-12 text-orange-400 mx-auto mb-4 animate-pulse" />
+          <p className="text-orange-300 font-semibold text-lg">Loading checklist...</p>
+        </div>
+      </div>
+    }>
+      <ChecklistPageContent />
+    </Suspense>
   );
 }
