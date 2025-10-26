@@ -22,7 +22,7 @@ import {
   BriefcaseIcon,
   GlobeAltIcon
 } from '@heroicons/react/24/outline';
-import ProfileCompletionWidget from '@/components/vendor/ProfileCompletionWidget';
+import ProfileCompletionWidget from '../../../components/vendor/ProfileCompletionWidget';
 
 interface VendorSession {
   vendorId: string;

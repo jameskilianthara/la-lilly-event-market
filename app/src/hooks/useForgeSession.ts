@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback } from 'react';
-import { ClientBrief } from '@/types/blueprint';
-import { ForgeMessageData } from '@/components/forge/ForgeMessage';
+import { ClientBrief } from '../types/blueprint';
+import { ForgeMessageData } from '../components/forge/ForgeMessage';
 
 interface ForgeSession {
   messages: ForgeMessageData[];

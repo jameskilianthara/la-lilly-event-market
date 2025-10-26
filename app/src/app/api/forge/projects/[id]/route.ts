@@ -2,7 +2,7 @@
 // Aligned with CLAUDE.md Section 12: API Spec
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db, forgeProjects } from '@/db';
+import { db, forgeProjects } from '../../../../../db';
 import { eq } from 'drizzle-orm';
 
 export async function GET(

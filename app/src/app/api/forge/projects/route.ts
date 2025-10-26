@@ -2,10 +2,10 @@
 // Aligned with CLAUDE.md Section 12: API Spec
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db, forgeProjects, forgeBlueprints } from '@/db';
+import { db, forgeProjects, forgeBlueprints } from '../../../../db';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import { ClientBrief } from '@/types/blueprint';
+import { ClientBrief } from '../../../../types/blueprint';
 
 interface CreateForgeProjectRequest {
   userId: string;

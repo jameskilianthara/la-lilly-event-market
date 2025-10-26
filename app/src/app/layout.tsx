@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import ScrollToTop from "@/components/ScrollToTop";
-import { AuthProvider } from "@/contexts/AuthContext";
+import Navbar from '../components/Navbar';
+import ScrollToTop from '../components/ScrollToTop';
+import { AuthProvider } from '../contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: "EventFoundry - Forge Extraordinary Events",

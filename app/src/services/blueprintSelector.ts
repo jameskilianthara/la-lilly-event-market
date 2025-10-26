@@ -1,4 +1,4 @@
-import { ClientBrief, ForgeBlueprint, BlueprintSection, BlueprintItem } from '@/types/blueprint';
+import { ClientBrief, ForgeBlueprint, BlueprintSection, BlueprintItem } from '../types/blueprint';
 
 interface BlueprintSelectorDeprecated {
   id: string;

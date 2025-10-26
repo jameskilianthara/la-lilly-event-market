@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { DocumentTextIcon, EyeIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import { ClientBrief } from '@/types/blueprint';
+import { ClientBrief } from '../../types/blueprint';
 
 interface BlueprintPreviewProps {
   clientBrief: ClientBrief;
