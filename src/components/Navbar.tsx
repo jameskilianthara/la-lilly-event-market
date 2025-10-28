@@ -216,10 +216,10 @@ export default function Navbar() {
 
         {/* Mobile Menu Overlay */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 top-[72px] bg-slate-900/98 backdrop-blur-lg md:hidden z-40">
-            <div className="flex flex-col h-full">
+          <div className="fixed inset-0 top-[72px] bg-slate-900 md:hidden z-50">
+            <div className="flex flex-col h-[calc(100vh-72px)] overflow-hidden">
               {/* Mobile Navigation Links */}
-              <div className="flex-1 px-6 py-8 space-y-1 overflow-y-auto">
+              <div className="flex-1 px-6 py-8 space-y-2 overflow-y-auto">
                 {navLinks.map((link) => {
                   const isActive = isActivePath(link.href);
                   return (
@@ -288,7 +288,7 @@ export default function Navbar() {
               </div>
 
               {/* Mobile CTA */}
-              <div className="border-t border-slate-800 p-6">
+              <div className="flex-shrink-0 border-t border-slate-800 p-6 bg-slate-900">
                 <Link
                   href="/forge"
                   className="block w-full px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-base font-semibold rounded-lg shadow-lg shadow-orange-500/30 text-center transition-all duration-300"
