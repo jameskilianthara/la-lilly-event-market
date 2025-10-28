@@ -44,12 +44,12 @@ export default function Navbar() {
   // Smart navigation links based on user type
   const getNavLinks = () => {
     const baseLinks = [
-      { name: 'Plan Your Event', href: '/' },
+      { name: 'Plan My Event', href: '/forge' },
+      { name: 'Browse Vendors', href: '/vendors' },
       // Show dashboard for logged-in vendors, onboarding for others
       isAuthenticated && user?.userType === 'vendor'
         ? { name: 'Vendor Dashboard', href: '/craftsmen/dashboard' }
-        : { name: 'For Event Managers', href: '/craftsmen' },
-      { name: 'Browse Vendors', href: '/vendors' },
+        : { name: 'For Vendors', href: '/craftsmen' },
       { name: 'How It Works', href: '/how-it-works' }
     ];
     return baseLinks;
