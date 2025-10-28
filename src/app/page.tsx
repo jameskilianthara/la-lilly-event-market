@@ -72,17 +72,6 @@ export default function HomePage() {
               transition={{ duration: 0.8 }}
               className="text-white"
             >
-              {/* EventFoundry Logo */}
-              <div className="mb-8 flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">EF</span>
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-white">EventFoundry</h2>
-                  <p className="text-orange-400 text-sm font-medium">Plan Extraordinary Events</p>
-                </div>
-              </div>
-              
               {/* Foundry headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-8">
                 <span className="block text-white mb-2">PLAN</span>
