@@ -270,7 +270,7 @@ export default function HomePage() {
                 </div>
               </Link>
               <div className="text-gray-400 text-sm">
-                <span>Founded in Mumbai · Industry veterans</span>
+                <span>Founded in Kochi India · Industry veterans</span>
               </div>
             </div>
             
