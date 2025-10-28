@@ -15,7 +15,7 @@ import {
 const features = [
   {
     icon: MessageCircle,
-    title: "AI-Powered Planning",
+    title: "Smart Event Planning",
     description: "Our intelligent system creates the perfect event blueprint by understanding your vision and matching you with industry professionals."
   },
   {
@@ -93,7 +93,7 @@ export default function HomePage() {
                   we create <strong className="text-white">extraordinary experiences</strong> through innovation and expertise.
                 </p>
                 <p className="text-base sm:text-lg text-gray-400">
-                  AI-powered planning. Professional training. Shared resources. Transparent marketplace.<br />
+                  Smart planning. Professional training. Shared resources. Transparent marketplace.<br />
                   <span className="text-orange-400 font-medium">This is how the industry evolves.</span>
                 </p>
               </motion.div>
@@ -211,7 +211,7 @@ export default function HomePage() {
               Industry veterans create extraordinary experiences
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Every event is crafted with precision through <em className="text-orange-400">AI-powered planning</em> and shared industry resources
+              Every event is crafted with precision through <em className="text-orange-400">smart planning</em> and shared industry resources
             </p>
           </motion.div>
           
