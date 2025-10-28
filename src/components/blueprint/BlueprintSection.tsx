@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BlueprintSection as IBlueprintSection, ClientNotes, ReferenceImage } from '../../types/blueprint';
+import type { BlueprintSection as IBlueprintSection, ClientNotes, ReferenceImage } from '../../types/blueprint';
 import { BlueprintItem } from './BlueprintItem';
 import { ReferenceUpload } from './ReferenceUpload';
 

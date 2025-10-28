@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ForgeBlueprint, ClientBrief, ClientNotes, ReferenceImage, ForgeProject } from '../types/blueprint';
+import type { ForgeBlueprint, ClientBrief, ClientNotes, ReferenceImage, ForgeProject } from '../types/blueprint';
 import { getBlueprintById } from '../services/blueprintSelector';
 
 export const useBlueprintReview = (blueprintId: string, clientBrief: ClientBrief) => {

@@ -6,7 +6,7 @@ import { useForgeChat } from '../../hooks/useForgeChat';
 import { ForgeMessage } from './ForgeMessage';
 import { ForgeProgress } from './ForgeProgress';
 import { BlueprintPreview } from './BlueprintPreview';
-import { ClientBrief } from '../../types/blueprint';
+import type { ClientBrief } from '../../types/blueprint';
 
 interface ForgeChatProps {
   onBlueprintReady?: (blueprintId: string, clientBrief: ClientBrief) => void;

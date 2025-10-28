@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PencilIcon, CheckIcon } from '@heroicons/react/24/outline';
-import { BlueprintItem as IBlueprintItem } from '../../types/blueprint';
+import type { BlueprintItem as IBlueprintItem } from '../../types/blueprint';
 
 interface BlueprintItemProps {
   item: IBlueprintItem;

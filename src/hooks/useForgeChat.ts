@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { ForgeMessageData } from '../components/forge/ForgeMessage';
+import type { ForgeMessageData } from '../components/forge/ForgeMessage';
 import { selectForgeBlueprint } from '../services/blueprintSelector';
 import { useForgeSession } from './useForgeSession';
-import { ClientBrief } from '../types/blueprint';
+import type { ClientBrief } from '../types/blueprint';
 
 export const useForgeChat = () => {
   const [messages, setMessages] = useState<ForgeMessageData[]>([]);

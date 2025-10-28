@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { CloudArrowUpIcon, XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
-import { ReferenceImage } from '../../types/blueprint';
+import type { ReferenceImage } from '../../types/blueprint';
 
 interface ReferenceUploadProps {
   images: ReferenceImage[];

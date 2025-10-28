@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Calendar, MapPin, Users, Building2, Sparkles, ArrowRight, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { ClientBrief } from '../../types/blueprint';
+import type { ClientBrief } from '../../types/blueprint';
 
 interface BlueprintItem {
   id: string;

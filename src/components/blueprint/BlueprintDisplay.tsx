@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { ForgeBlueprint, ClientBrief, ClientNotes, ReferenceImage } from '../../types/blueprint';
+import type { ForgeBlueprint, ClientBrief, ClientNotes, ReferenceImage } from '../../types/blueprint';
 import { BlueprintSection } from './BlueprintSection';
 
 interface BlueprintDisplayProps {

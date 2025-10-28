@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, forgeProjects, forgeBlueprints } from '../../../../db';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import { ClientBrief } from '../../../../types/blueprint';
+import type { ClientBrief } from '../../../../types/blueprint';
 
 interface CreateForgeProjectRequest {
   userId: string;

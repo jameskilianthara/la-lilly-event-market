@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { EyeIcon } from '@heroicons/react/24/outline';
-import { ClientBrief, ForgeBlueprint } from '../../types/blueprint';
+import type { ClientBrief, ForgeBlueprint } from '../../types/blueprint';
 
 interface ClientBriefSummaryProps {
   clientBrief: ClientBrief;
