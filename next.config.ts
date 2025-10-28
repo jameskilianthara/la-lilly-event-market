@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   typedRoutes: false,
+  experimental: {
+    turbo: {
+      root: '/Users/jameskilianthara/Documents/la-lilly-event-market',
+    },
+  },
   images: {
     remotePatterns: [
       {
