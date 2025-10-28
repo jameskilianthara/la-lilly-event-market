@@ -19,19 +19,19 @@ const features = [
     description: "Our intelligent system creates the perfect event blueprint by understanding your vision and matching you with industry professionals."
   },
   {
+    icon: FileCheck,
+    title: "Quality Assurance",
+    description: "Every event backed by our industry experience and dedicated support from planning to execution."
+  },
+  {
     icon: Users,
     title: "Training Academy",
-    description: "Professional development school for event managers and craftsmen. Learn from industry veterans with thousands of successful events."
+    description: "Professional development school for event managers and craftsmen. Learn from industry veterans with thousands of successful events. (Coming Soon)"
   },
   {
     icon: Share2,
     title: "Inventory & Resource Management",
-    description: "Shared inventory database across partner companies. Optimize equipment, transport, and labor allocation for maximum efficiency."
-  },
-  {
-    icon: FileCheck,
-    title: "Quality Assurance",
-    description: "Every event backed by our industry experience and dedicated support from planning to execution."
+    description: "Shared inventory database across partner companies. Optimize equipment, transport, and labor allocation for maximum efficiency. (Coming Soon)"
   }
 ];
 
