@@ -95,13 +95,81 @@ Optimized indexes for:
 - Event queries by status and date
 - Bid and contract relationships
 
+## Storage Setup (Images & Files)
+
+### Creating Storage Buckets
+
+1. Go to **Storage** in Supabase Dashboard
+2. Create three public buckets:
+
+**vendor-profiles**
+- Public: ✓ Yes
+- File size limit: 5MB
+- Allowed MIME types: `image/jpeg, image/png, image/webp`
+- Folder structure: `{user_id}/logo-{filename}.jpg`
+
+**vendor-portfolios**
+- Public: ✓ Yes
+- File size limit: 10MB
+- Allowed MIME types: `image/jpeg, image/png, image/webp`
+- Folder structure: `{user_id}/{event_id}/{filename}.jpg`
+
+**event-references**
+- Public: ✓ Yes
+- File size limit: 10MB
+- Allowed MIME types: `image/jpeg, image/png, image/webp`
+- Folder structure: `{user_id}/{event_id}/{filename}.jpg`
+
+3. Apply storage policies from `storage-setup.sql` in SQL Editor
+
+### Using Storage in Code
+
+```javascript
+// Import storage functions
+import {
+  uploadVendorProfileImage,
+  uploadVendorPortfolioImage,
+  uploadEventReferenceImage
+} from '@/lib/storage';
+
+// Upload vendor logo
+const result = await uploadVendorProfileImage(file, userId, 'logo');
+if (result.success) {
+  console.log('Image URL:', result.url);
+}
+
+// Upload portfolio image
+const portfolioResult = await uploadVendorPortfolioImage(file, userId, eventId);
+
+// Upload event reference
+const refResult = await uploadEventReferenceImage(file, userId, eventId);
+```
+
+### ImageUpload Component
+
+```jsx
+import ImageUpload from '@/components/ImageUpload';
+
+<ImageUpload
+  type="profile"  // or 'portfolio' or 'reference'
+  maxSize={5 * 1024 * 1024}  // 5MB
+  multiple={false}
+  onUpload={(url, path) => {
+    console.log('Uploaded:', url);
+    // Save URL to database
+  }}
+/>
+```
+
 ## Next Steps
 
 1. **Run the schema.sql** in Supabase SQL Editor
-2. **Enable Email Auth** in Authentication settings
-3. **Test the connection** - app should connect automatically
-4. **Create test accounts** to verify signup/login flow
-5. **Replace localStorage calls** with Supabase queries in the codebase
+2. **Create storage buckets** (vendor-profiles, vendor-portfolios, event-references)
+3. **Run storage-setup.sql** to apply storage policies
+4. **Enable Email Auth** in Authentication settings
+5. **Test the connection** - app should connect automatically
+6. **Create test accounts** to verify signup/login flow
+7. **Replace localStorage calls** with Supabase queries in the codebase
 
 ## Migration Path
 
@@ -112,9 +180,22 @@ Current localStorage → Supabase migration:
 3. **Events** - Store events in database instead of localStorage
 4. **Bids** - Persist bids to bids table
 5. **Contracts** - Generate and store contracts in database
+6. **Images** - Upload vendor/portfolio images to Storage buckets
 
 All data will persist across:
 - Browser sessions
 - Deployments
 - Multiple devices
 - User authentication states
+
+## Storage Features
+
+- ✅ Drag-and-drop upload interface
+- ✅ Image preview before upload
+- ✅ Progress indicators
+- ✅ File validation (type, size)
+- ✅ Error handling
+- ✅ Multiple file support
+- ✅ Public CDN delivery
+- ✅ User-based folder isolation
+- ✅ RLS policies for security
