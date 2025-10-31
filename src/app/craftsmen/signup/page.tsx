@@ -12,6 +12,9 @@ import {
   CameraIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../../../contexts/AuthContext';
+import { createVendor } from '../../../lib/database';
+import { uploadVendorPortfolioImage } from '../../../lib/storage';
 
 interface CompanyInfo {
   companyName: string;
@@ -27,6 +30,8 @@ interface ContactInfo {
   mobile: string;
   whatsapp: string;
   email: string;
+  password: string;
+  confirmPassword: string;
   address: string;
 }
 
@@ -40,7 +45,8 @@ interface Services {
 }
 
 interface Portfolio {
-  images: string[];
+  images: string[]; // base64 strings for preview
+  imageFiles: File[]; // actual File objects for upload
   notableEvents: string;
   testimonials: string;
   hasInsurance: boolean;
@@ -50,8 +56,10 @@ interface Portfolio {
 
 export default function VendorSignupPage() {
   const router = useRouter();
+  const { signup } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form data state
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
@@ -68,6 +76,8 @@ export default function VendorSignupPage() {
     mobile: '',
     whatsapp: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     address: ''
   });
 
@@ -82,6 +92,7 @@ export default function VendorSignupPage() {
 
   const [portfolio, setPortfolio] = useState<Portfolio>({
     images: [],
+    imageFiles: [],
     notableEvents: '',
     testimonials: '',
     hasInsurance: false,
@@ -127,6 +138,14 @@ export default function VendorSignupPage() {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactInfo.email)) {
       newErrors.email = 'Please enter a valid email address';
+    }
+    if (!contactInfo.password.trim()) {
+      newErrors.password = 'Password is required';
+    } else if (contactInfo.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    if (contactInfo.password !== contactInfo.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
     if (!contactInfo.address.trim()) {
       newErrors.address = 'Office address is required';
@@ -209,59 +228,151 @@ export default function VendorSignupPage() {
     if (!files) return;
 
     const newImages: string[] = [];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const newFiles: File[] = [];
+    const maxSize = 10 * 1024 * 1024; // 10MB for portfolio images
 
-    Array.from(files).forEach((file) => {
+    const remainingSlots = 5 - portfolio.images.length;
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+
+    filesToProcess.forEach((file) => {
       if (file.size > maxSize) {
-        alert(`${file.name} is too large. Maximum size is 5MB.`);
+        alert(`${file.name} is too large. Maximum size is 10MB.`);
         return;
       }
 
-      if (portfolio.images.length + newImages.length >= 5) {
-        alert('Maximum 5 images allowed');
-        return;
-      }
+      // Store actual file for upload
+      newFiles.push(file);
 
+      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         newImages.push(reader.result as string);
-        if (newImages.length === Math.min(files.length, 5 - portfolio.images.length)) {
-          setPortfolio({ ...portfolio, images: [...portfolio.images, ...newImages] });
+        if (newImages.length === filesToProcess.length) {
+          setPortfolio({
+            ...portfolio,
+            images: [...portfolio.images, ...newImages],
+            imageFiles: [...portfolio.imageFiles, ...newFiles]
+          });
         }
       };
       reader.readAsDataURL(file);
     });
+
+    if (filesToProcess.length < files.length) {
+      alert('Maximum 5 images allowed');
+    }
   };
 
   const removeImage = (index: number) => {
     const updatedImages = portfolio.images.filter((_, i) => i !== index);
-    setPortfolio({ ...portfolio, images: updatedImages });
+    const updatedFiles = portfolio.imageFiles.filter((_, i) => i !== index);
+    setPortfolio({ ...portfolio, images: updatedImages, imageFiles: updatedFiles });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateStep4()) return;
+    setIsSubmitting(true);
 
-    const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(2, 7);
-    const signupId = `vnd_signup_${timestamp}_${randomStr}`;
+    try {
+      // Step 1: Create Supabase Auth account
+      console.log('Creating auth account...');
+      const authResult = await signup(
+        contactInfo.email,
+        contactInfo.password,
+        'vendor',
+        {
+          name: contactInfo.contactName,
+          phone: contactInfo.mobile,
+        }
+      );
 
-    const signupData = {
-      id: signupId,
-      companyInfo,
-      contactInfo,
-      services,
-      portfolio,
-      status: 'pending_approval',
-      submittedAt: new Date().toISOString()
-    };
+      if (!authResult.success) {
+        setErrors({ submit: authResult.error || 'Failed to create account. Please try again.' });
+        setIsSubmitting(false);
+        return;
+      }
 
-    // Save to localStorage
-    const existingSignups = JSON.parse(localStorage.getItem('vendor_signups') || '[]');
-    existingSignups.push(signupData);
-    localStorage.setItem('vendor_signups', JSON.stringify(existingSignups));
+      // Get the created user ID from auth
+      // The signup function creates the public.users record automatically
+      // We need to wait a moment for it to propagate
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Step 2: Upload portfolio images to Supabase Storage
+      console.log('Uploading portfolio images...');
+      const portfolioUrls: string[] = [];
+
+      for (let i = 0; i < portfolio.imageFiles.length; i++) {
+        const file = portfolio.imageFiles[i];
+        const uploadResult = await uploadVendorPortfolioImage(
+          file,
+          authResult.userId || contactInfo.email, // Use email as fallback
+          'signup'
+        );
+
+        if (uploadResult.success && uploadResult.url) {
+          portfolioUrls.push(uploadResult.url);
+        } else {
+          console.warn(`Failed to upload image ${i + 1}:`, uploadResult.error);
+          // Continue with other images even if one fails
+        }
+      }
+
+      // Step 3: Create vendor profile in database
+      console.log('Creating vendor profile...');
+
+      // Combine all service types
+      const allSpecialties = [
+        ...services.serviceAreas,
+        ...services.eventTypes.filter(t => t !== 'Other'),
+        ...(services.otherEventType ? [services.otherEventType] : [])
+      ];
+
+      const vendorData = {
+        user_id: authResult.userId || contactInfo.email, // This should be the auth user ID
+        company_name: companyInfo.companyName,
+        business_type: companyInfo.businessType,
+        specialties: allSpecialties,
+        location: contactInfo.address,
+        city: services.serviceAreas[0] || 'Kerala', // Primary service area
+        state: 'Kerala',
+        years_experience: parseInt(companyInfo.yearsInBusiness) || 0,
+        certifications: {
+          gst_number: companyInfo.gstNumber || null,
+          website: companyInfo.website || null,
+          has_insurance: portfolio.hasInsurance,
+        },
+        portfolio_urls: portfolioUrls,
+        description: services.description,
+        rating: 0,
+        total_projects: 0,
+        verified: false, // Admin approval required
+      };
+
+      const vendorResult = await createVendor(vendorData);
+
+      if (vendorResult.error) {
+        console.error('Vendor creation error:', vendorResult.error);
+        setErrors({
+          submit: 'Account created but profile setup failed. Please contact support at kerala@eventfoundry.com'
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('Vendor profile created successfully:', vendorResult.data);
+
+      // Step 4: Success! Show confirmation
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (error) {
+      console.error('Signup error:', error);
+      setErrors({
+        submit: 'An unexpected error occurred. Please try again or contact support at kerala@eventfoundry.com'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCheckboxChange = (field: 'serviceAreas' | 'eventTypes', value: string) => {
@@ -307,9 +418,9 @@ export default function VendorSignupPage() {
                 setSubmitted(false);
                 setCurrentStep(1);
                 setCompanyInfo({ companyName: '', businessType: '', yearsInBusiness: '', gstNumber: '', website: '' });
-                setContactInfo({ contactName: '', designation: '', mobile: '', whatsapp: '', email: '', address: '' });
+                setContactInfo({ contactName: '', designation: '', mobile: '', whatsapp: '', email: '', password: '', confirmPassword: '', address: '' });
                 setServices({ serviceAreas: [], eventTypes: [], otherEventType: '', eventCapacity: '', teamSize: '', description: '' });
-                setPortfolio({ images: [], notableEvents: '', testimonials: '', hasInsurance: false, monthlyCapacity: '', acceptedTerms: false });
+                setPortfolio({ images: [], imageFiles: [], notableEvents: '', testimonials: '', hasInsurance: false, monthlyCapacity: '', acceptedTerms: false });
                 setErrors({});
               }}
               className="px-8 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all duration-300"
@@ -579,6 +690,39 @@ export default function VendorSignupPage() {
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Password <span className="text-orange-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={contactInfo.password}
+                  onChange={(e) => setContactInfo({ ...contactInfo, password: e.target.value })}
+                  placeholder="Minimum 6 characters"
+                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                />
+                <p className="mt-1 text-xs text-slate-400">Use a strong password to secure your account</p>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-400">{errors.password}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Confirm Password <span className="text-orange-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={contactInfo.confirmPassword}
+                  onChange={(e) => setContactInfo({ ...contactInfo, confirmPassword: e.target.value })}
+                  placeholder="Re-enter your password"
+                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                />
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-400">{errors.confirmPassword}</p>
                 )}
               </div>
 
@@ -904,19 +1048,34 @@ export default function VendorSignupPage() {
                 )}
               </div>
 
+              {errors.submit && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                  <p className="text-sm text-red-300">{errors.submit}</p>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleBack}
-                  className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all duration-300"
+                  disabled={isSubmitting}
+                  className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ArrowLeftIcon className="w-5 h-5" />
                   <span>Back</span>
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105"
+                  disabled={isSubmitting}
+                  className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  Submit Registration
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <span>Submit Registration</span>
+                  )}
                 </button>
               </div>
             </div>

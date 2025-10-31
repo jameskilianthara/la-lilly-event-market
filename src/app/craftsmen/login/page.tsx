@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   BuildingOffice2Icon,
   EnvelopeIcon,
-  PhoneIcon,
+  LockClosedIcon,
   ArrowRightIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
@@ -16,13 +16,13 @@ export default function VendorLoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
-  const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; mobile?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
   const validateForm = (): boolean => {
-    const errors: { email?: string; mobile?: string } = {};
+    const errors: { email?: string; password?: string } = {};
 
     // Email validation
     if (!email.trim()) {
@@ -31,11 +31,9 @@ export default function VendorLoginPage() {
       errors.email = 'Please enter a valid email address';
     }
 
-    // Mobile validation
-    if (!mobile.trim()) {
-      errors.mobile = 'Mobile number is required';
-    } else if (!/^(\+91)?[6-9]\d{9}$/.test(mobile.replace(/\s/g, ''))) {
-      errors.mobile = 'Please enter a valid 10-digit Indian mobile number';
+    // Password validation
+    if (!password.trim()) {
+      errors.password = 'Password is required';
     }
 
     setFieldErrors(errors);
@@ -53,91 +51,47 @@ export default function VendorLoginPage() {
 
     setIsLoading(true);
 
-    // Simulate network delay for better UX
-    setTimeout(() => {
-      // Normalize mobile number for comparison
-      const normalizedMobile = mobile.replace(/\s/g, '').replace(/^\+91/, '');
-      const normalizedEmail = email.toLowerCase().trim();
+    try {
+      // Try Supabase Auth first
+      const result = await login(email, password, true);
 
-      // PRIORITY 1: Check active vendors (approved vendors) FIRST
-      const activeVendors = JSON.parse(localStorage.getItem('active_vendors') || '[]');
+      if (result.success) {
+        // Successful login - redirect to dashboard
+        router.push('/craftsmen/dashboard');
+      } else {
+        // Login failed - check localStorage fallback for migration
+        const normalizedEmail = email.toLowerCase().trim();
 
-      // Try to find by email first
-      const vendorByEmail = activeVendors.find((v: any) => {
-        const vendorEmail = (v.email || v.contactInfo?.email || '').toLowerCase().trim();
-        return vendorEmail === normalizedEmail;
-      });
+        // Check active vendors in localStorage (for legacy accounts)
+        const activeVendors = JSON.parse(localStorage.getItem('active_vendors') || '[]');
+        const vendorByEmail = activeVendors.find((v: any) => {
+          const vendorEmail = (v.email || v.contactInfo?.email || '').toLowerCase().trim();
+          return vendorEmail === normalizedEmail;
+        });
 
-      if (vendorByEmail) {
-        // Found by email - now verify phone
-        const vendorMobile = (vendorByEmail.phone || vendorByEmail.contactInfo?.phone || vendorByEmail.contactInfo?.mobile || '').replace(/\s/g, '').replace(/^\+91/, '');
-
-        if (vendorMobile === normalizedMobile) {
-          // Successful login - both email and phone match
-          const userData = {
-            userId: vendorByEmail.id,
-            email: normalizedEmail,
-            userType: 'vendor' as const,
-            companyName: vendorByEmail.businessName || vendorByEmail.companyInfo?.businessName,
-            serviceType: vendorByEmail.serviceType || vendorByEmail.categories?.[0],
-            isAuthenticated: true as const,
-            persistent: true,
-            loginTime: new Date().toISOString(),
-            expiresAt: null as null
-          };
-
-          // Save using new auth system
-          login(userData, true);
-
-          // Keep legacy session for backward compatibility
-          const legacySession = {
-            vendorId: vendorByEmail.id,
-            email: normalizedEmail,
-            businessName: vendorByEmail.businessName || vendorByEmail.companyInfo?.businessName,
-            loginTime: new Date().toISOString()
-          };
-          localStorage.setItem('vendor_session', JSON.stringify(legacySession));
-
-          // Redirect to dashboard
-          router.push('/craftsmen/dashboard');
-          return;
+        if (vendorByEmail) {
+          setError('Your account needs to be migrated to our new system. Please contact support at kerala@eventfoundry.com or reset your password.');
         } else {
-          // Email found but phone doesn't match
-          setError('Phone number does not match our records. Please use the mobile number you registered with.');
-          setIsLoading(false);
-          return;
+          // Check if pending approval
+          const pendingSignups = JSON.parse(localStorage.getItem('vendor_signups') || '[]');
+          const pendingByEmail = pendingSignups.find((v: any) => {
+            const vendorEmail = (v.email || v.contactInfo?.email || '').toLowerCase().trim();
+            return vendorEmail === normalizedEmail;
+          });
+
+          if (pendingByEmail) {
+            setError('Your registration is pending approval. We\'ll notify you within 24-48 hours.');
+          } else {
+            setError(result.error || 'Invalid email or password. Please check your credentials and try again.');
+          }
         }
       }
-
-      // PRIORITY 2: Only check pending signups if not found in active vendors
-      const pendingSignups = JSON.parse(localStorage.getItem('vendor_signups') || '[]');
-
-      // Try to find by email in pending signups
-      const pendingByEmail = pendingSignups.find((v: any) => {
-        const vendorEmail = (v.email || v.contactInfo?.email || '').toLowerCase().trim();
-        return vendorEmail === normalizedEmail;
-      });
-
-      if (pendingByEmail) {
-        // Found in pending - verify phone
-        const vendorMobile = (pendingByEmail.phone || pendingByEmail.contactInfo?.phone || pendingByEmail.contactInfo?.mobile || '').replace(/\s/g, '').replace(/^\+91/, '');
-
-        if (vendorMobile === normalizedMobile) {
-          setError('Your registration is pending approval. We\'ll notify you within 24-48 hours. Please check your email for updates.');
-          setIsLoading(false);
-          return;
-        } else {
-          // Email found in pending but phone doesn't match
-          setError('Phone number does not match our records. Please use the mobile number you registered with.');
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      // PRIORITY 3: No account found anywhere
-      setError('No account found with this email. Please check your email address or register if you\'re new to EventFoundry.');
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -197,36 +151,33 @@ export default function VendorLoginPage() {
               )}
             </div>
 
-            {/* Mobile Number Field */}
+            {/* Password Field */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Mobile Number <span className="text-orange-500">*</span>
+                Password <span className="text-orange-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <PhoneIcon className="h-5 w-5 text-slate-500" />
+                  <LockClosedIcon className="h-5 w-5 text-slate-500" />
                 </div>
                 <input
-                  type="tel"
-                  value={mobile}
+                  type="password"
+                  value={password}
                   onChange={(e) => {
-                    setMobile(e.target.value);
-                    setFieldErrors({ ...fieldErrors, mobile: undefined });
+                    setPassword(e.target.value);
+                    setFieldErrors({ ...fieldErrors, password: undefined });
                     setError('');
                   }}
-                  placeholder="+91 98765 43210"
+                  placeholder="Enter your password"
                   className={`w-full pl-10 pr-4 py-3 bg-slate-900/50 border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
-                    fieldErrors.mobile
+                    fieldErrors.password
                       ? 'border-red-500 focus:ring-red-500'
                       : 'border-slate-700 focus:ring-orange-500 focus:border-transparent'
                   }`}
                 />
               </div>
-              <p className="mt-1 text-xs text-slate-400">
-                Use the mobile number you registered with
-              </p>
-              {fieldErrors.mobile && (
-                <p className="mt-1 text-sm text-red-400">{fieldErrors.mobile}</p>
+              {fieldErrors.password && (
+                <p className="mt-1 text-sm text-red-400">{fieldErrors.password}</p>
               )}
             </div>
 
@@ -262,11 +213,19 @@ export default function VendorLoginPage() {
               <span className="font-medium">Register your company →</span>
             </Link>
 
+            <Link
+              href="/reset-password"
+              className="block text-center text-sm text-slate-400 hover:text-orange-400 transition-colors duration-200"
+            >
+              Forgot your password?{' '}
+              <span className="font-medium">Reset it here</span>
+            </Link>
+
             <a
               href="mailto:kerala@eventfoundry.com"
               className="block text-center text-sm text-slate-400 hover:text-orange-400 transition-colors duration-200"
             >
-              Forgot your details?{' '}
+              Need help?{' '}
               <span className="font-medium">Contact support</span>
             </a>
           </div>

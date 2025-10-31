@@ -5,627 +5,359 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   FolderOpenIcon,
-  DocumentTextIcon,
-  StarIcon,
-  TrophyIcon,
-  InboxIcon,
-  SparklesIcon,
   CalendarIcon,
   MapPinIcon,
   UsersIcon,
-  CurrencyRupeeIcon,
-  BuildingOffice2Icon,
   ArrowRightIcon,
-  FunnelIcon,
-  XMarkIcon,
-  HeartIcon,
-  BriefcaseIcon,
-  GlobeAltIcon
+  SparklesIcon,
+  TrophyIcon,
+  ExclamationCircleIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
-import ProfileCompletionWidget from '../../../components/vendor/ProfileCompletionWidget';
-
-interface VendorSession {
-  vendorId: string;
-  email: string;
-  companyName: string;
-  loginTime: string;
-}
-
-interface Event {
-  id: string;
-  title: string;
-  eventType: string;
-  date: string;
-  location: string;
-  city: string;
-  guestCount: number;
-  budgetRange?: string;
-  status: string;
-  postedAt: string;
-  bidsCount: number;
-  description?: string;
-}
+import { useAuth } from '../../../contexts/AuthContext';
+import { getOpenEvents, getVendorByUserId, getBidsByVendorId } from '../../../lib/database';
+import type { Event, Vendor, Bid } from '../../../types/database';
 
 export default function VendorDashboardPage() {
   const router = useRouter();
-  const [session, setSession] = useState<VendorSession | null>(null);
-  const [vendor, setVendor] = useState<any>(null);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
-  const [myBids, setMyBids] = useState<any[]>([]);
+  const { user, isAuthenticated, isLoading: authLoading, isVendor } = useAuth();
 
-  // Filters
-  const [eventTypeFilter, setEventTypeFilter] = useState('All');
-  const [dateRangeFilter, setDateRangeFilter] = useState('Upcoming');
-  const [locationFilter, setLocationFilter] = useState('All Kerala');
-  const [guestCountFilter, setGuestCountFilter] = useState(1000);
+  const [vendor, setVendor] = useState<Vendor | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [myBids, setMyBids] = useState<Bid[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Stats
   const [stats, setStats] = useState({
     openEvents: 0,
     activeBids: 0,
     shortlisted: 0,
-    wonThisMonth: 0
+    totalBids: 0
   });
 
   useEffect(() => {
+    loadDashboardData();
+  }, [isAuthenticated, user]);
+
+  const loadDashboardData = async () => {
+    if (authLoading) return;
+
     // Check authentication
-    const sessionData = localStorage.getItem('vendor_session');
-    if (!sessionData) {
+    if (!isAuthenticated || !user) {
       router.push('/craftsmen/login');
       return;
     }
 
-    const parsedSession: VendorSession = JSON.parse(sessionData);
-    setSession(parsedSession);
+    // Check if user is vendor
+    if (!isVendor) {
+      setError('Access denied. Vendor account required.');
+      setIsLoading(false);
+      return;
+    }
 
-    // Load vendor details
-    const activeVendors = JSON.parse(localStorage.getItem('active_vendors') || '[]');
-    const vendorData = activeVendors.find((v: any) => v.id === parsedSession.vendorId);
-    if (vendorData) {
+    try {
+      setIsLoading(true);
+
+      // Load vendor profile
+      const { data: vendorData, error: vendorError } = await getVendorByUserId(user.userId);
+
+      if (vendorError || !vendorData) {
+        setError('Vendor profile not found. Please complete your registration.');
+        setIsLoading(false);
+        return;
+      }
+
       setVendor(vendorData);
-    }
 
-    // Load events
-    loadEvents();
+      // Check if vendor is verified
+      if (!vendorData.verified) {
+        setError('Your account is pending verification. You\'ll be able to bid once approved.');
+      }
 
-    // Load vendor's bids
-    const allBids = JSON.parse(localStorage.getItem('vendor_bids') || '[]');
-    const vendorBids = allBids.filter((bid: any) => bid.vendorId === parsedSession.vendorId);
-    setMyBids(vendorBids);
+      // Load open events
+      const { data: eventsData, error: eventsError } = await getOpenEvents();
 
-    // Calculate stats
-    calculateStats(vendorBids);
-  }, [router]);
+      if (eventsError) {
+        console.error('Error loading events:', eventsError);
+      } else {
+        setEvents(eventsData || []);
+      }
 
-  const loadEvents = () => {
-    console.log('Dashboard mounted - loading events');
+      // Load vendor's bids
+      const { data: bidsData, error: bidsError } = await getBidsByVendorId(vendorData.id);
 
-    // Load real posted events from localStorage
-    let postedEvents = JSON.parse(localStorage.getItem('posted_events') || '[]');
-    console.log('Posted events from localStorage:', postedEvents);
+      if (bidsError) {
+        console.error('Error loading bids:', bidsError);
+      } else {
+        setMyBids(bidsData || []);
+      }
 
-    // Transform real events to match dashboard schema
-    const transformedEvents = postedEvents.map((e: any) => ({
-      id: e.eventId,
-      title: `${e.eventMemory?.event_type || 'Event'} - ${e.eventMemory?.location || 'Location'}`,
-      eventType: e.eventMemory?.event_type || 'Event',
-      date: e.eventMemory?.date || new Date().toISOString(),
-      location: e.eventMemory?.location || 'India',
-      city: e.eventMemory?.location?.split(',')[0] || e.eventMemory?.location || 'India',
-      guestCount: parseInt(e.eventMemory?.guest_count) || 0,
-      budgetRange: 'Contact for quote',
-      status: e.status || 'open',
-      postedAt: e.postedAt || new Date().toISOString(),
-      bidsCount: e.bids?.length || 0,
-      description: `${e.eventMemory?.event_type} for ${e.eventMemory?.guest_count} guests`
-    }));
+      // Calculate stats
+      const openEventsCount = eventsData?.length || 0;
+      const activeBidsCount = bidsData?.filter(b => b.status === 'SUBMITTED').length || 0;
+      const shortlistedCount = bidsData?.filter(b => b.status === 'SHORTLISTED').length || 0;
+      const totalBidsCount = bidsData?.length || 0;
 
-    console.log('Transformed events:', transformedEvents);
+      setStats({
+        openEvents: openEventsCount,
+        activeBids: activeBidsCount,
+        shortlisted: shortlistedCount,
+        totalBids: totalBidsCount
+      });
 
-    // If no real events, create sample events for demo
-    if (transformedEvents.length === 0) {
-      console.log('No real events found - creating sample events');
-      postedEvents = [
-        {
-          id: 'evt_001',
-          title: 'Destination Wedding in Kochi',
-          eventType: 'Destination Wedding',
-          date: '2025-06-15',
-          location: 'Kochi, Kerala',
-          city: 'Kochi',
-          guestCount: 250,
-          budgetRange: '₹8-12L',
-          status: 'open',
-          postedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          bidsCount: 5,
-          description: 'Looking for full-service event management for a 3-day destination wedding'
-        },
-        {
-          id: 'evt_002',
-          title: 'Corporate Annual Conference',
-          eventType: 'Corporate Event',
-          date: '2025-07-20',
-          location: 'Thiruvananthapuram, Kerala',
-          city: 'Thiruvananthapuram',
-          guestCount: 400,
-          budgetRange: '₹15-20L',
-          status: 'open',
-          postedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-          bidsCount: 8,
-          description: '2-day corporate conference with accommodation and entertainment'
-        },
-        {
-          id: 'evt_003',
-          title: 'Traditional Kerala Wedding',
-          eventType: 'Traditional Wedding',
-          date: '2025-08-10',
-          location: 'Thrissur, Kerala',
-          city: 'Thrissur',
-          guestCount: 600,
-          budgetRange: '₹10-15L',
-          status: 'open',
-          postedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          bidsCount: 12,
-          description: 'Traditional wedding ceremony with cultural performances'
-        },
-        {
-          id: 'evt_004',
-          title: 'Product Launch Event',
-          eventType: 'Product Launch',
-          date: '2025-06-25',
-          location: 'Kochi, Kerala',
-          city: 'Kochi',
-          guestCount: 150,
-          budgetRange: '₹5-8L',
-          status: 'open',
-          postedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-          bidsCount: 3,
-          description: 'Tech product launch with media coverage and influencer management'
-        },
-        {
-          id: 'evt_005',
-          title: 'Cultural Festival Celebration',
-          eventType: 'Cultural Event',
-          date: '2025-09-05',
-          location: 'Kozhikode, Kerala',
-          city: 'Kozhikode',
-          guestCount: 800,
-          budgetRange: '₹12-18L',
-          status: 'open',
-          postedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          bidsCount: 7,
-          description: 'Multi-day cultural festival with traditional performances'
-        }
-      ];
-      // Set sample events without saving to localStorage
-      setEvents(postedEvents.filter((e: Event) => e.status === 'open'));
-      setFilteredEvents(postedEvents.filter((e: Event) => e.status === 'open'));
-    } else {
-      // Use transformed real events
-      const openEvents = transformedEvents.filter((e: Event) => e.status === 'open');
-      console.log('Open events after filtering:', openEvents);
-      setEvents(openEvents);
-      setFilteredEvents(openEvents);
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Error loading dashboard:', err);
+      setError('Failed to load dashboard data');
+      setIsLoading(false);
     }
   };
 
-  const calculateStats = (vendorBids: any[]) => {
-    const openEventsCount = events.filter(e => e.status === 'open').length;
-    const activeBidsCount = vendorBids.filter(b =>
-      b.status !== 'rejected' && b.status !== 'selected_other'
-    ).length;
-    const shortlistedCount = vendorBids.filter(b => b.status === 'shortlisted').length;
+  const formatTimeRemaining = (closesAt: string | null) => {
+    if (!closesAt) return 'No deadline';
 
-    // Calculate won this month
-    const thisMonth = new Date().getMonth();
-    const thisYear = new Date().getFullYear();
-    const wonThisMonth = vendorBids
-      .filter(b => {
-        if (b.status !== 'won') return false;
-        const wonDate = new Date(b.wonAt || b.updatedAt);
-        return wonDate.getMonth() === thisMonth && wonDate.getFullYear() === thisYear;
-      })
-      .reduce((sum, b) => sum + (b.bidAmount || 0), 0);
-
-    setStats({
-      openEvents: openEventsCount,
-      activeBids: activeBidsCount,
-      shortlisted: shortlistedCount,
-      wonThisMonth: wonThisMonth
-    });
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('vendor_session');
-    router.push('/craftsmen/login');
-  };
-
-  const applyFilters = () => {
-    console.log('Applying filters...');
-    console.log('All events:', events);
-    let filtered = [...events];
-
-    // Event type filter
-    if (eventTypeFilter !== 'All') {
-      filtered = filtered.filter(e => e.eventType === eventTypeFilter);
-      console.log('After event type filter:', filtered);
-    }
-
-    // TEMPORARILY REMOVED: Location filter (show all locations for testing)
-    // if (locationFilter !== 'All Kerala') {
-    //   filtered = filtered.filter(e => e.city === locationFilter);
-    // }
-
-    // Guest count filter
-    filtered = filtered.filter(e => e.guestCount <= guestCountFilter);
-    console.log('After guest count filter:', filtered);
-
-    // Date range filter
     const now = new Date();
-    if (dateRangeFilter === 'This Month') {
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      filtered = filtered.filter(e => new Date(e.date) <= endOfMonth);
-    } else if (dateRangeFilter === 'Next 3 Months') {
-      const threeMonthsLater = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(e => new Date(e.date) <= threeMonthsLater);
-    } else if (dateRangeFilter === 'Upcoming') {
-      filtered = filtered.filter(e => new Date(e.date) >= now);
-    }
+    const deadline = new Date(closesAt);
+    const diff = deadline.getTime() - now.getTime();
 
-    console.log('Filtered events (final):', filtered);
-    setFilteredEvents(filtered);
+    if (diff < 0) return 'Closed';
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) return `${days}d ${hours}h remaining`;
+    if (hours > 0) return `${hours}h remaining`;
+    return 'Closing soon';
   };
 
-  const clearFilters = () => {
-    setEventTypeFilter('All');
-    setDateRangeFilter('Upcoming');
-    setLocationFilter('All Kerala');
-    setGuestCountFilter(1000);
-    setFilteredEvents(events);
+  const hasBidOnEvent = (eventId: string) => {
+    return myBids.some(bid => bid.event_id === eventId);
   };
 
-  useEffect(() => {
-    if (events.length > 0) {
-      applyFilters();
-    }
-  }, [eventTypeFilter, dateRangeFilter, locationFilter, guestCountFilter, events]);
-
-  const getEventIcon = (eventType: string) => {
-    switch (eventType) {
-      case 'Destination Wedding':
-      case 'Traditional Wedding':
-        return HeartIcon;
-      case 'Corporate Event':
-        return BriefcaseIcon;
-      case 'Cultural Event':
-        return GlobeAltIcon;
-      case 'Product Launch':
-        return SparklesIcon;
-      default:
-        return CalendarIcon;
-    }
-  };
-
-  const getEventBadgeColor = (eventType: string) => {
-    switch (eventType) {
-      case 'Destination Wedding':
-      case 'Traditional Wedding':
-        return 'bg-pink-500/20 text-pink-400 border-pink-500/30';
-      case 'Corporate Event':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'Cultural Event':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      case 'Product Launch':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
-      default:
-        return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-    }
-  };
-
-  const getTimeAgo = (timestamp: string) => {
-    const now = Date.now();
-    const posted = new Date(timestamp).getTime();
-    const diffMs = now - posted;
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    return 'Just now';
-  };
-
-  const hasVendorBid = (eventId: string) => {
-    return myBids.some(bid => bid.eventId === eventId);
-  };
-
-  if (!session || !vendor) {
+  // Loading state
+  if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-300 text-lg">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && !vendor) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-slate-800/90 backdrop-blur-lg rounded-2xl border border-slate-700 p-8 text-center">
+          <ExclamationCircleIcon className="w-16 h-16 text-orange-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-4">Setup Required</h2>
+          <p className="text-slate-300 mb-6">{error}</p>
+          <Link
+            href="/craftsmen/signup"
+            className="inline-block px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+          >
+            Complete Registration
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Top Navigation */}
-      <nav className="bg-slate-900/95 backdrop-blur-lg border-b border-slate-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
+      {/* Header */}
+      <div className="border-b border-slate-700/50 bg-slate-900/95 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/craftsmen/dashboard" className="flex items-center space-x-2">
-              <BuildingOffice2Icon className="w-8 h-8 text-orange-500" />
-              <span className="text-xl font-bold text-white hidden sm:block">EventFoundry</span>
+            <div>
+              <h1 className="text-3xl font-bold text-white">
+                Welcome back, {vendor?.company_name}
+              </h1>
+              <p className="text-slate-400 mt-1">
+                {vendor?.verified ? 'Verified Vendor' : 'Pending Verification'} • {vendor?.city || 'Kerala'}
+              </p>
+            </div>
+            <Link
+              href="/craftsmen/profile"
+              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition"
+            >
+              Edit Profile
             </Link>
-
-            {/* Company Name */}
-            <div className="text-center flex-1 px-4">
-              <p className="text-sm text-slate-400">Welcome back,</p>
-              <p className="text-lg font-semibold text-white">{session.companyName}</p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/craftsmen/my-bids"
-                className="hidden sm:block px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
-              >
-                My Bids
-              </Link>
-              <Link
-                href="/craftsmen/dashboard/profile/edit"
-                className="hidden sm:block px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
-              >
-                Profile
-              </Link>
-              <Link
-                href="/vendors"
-                className="hidden lg:block px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
-              >
-                Browse Vendors
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors"
-              >
-                Logout
-              </button>
-            </div>
           </div>
         </div>
-      </nav>
+      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Bar */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {/* Open Events */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Verification Alert */}
+        {error && vendor && (
+          <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4 mb-6">
+            <div className="flex items-start space-x-3">
+              <ExclamationCircleIcon className="w-6 h-6 text-orange-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-orange-300 font-semibold mb-1">Verification Pending</h3>
+                <p className="text-orange-200 text-sm">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-slate-800/90 backdrop-blur-lg rounded-xl border border-slate-700 p-6">
             <div className="flex items-center justify-between mb-2">
               <FolderOpenIcon className="w-8 h-8 text-blue-400" />
               <span className="text-3xl font-bold text-white">{stats.openEvents}</span>
             </div>
-            <p className="text-sm text-slate-400">Open Events</p>
+            <p className="text-slate-400 text-sm">Open Events</p>
           </div>
 
-          {/* My Active Bids */}
           <div className="bg-slate-800/90 backdrop-blur-lg rounded-xl border border-slate-700 p-6">
             <div className="flex items-center justify-between mb-2">
-              <DocumentTextIcon className="w-8 h-8 text-orange-400" />
+              <SparklesIcon className="w-8 h-8 text-orange-400" />
               <span className="text-3xl font-bold text-white">{stats.activeBids}</span>
             </div>
-            <p className="text-sm text-slate-400">My Active Bids</p>
+            <p className="text-slate-400 text-sm">Active Bids</p>
           </div>
 
-          {/* Shortlisted */}
-          <div className={`backdrop-blur-lg rounded-xl border p-6 ${
-            stats.shortlisted > 0
-              ? 'bg-yellow-500/10 border-yellow-500/30'
-              : 'bg-slate-800/90 border-slate-700'
-          }`}>
+          <div className="bg-slate-800/90 backdrop-blur-lg rounded-xl border border-slate-700 p-6">
             <div className="flex items-center justify-between mb-2">
-              <StarIcon className={`w-8 h-8 ${stats.shortlisted > 0 ? 'text-yellow-400' : 'text-slate-400'}`} />
-              <span className={`text-3xl font-bold ${stats.shortlisted > 0 ? 'text-yellow-400' : 'text-white'}`}>
-                {stats.shortlisted}
-              </span>
+              <TrophyIcon className="w-8 h-8 text-green-400" />
+              <span className="text-3xl font-bold text-white">{stats.shortlisted}</span>
             </div>
-            <p className="text-sm text-slate-400">Shortlisted</p>
+            <p className="text-slate-400 text-sm">Shortlisted</p>
           </div>
 
-          {/* Won This Month */}
-          <div className={`backdrop-blur-lg rounded-xl border p-6 ${
-            stats.wonThisMonth > 0
-              ? 'bg-green-500/10 border-green-500/30'
-              : 'bg-slate-800/90 border-slate-700'
-          }`}>
+          <div className="bg-slate-800/90 backdrop-blur-lg rounded-xl border border-slate-700 p-6">
             <div className="flex items-center justify-between mb-2">
-              <TrophyIcon className={`w-8 h-8 ${stats.wonThisMonth > 0 ? 'text-green-400' : 'text-slate-400'}`} />
-              <span className={`text-2xl font-bold ${stats.wonThisMonth > 0 ? 'text-green-400' : 'text-white'}`}>
-                ₹{(stats.wonThisMonth / 100000).toFixed(1)}L
-              </span>
+              <TrophyIcon className="w-8 h-8 text-purple-400" />
+              <span className="text-3xl font-bold text-white">{stats.totalBids}</span>
             </div>
-            <p className="text-sm text-slate-400">Won This Month</p>
+            <p className="text-slate-400 text-sm">Total Bids</p>
           </div>
         </div>
 
-        {/* Profile Completion Widget */}
-        <div className="mb-8">
-          <ProfileCompletionWidget />
-        </div>
-
-        {/* Filters Bar */}
+        {/* Open Events Section */}
         <div className="bg-slate-800/90 backdrop-blur-lg rounded-xl border border-slate-700 p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <FunnelIcon className="w-5 h-5 text-slate-400" />
-              <h3 className="text-lg font-semibold text-white">Filter Events</h3>
+          <h2 className="text-2xl font-bold text-white mb-6">Open Events</h2>
+
+          {events.length === 0 ? (
+            <div className="text-center py-12">
+              <FolderOpenIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-400 text-lg mb-2">No open events available</p>
+              <p className="text-slate-500 text-sm">New opportunities will appear here</p>
             </div>
-            <button
-              onClick={clearFilters}
-              className="flex items-center space-x-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-medium rounded-lg transition-colors"
-            >
-              <XMarkIcon className="w-4 h-4" />
-              <span>Clear Filters</span>
-            </button>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              {events.map((event) => {
+                const alreadyBid = hasBidOnEvent(event.id);
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Event Type */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Event Type</label>
-              <select
-                value={eventTypeFilter}
-                onChange={(e) => setEventTypeFilter(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <option>All</option>
-                <option>Wedding</option>
-                <option>Corporate Event</option>
-                <option>Birthday Party</option>
-                <option>Product Launch</option>
-              </select>
-            </div>
-
-            {/* Date Range */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Date Range</label>
-              <select
-                value={dateRangeFilter}
-                onChange={(e) => setDateRangeFilter(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <option>Upcoming</option>
-                <option>This Month</option>
-                <option>Next 3 Months</option>
-                <option>All</option>
-              </select>
-            </div>
-
-            {/* Guest Count */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Max Guest Count: {guestCountFilter === 1000 ? '1000+' : guestCountFilter}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1000"
-                step="50"
-                value={guestCountFilter}
-                onChange={(e) => setGuestCountFilter(parseInt(e.target.value))}
-                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Events Feed Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">
-            Available Events ({filteredEvents.length})
-          </h2>
-        </div>
-
-        {/* Events Grid */}
-        {filteredEvents.length > 0 ? (
-          <div className="grid md:grid-cols-2 gap-6">
-            {filteredEvents.map((event) => {
-              const EventIcon = getEventIcon(event.eventType);
-              const badgeColor = getEventBadgeColor(event.eventType);
-              const alreadyBid = hasVendorBid(event.id);
-
-              return (
-                <div
-                  key={event.id}
-                  className="bg-slate-800/90 backdrop-blur-lg rounded-xl border border-slate-700 p-6 hover:border-orange-500/30 hover:scale-[1.02] transition-all duration-300 cursor-pointer group"
-                >
-                  {/* Event Type Badge */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`flex items-center space-x-2 px-3 py-1 border rounded-full ${badgeColor}`}>
-                      <EventIcon className="w-4 h-4" />
-                      <span className="text-xs font-semibold">{event.eventType}</span>
-                    </div>
-                    <span className="text-xs text-slate-500">{getTimeAgo(event.postedAt)}</span>
-                  </div>
-
-                  {/* Event Title */}
-                  <h3 className="text-xl font-bold text-white mb-4 group-hover:text-orange-400 transition-colors">
-                    {event.title}
-                  </h3>
-
-                  {/* Event Details */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center space-x-2 text-slate-300">
-                      <CalendarIcon className="w-4 h-4 text-slate-500" />
-                      <span className="text-sm">{new Date(event.date).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}</span>
-                    </div>
-
-                    <div className="flex items-center space-x-2 text-slate-300">
-                      <MapPinIcon className="w-4 h-4 text-slate-500" />
-                      <span className="text-sm">{event.location}</span>
-                    </div>
-
-                    <div className="flex items-center space-x-2 text-slate-300">
-                      <UsersIcon className="w-4 h-4 text-slate-500" />
-                      <span className="text-sm">{event.guestCount} guests</span>
-                    </div>
-
-                    {event.budgetRange && (
-                      <div className="flex items-center space-x-2 text-slate-300">
-                        <CurrencyRupeeIcon className="w-4 h-4 text-slate-500" />
-                        <span className="text-sm font-medium">{event.budgetRange}</span>
+                return (
+                  <div
+                    key={event.id}
+                    className="bg-slate-900/50 border border-slate-700 rounded-lg p-6 hover:border-orange-500/50 transition"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-white mb-2">{event.title}</h3>
+                        <div className="flex flex-wrap gap-4 text-sm text-slate-300">
+                          <div className="flex items-center space-x-2">
+                            <CalendarIcon className="w-4 h-4 text-slate-400" />
+                            <span>{event.date || 'Date TBD'}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <MapPinIcon className="w-4 h-4 text-slate-400" />
+                            <span>{event.city || 'Location TBD'}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <UsersIcon className="w-4 h-4 text-slate-400" />
+                            <span>{event.guest_count || 'TBD'} guests</span>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
 
-                  {/* Bids Count */}
-                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-700">
-                    <span className="text-xs text-slate-400">
-                      {event.bidsCount} proposal{event.bidsCount !== 1 ? 's' : ''} submitted
-                    </span>
-                    <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded-full">
-                      Open
-                    </span>
-                  </div>
+                      <div className="flex flex-col items-end space-y-2">
+                        {event.bidding_closes_at && (
+                          <div className="flex items-center space-x-2 text-sm text-orange-400">
+                            <ClockIcon className="w-4 h-4" />
+                            <span>{formatTimeRemaining(event.bidding_closes_at)}</span>
+                          </div>
+                        )}
+                        <span className="px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full text-green-400 text-xs font-medium">
+                          {event.forge_status.replace(/_/g, ' ')}
+                        </span>
+                      </div>
+                    </div>
 
-                  {/* Action Button */}
-                  {alreadyBid ? (
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+                      <span className="text-sm text-slate-400">
+                        Event Type: <span className="text-slate-300 font-medium">{event.event_type}</span>
+                      </span>
+
+                      {alreadyBid ? (
+                        <div className="flex items-center space-x-2 text-blue-400">
+                          <span className="text-sm font-medium">Bid Submitted</span>
+                          <Link
+                            href={`/craftsmen/events/${event.id}/bid`}
+                            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-lg transition"
+                          >
+                            View Bid
+                          </Link>
+                        </div>
+                      ) : (
+                        <Link
+                          href={`/craftsmen/events/${event.id}/bid`}
+                          className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition transform hover:scale-105"
+                        >
+                          <span>Submit Bid</span>
+                          <ArrowRightIcon className="w-4 h-4" />
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* My Bids Section */}
+        {myBids.length > 0 && (
+          <div className="bg-slate-800/90 backdrop-blur-lg rounded-xl border border-slate-700 p-6">
+            <h2 className="text-2xl font-bold text-white mb-6">My Recent Bids</h2>
+            <div className="space-y-4">
+              {myBids.slice(0, 5).map((bid) => (
+                <div
+                  key={bid.id}
+                  className="bg-slate-900/50 border border-slate-700 rounded-lg p-4 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-white font-medium mb-1">Bid #{bid.id.substring(0, 8)}</p>
+                    <p className="text-sm text-slate-400">
+                      Amount: <span className="text-orange-400 font-semibold">₹{bid.total_forge_cost.toLocaleString()}</span>
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      bid.status === 'ACCEPTED' ? 'bg-green-500/10 border border-green-500/30 text-green-400' :
+                      bid.status === 'SHORTLISTED' ? 'bg-blue-500/10 border border-blue-500/30 text-blue-400' :
+                      bid.status === 'SUBMITTED' ? 'bg-orange-500/10 border border-orange-500/30 text-orange-400' :
+                      'bg-slate-500/10 border border-slate-500/30 text-slate-400'
+                    }`}>
+                      {bid.status}
+                    </span>
                     <Link
-                      href={`/craftsmen/events/${event.id}`}
-                      className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 font-semibold rounded-lg transition-all duration-300"
+                      href={`/craftsmen/events/${bid.event_id}/bid`}
+                      className="text-orange-400 hover:text-orange-300 text-sm font-medium"
                     >
-                      <span>View Your Bid</span>
-                      <ArrowRightIcon className="w-5 h-5" />
+                      View →
                     </Link>
-                  ) : (
-                    <Link
-                      href={`/craftsmen/events/${event.id}`}
-                      className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 transform group-hover:scale-105"
-                    >
-                      <span>View Details & Bid</span>
-                      <ArrowRightIcon className="w-5 h-5" />
-                    </Link>
-                  )}
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="bg-slate-800/90 backdrop-blur-lg rounded-xl border border-slate-700 p-12 text-center">
-            <InboxIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No events match your filters</h3>
-            <p className="text-slate-400 mb-6">Try adjusting your filters to see more opportunities</p>
-            <button
-              onClick={clearFilters}
-              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300"
-            >
-              Clear Filters
-            </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
