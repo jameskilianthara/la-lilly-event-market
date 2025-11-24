@@ -1,0 +1,226 @@
+{
+  "eventType": "inauguration",
+  "displayName": "Inauguration Event Checklist",
+  "categories": [
+    {
+      "id": "event_details",
+      "title": "Event Details",
+      "icon": "🎗️",
+      "items": [
+        {
+          "id": "inauguration_type",
+          "question": "Type of inauguration",
+          "type": "select",
+          "options": ["Business/Showroom Opening", "Office Inauguration", "Factory Launch", "Branch Opening", "Facility Inauguration", "Monument/Public Space", "Religious Premises"]
+        },
+        {
+          "id": "event_scale",
+          "question": "Event scale",
+          "type": "radio",
+          "options": ["Intimate (VIPs and key stakeholders)", "Medium (100-200 guests)", "Large (200-500 guests)", "Grand public event (500+ guests)"]
+        },
+        {
+          "id": "ceremony_elements",
+          "question": "Ceremony elements to include",
+          "type": "checkbox",
+          "options": ["Ribbon cutting", "Lamp lighting", "Coconut breaking", "Plaque unveiling", "Foundation stone laying", "Religious ceremony/Pooja", "Cake cutting"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "vip_management",
+      "title": "VIP & Guest Management",
+      "icon": "👔",
+      "items": [
+        {
+          "id": "chief_guest",
+          "question": "Chief guest arrangements",
+          "type": "checkbox",
+          "options": ["VIP invitation coordination", "Arrival and escort protocol", "Dedicated seating area", "Bouquet and memento", "Photo opportunities", "Speech slot coordination"]
+        },
+        {
+          "id": "guest_categories",
+          "question": "Guest categories",
+          "type": "checkbox",
+          "options": ["Government officials", "Business partners", "Media representatives", "Community leaders", "Employees", "Customers", "Well-wishers"]
+        },
+        {
+          "id": "invitation_management",
+          "question": "Invitation and RSVP",
+          "type": "checkbox",
+          "options": ["Printed invitations", "Digital invitations", "Personal calls to VIPs", "RSVP tracking", "Reminder system", "Guest list management"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "venue_setup",
+      "title": "Venue & Setup",
+      "icon": "🏢",
+      "items": [
+        {
+          "id": "entrance_decor",
+          "question": "Entrance decoration",
+          "type": "checkbox",
+          "options": ["Welcome arch/gate", "Rangoli/flower carpet", "Red carpet walkway", "Balloon decoration", "Company branding", "Directional signage"]
+        },
+        {
+          "id": "stage_setup",
+          "question": "Stage and ceremony area",
+          "type": "checkbox",
+          "options": ["Raised platform/stage", "Ribbon cutting setup", "Backdrop with branding", "Seating for dignitaries", "Podium with microphone", "Lamp lighting setup"]
+        },
+        {
+          "id": "seating_arrangement",
+          "question": "Seating arrangement",
+          "type": "select",
+          "options": ["Theater style", "VIP front rows + general seating", "Standing arrangement", "Mixed seating", "Open gathering"]
+        },
+        {
+          "id": "audio_visual",
+          "question": "Audio-visual requirements",
+          "type": "checkbox",
+          "options": ["Sound system", "Microphones for speeches", "LED screens", "Projector setup", "Stage lighting", "Background music"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "ceremony_program",
+      "title": "Ceremony Program",
+      "icon": "📋",
+      "items": [
+        {
+          "id": "program_sequence",
+          "question": "Program sequence elements",
+          "type": "checkbox",
+          "options": ["Guest arrival and registration", "Welcome address", "Chief guest speech", "Ribbon cutting/inauguration", "Vote of thanks", "Facility tour", "Networking session"]
+        },
+        {
+          "id": "religious_ceremony",
+          "question": "Religious ceremony (if applicable)",
+          "type": "checkbox",
+          "options": ["Pandit/priest booking", "Pooja samagri", "Havan/fire ceremony", "Prasad distribution", "Aarti", "Temple ceremony", "Not needed"]
+        },
+        {
+          "id": "entertainment",
+          "question": "Entertainment elements",
+          "type": "checkbox",
+          "options": ["Cultural performances", "Live music", "DJ", "Traditional band", "Celebrity appearance", "Not needed"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "branding_media",
+      "title": "Branding & Media",
+      "icon": "📸",
+      "items": [
+        {
+          "id": "branding_elements",
+          "question": "Branding and signage",
+          "type": "checkbox",
+          "options": ["Company logo backdrop", "Banners and standees", "Commemorative plaque", "Directional signage", "Welcome boards", "Thank you boards"]
+        },
+        {
+          "id": "photography_video",
+          "question": "Photography and videography",
+          "type": "checkbox",
+          "options": ["Professional photographer", "Video documentation", "Drone coverage", "Live streaming", "Social media coverage", "Press photography"]
+        },
+        {
+          "id": "media_coverage",
+          "question": "Media coordination",
+          "type": "checkbox",
+          "options": ["Press invitations", "Press kit distribution", "Media enclosure", "Press conference", "Media interactions", "Post-event press release"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "hospitality",
+      "title": "Hospitality & Catering",
+      "icon": "🍽️",
+      "items": [
+        {
+          "id": "refreshments",
+          "question": "Refreshment service",
+          "type": "select",
+          "options": ["Welcome drinks only", "Light snacks and tea/coffee", "High tea with snacks", "Full meal service", "Cocktail and appetizers"]
+        },
+        {
+          "id": "catering_style",
+          "question": "Catering service style",
+          "type": "radio",
+          "options": ["Buffet setup", "Served refreshments", "Standing cocktail", "Seated meal", "Food stalls"]
+        },
+        {
+          "id": "special_services",
+          "question": "Special hospitality services",
+          "type": "checkbox",
+          "options": ["VIP lounge", "Dedicated waiters for VIPs", "Bar service", "Traditional prasad distribution", "Packed giveaways", "Gift hampers"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "logistics_support",
+      "title": "Logistics & Support",
+      "icon": "🛠️",
+      "items": [
+        {
+          "id": "guest_services",
+          "question": "Guest services",
+          "type": "checkbox",
+          "options": ["Registration desk", "Valet parking", "Guest escort service", "Information desk", "Restroom attendants", "Lost and found"]
+        },
+        {
+          "id": "transportation",
+          "question": "Transportation arrangements",
+          "type": "checkbox",
+          "options": ["VIP car arrangements", "Guest shuttle service", "Parking management", "Airport transfers", "Traffic coordination", "Not needed"]
+        },
+        {
+          "id": "security_safety",
+          "question": "Security and safety",
+          "type": "checkbox",
+          "options": ["Security personnel", "Crowd management", "VIP security", "Fire safety measures", "Medical team on standby", "Emergency exits clearance"]
+        },
+        {
+          "id": "staff_coordination",
+          "question": "Event staff",
+          "type": "checkbox",
+          "options": ["Event coordinator", "Registration staff", "Ushers and guides", "Protocol officers", "Technical support team", "Hospitality staff"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "giveaways_documentation",
+      "title": "Giveaways & Documentation",
+      "icon": "🎁",
+      "items": [
+        {
+          "id": "guest_giveaways",
+          "question": "Guest giveaways and mementos",
+          "type": "checkbox",
+          "options": ["Commemorative plaques for VIPs", "Corporate gift hampers", "Branded merchandise", "Traditional gifts", "Product samples", "Not needed"]
+        },
+        {
+          "id": "collateral_materials",
+          "question": "Collateral materials",
+          "type": "checkbox",
+          "options": ["Company profile booklets", "Product catalogs", "Business cards", "Promotional flyers", "Welcome kits", "Thank you cards"]
+        },
+        {
+          "id": "post_event",
+          "question": "Post-event requirements",
+          "type": "checkbox",
+          "options": ["Event report compilation", "Photo/video delivery", "Thank you notes", "Press coverage compilation", "Social media highlights", "Guest feedback collection"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

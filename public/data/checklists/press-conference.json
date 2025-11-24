@@ -1,0 +1,256 @@
+{
+  "eventType": "press-conference",
+  "displayName": "Press Conference Checklist",
+  "categories": [
+    {
+      "id": "event_details",
+      "title": "Event Details",
+      "icon": "📰",
+      "items": [
+        {
+          "id": "conference_type",
+          "question": "Type of press conference",
+          "type": "select",
+          "options": ["Product Launch", "Company Announcement", "Crisis Management", "Media Briefing", "Award/Recognition Event", "Political/Government Briefing", "Celebrity Statement"]
+        },
+        {
+          "id": "announcement_nature",
+          "question": "Nature of announcement",
+          "type": "select",
+          "options": ["Positive news/celebration", "Neutral information", "Sensitive/crisis management", "Breaking news", "Scheduled update"]
+        },
+        {
+          "id": "media_scale",
+          "question": "Expected media scale",
+          "type": "radio",
+          "options": ["Small (10-20 journalists)", "Medium (20-50 journalists)", "Large (50-100 journalists)", "Major (100+ journalists)"]
+        },
+        {
+          "id": "broadcast_requirements",
+          "question": "Broadcast requirements",
+          "type": "checkbox",
+          "options": ["Live television coverage", "Live streaming", "Radio broadcast", "Social media live", "Recording only", "Closed event (no broadcast)"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "venue_setup",
+      "title": "Venue & Technical Setup",
+      "icon": "🏢",
+      "items": [
+        {
+          "id": "venue_type",
+          "question": "Venue preference",
+          "type": "select",
+          "options": ["Hotel conference hall", "Corporate office/HQ", "Convention center", "Virtual/hybrid setup", "Outdoor venue", "Government premises"]
+        },
+        {
+          "id": "seating_layout",
+          "question": "Seating arrangement",
+          "type": "radio",
+          "options": ["Theater style (rows)", "Classroom style (tables)", "U-shape setup", "Round tables", "Press pit (standing)"]
+        },
+        {
+          "id": "stage_podium",
+          "question": "Stage and podium setup",
+          "type": "checkbox",
+          "options": ["Raised stage platform", "Speaker podium with logo", "Panel table for multiple speakers", "Backdrop with branding", "Lectern with microphone", "Confidence monitor"]
+        },
+        {
+          "id": "technical_infrastructure",
+          "question": "Technical infrastructure",
+          "type": "checkbox",
+          "options": ["Professional sound system", "Multiple microphones (wired/wireless)", "Large projection screens", "LED video wall", "Stage lighting", "Recording equipment", "Translation booth"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "media_coordination",
+      "title": "Media Coordination",
+      "icon": "📡",
+      "items": [
+        {
+          "id": "media_invitations",
+          "question": "Media invitation strategy",
+          "type": "checkbox",
+          "options": ["National media outlets", "Regional/local media", "International press", "Online media and bloggers", "Industry-specific publications", "Television networks", "Radio stations"]
+        },
+        {
+          "id": "media_registration",
+          "question": "Media registration and accreditation",
+          "type": "checkbox",
+          "options": ["Online RSVP system", "On-site registration desk", "Media badge distribution", "Press kit pickup", "Attendance tracking", "VIP media priority"]
+        },
+        {
+          "id": "press_area",
+          "question": "Press area facilities",
+          "type": "checkbox",
+          "options": ["Dedicated media seating", "Camera positions/risers", "Photographer pit", "Broadcast booth", "Interview area", "Media lounge", "WiFi and charging stations"]
+        },
+        {
+          "id": "media_relations",
+          "question": "Media relations support",
+          "type": "checkbox",
+          "options": ["PR team on-site", "Media liaison officers", "Spokesperson coordination", "Interview scheduling", "One-on-one briefings", "Post-event follow-up"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "av_broadcasting",
+      "title": "Audio-Visual & Broadcasting",
+      "icon": "🎥",
+      "items": [
+        {
+          "id": "camera_coverage",
+          "question": "Camera and video coverage",
+          "type": "checkbox",
+          "options": ["Multi-camera setup", "Professional videography team", "Live broadcast feed", "Recording for archive", "Social media streaming", "Photographer (stills)"]
+        },
+        {
+          "id": "audio_setup",
+          "question": "Audio requirements",
+          "type": "checkbox",
+          "options": ["Podium microphones", "Wireless lavalier mics", "Handheld mics for Q&A", "Audio feed for broadcast", "Recording system", "Translation services"]
+        },
+        {
+          "id": "presentation_equipment",
+          "question": "Presentation equipment",
+          "type": "checkbox",
+          "options": ["Projector and screens", "LED video walls", "Clicker/remote control", "Laptop connectivity", "Teleprompter", "Confidence monitors"]
+        },
+        {
+          "id": "streaming_platform",
+          "question": "Live streaming platforms",
+          "type": "checkbox",
+          "options": ["YouTube Live", "Facebook Live", "Twitter/X Live", "Instagram Live", "LinkedIn Live", "Custom streaming platform", "Not needed"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "press_materials",
+      "title": "Press Materials & Documentation",
+      "icon": "📄",
+      "items": [
+        {
+          "id": "press_kit_contents",
+          "question": "Press kit contents",
+          "type": "checkbox",
+          "options": ["Press release", "Company backgrounder", "Executive biographies", "Product specifications", "High-resolution images", "Fact sheets", "Contact information"]
+        },
+        {
+          "id": "distribution_method",
+          "question": "Press kit distribution",
+          "type": "checkbox",
+          "options": ["Physical folders/binders", "USB drives", "Digital download link", "Email distribution", "Cloud storage access", "QR code access"]
+        },
+        {
+          "id": "visual_materials",
+          "question": "Visual materials needed",
+          "type": "checkbox",
+          "options": ["Product photos", "Infographics", "Video B-roll", "Logo files", "Executive portraits", "Charts and graphs", "Presentation slides"]
+        },
+        {
+          "id": "supplementary_materials",
+          "question": "Supplementary materials",
+          "type": "checkbox",
+          "options": ["Q&A briefing document", "Talking points", "Statistics and data", "Case studies", "Testimonials", "Research papers"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "speakers_qa",
+      "title": "Speakers & Q&A Management",
+      "icon": "🎤",
+      "items": [
+        {
+          "id": "speaker_preparation",
+          "question": "Speaker preparation services",
+          "type": "checkbox",
+          "options": ["Media training", "Rehearsal session", "Talking points brief", "Presentation review", "Crisis messaging prep", "Body language coaching"]
+        },
+        {
+          "id": "qa_format",
+          "question": "Q&A session format",
+          "type": "radio",
+          "options": ["Open Q&A (all journalists)", "Moderated Q&A", "Pre-submitted questions only", "One-on-one interviews", "No Q&A session"]
+        },
+        {
+          "id": "qa_management",
+          "question": "Q&A management tools",
+          "type": "checkbox",
+          "options": ["Question moderator/MC", "Microphone runners", "Time keeper", "Question cards/forms", "Digital Q&A platform", "Priority question system"]
+        },
+        {
+          "id": "speaker_support",
+          "question": "On-site speaker support",
+          "type": "checkbox",
+          "options": ["Green room/holding area", "Makeup and hair services", "Wardrobe assistance", "Teleprom pter operator", "Technical support staff", "Water and refreshments"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "logistics_support",
+      "title": "Logistics & Support Services",
+      "icon": "🛠️",
+      "items": [
+        {
+          "id": "hospitality_services",
+          "question": "Hospitality for media",
+          "type": "checkbox",
+          "options": ["Registration refreshments", "Coffee and tea service", "Light snacks/breakfast", "Lunch arrangements", "Bar service (if evening)", "Continuous beverage service"]
+        },
+        {
+          "id": "signage_branding",
+          "question": "Signage and branding",
+          "type": "checkbox",
+          "options": ["Event entrance signage", "Directional signs", "Backdrop with logos", "Step and repeat banner", "Table/podium branding", "Sponsor recognition"]
+        },
+        {
+          "id": "support_staff",
+          "question": "Support staff required",
+          "type": "checkbox",
+          "options": ["Registration desk staff", "Ushers and guides", "Technical support team", "Security personnel", "Parking attendants", "Protocol officers"]
+        },
+        {
+          "id": "accessibility",
+          "question": "Accessibility and accommodations",
+          "type": "checkbox",
+          "options": ["Wheelchair access", "Hearing assistance devices", "Sign language interpreter", "Prayer/meditation room", "Nursing room", "Accessible restrooms"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "post_event",
+      "title": "Post-Event Management",
+      "icon": "📊",
+      "items": [
+        {
+          "id": "media_distribution",
+          "question": "Post-event media distribution",
+          "type": "checkbox",
+          "options": ["Video recording distribution", "Photo gallery sharing", "Transcript distribution", "Press release follow-up", "Social media highlights", "Media mention tracking"]
+        },
+        {
+          "id": "analytics_reporting",
+          "question": "Analytics and reporting",
+          "type": "checkbox",
+          "options": ["Media attendance report", "Coverage analysis", "Social media metrics", "Reach and impressions", "Sentiment analysis", "Key message penetration"]
+        },
+        {
+          "id": "follow_up_activities",
+          "question": "Follow-up activities",
+          "type": "checkbox",
+          "options": ["Thank you notes to media", "Additional interview scheduling", "Clarification statements", "Supplementary materials", "One-on-one briefings", "Media monitoring"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

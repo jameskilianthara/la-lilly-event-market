@@ -1,0 +1,224 @@
+{
+  "eventType": "film-events",
+  "displayName": "Film Events Checklist",
+  "categories": [
+    {
+      "id": "event_specifications",
+      "title": "Event Specifications",
+      "icon": "🎬",
+      "items": [
+        {
+          "id": "event_type",
+          "question": "Type of film event",
+          "type": "select",
+          "options": ["Movie Launch", "Muhurat/Pooja Ceremony", "Trailer Launch", "Music Launch", "Celebrity Meet & Greet", "Premiere Show", "Press Conference", "Success Party"]
+        },
+        {
+          "id": "event_scale",
+          "question": "Scale of the event",
+          "type": "radio",
+          "options": ["Intimate (cast and crew only)", "Medium (industry professionals)", "Large (public and media)", "Grand (major celebrities and media)"]
+        },
+        {
+          "id": "media_coverage",
+          "question": "Media coverage requirements",
+          "type": "radio",
+          "options": ["No media", "Select media only", "Full media access", "Live broadcast coverage"]
+        },
+        {
+          "id": "audience_type",
+          "question": "Target audience",
+          "type": "checkbox",
+          "options": ["Film industry professionals", "Media and press", "Influencers and bloggers", "Fans and public", "Distributors and exhibitors", "Celebrity guests"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "celebrity_management",
+      "title": "Celebrity & Guest Management",
+      "icon": "⭐",
+      "items": [
+        {
+          "id": "celebrity_coordination",
+          "question": "Celebrity management requirements",
+          "type": "checkbox",
+          "options": ["Star coordination and scheduling", "Green room setup", "Hair and makeup artists", "Wardrobe management", "Personal security", "Transport coordination"]
+        },
+        {
+          "id": "vip_arrangements",
+          "question": "VIP guest arrangements",
+          "type": "checkbox",
+          "options": ["VIP seating area", "Private entrance and exit", "Meet and greet area", "Photo opportunity setup", "Autograph session management", "Dedicated staff for VIPs"]
+        },
+        {
+          "id": "fan_management",
+          "question": "Fan and crowd management",
+          "type": "checkbox",
+          "options": ["Crowd control barriers", "Fan meet area", "Autograph management", "Photo opportunities", "Security personnel", "Queue management system"]
+        },
+        {
+          "id": "hospitality",
+          "question": "Hospitality for celebrities and guests",
+          "type": "checkbox",
+          "options": ["Welcome refreshments", "Full catering service", "Bar service", "Special dietary requirements", "Continuous service staff", "Gift hampers"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "venue_technical",
+      "title": "Venue & Technical Setup",
+      "icon": "🏢",
+      "items": [
+        {
+          "id": "venue_type",
+          "question": "Venue preference",
+          "type": "select",
+          "options": ["Hotel ballroom", "Multiplex/cinema hall", "Outdoor venue", "Film studio", "Convention center", "Cultural center", "Temple (for Pooja ceremony)"]
+        },
+        {
+          "id": "stage_setup",
+          "question": "Stage and backdrop requirements",
+          "type": "checkbox",
+          "options": ["Main stage with podium", "Movie poster backdrop", "LED screen backdrop", "Traditional Pooja setup", "Red carpet area", "Step and repeat banner"]
+        },
+        {
+          "id": "audio_visual",
+          "question": "Audio-visual requirements",
+          "type": "checkbox",
+          "options": ["Professional sound system", "Multiple microphones", "LED/projection screens", "Video playback system", "Stage lighting", "Spotlight for entries"]
+        },
+        {
+          "id": "screening_equipment",
+          "question": "Screening equipment (if applicable)",
+          "type": "checkbox",
+          "options": ["Cinema-quality projection", "Surround sound system", "Multiple screens", "Live feed setup", "Recording equipment", "Not applicable"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "media_press",
+      "title": "Media & Press Management",
+      "icon": "📰",
+      "items": [
+        {
+          "id": "press_area",
+          "question": "Press area setup",
+          "type": "checkbox",
+          "options": ["Dedicated media enclosure", "Press conference area", "Photo wall/backdrop", "Interview area", "Media kit distribution", "Press registration desk"]
+        },
+        {
+          "id": "photography_videography",
+          "question": "Photography and videography",
+          "type": "checkbox",
+          "options": ["Official photographer", "Video production team", "Live streaming setup", "Social media coverage", "Behind-the-scenes coverage", "Drone cinematography"]
+        },
+        {
+          "id": "press_kit",
+          "question": "Press kit and materials",
+          "type": "checkbox",
+          "options": ["Press releases", "High-resolution photos", "Movie synopsis/details", "Cast and crew information", "Digital media kit", "Promotional materials"]
+        },
+        {
+          "id": "media_coordination",
+          "question": "Media coordination services",
+          "type": "checkbox",
+          "options": ["PR team management", "Interview scheduling", "Media liaison officer", "Social media management", "Live updates coordination", "Post-event media distribution"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "branding_decor",
+      "title": "Branding & Decoration",
+      "icon": "🎨",
+      "items": [
+        {
+          "id": "branding_elements",
+          "question": "Branding and signage",
+          "type": "checkbox",
+          "options": ["Movie posters and banners", "Step and repeat backdrop", "Standees and cutouts", "Digital displays", "Sponsor branding", "Directional signage"]
+        },
+        {
+          "id": "theme_decoration",
+          "question": "Thematic decoration",
+          "type": "checkbox",
+          "options": ["Movie theme decor", "Red carpet entrance", "Bollywood glamour setup", "Traditional Pooja decoration", "Floral arrangements", "Lighting and ambiance"]
+        },
+        {
+          "id": "special_installations",
+          "question": "Special installations",
+          "type": "checkbox",
+          "options": ["Photo booth with props", "Movie props display", "Interactive installations", "Promotional displays", "Award/trophy display", "Custom installations"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "security_logistics",
+      "title": "Security & Logistics",
+      "icon": "🛡️",
+      "items": [
+        {
+          "id": "security_requirements",
+          "question": "Security arrangements",
+          "type": "checkbox",
+          "options": ["Celebrity personal security", "Venue security personnel", "Crowd control team", "Bouncers/bodyguards", "CCTV monitoring", "Metal detectors/screening"]
+        },
+        {
+          "id": "transportation",
+          "question": "Transportation coordination",
+          "type": "checkbox",
+          "options": ["Luxury cars for celebrities", "Valet parking", "Guest shuttle service", "Traffic management", "Parking arrangements", "Airport transfers"]
+        },
+        {
+          "id": "permits_clearances",
+          "question": "Permits and clearances",
+          "type": "checkbox",
+          "options": ["Event permits", "Police permissions", "Fire safety clearance", "Crowd management approval", "Filming permissions", "Music licensing"]
+        },
+        {
+          "id": "contingency_planning",
+          "question": "Contingency and safety",
+          "type": "checkbox",
+          "options": ["Emergency medical team", "Fire safety equipment", "Backup power supply", "Weather contingency plan", "Crisis management team", "Insurance coverage"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "special_elements",
+      "title": "Special Elements",
+      "icon": "✨",
+      "items": [
+        {
+          "id": "pooja_ceremony",
+          "question": "Pooja ceremony requirements (if applicable)",
+          "type": "checkbox",
+          "options": ["Pandit/priest booking", "Pooja samagri arrangement", "Traditional setup", "Coconut breaking ceremony", "Mahurat shot setup", "Religious rituals coordination"]
+        },
+        {
+          "id": "entertainment",
+          "question": "Entertainment elements",
+          "type": "checkbox",
+          "options": ["Live performance/dance", "DJ and music", "Celebrity anchoring", "Game shows/contests", "Fireworks/pyrotechnics", "Cultural performances"]
+        },
+        {
+          "id": "promotional_activities",
+          "question": "Promotional activities",
+          "type": "checkbox",
+          "options": ["Contest and giveaways", "Merchandise distribution", "Fan engagement activities", "Social media contests", "Interactive games", "Souvenir distribution"]
+        },
+        {
+          "id": "post_event",
+          "question": "Post-event requirements",
+          "type": "checkbox",
+          "options": ["Photo and video compilation", "Media distribution", "Thank you notes", "Event report", "Social media highlights", "Merchandise packing"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

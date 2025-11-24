@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useBlueprintReview } from '../../hooks/useBlueprintReview';
 import { BlueprintDisplay } from './BlueprintDisplay';
+import { ProfessionalBlueprint } from './ProfessionalBlueprint';
 import { ClientBriefSummary } from './ClientBriefSummary';
 import { ProjectPreview } from './ProjectPreview';
 
@@ -38,6 +39,7 @@ export const BlueprintReview: React.FC<BlueprintReviewProps> = ({
   } = useBlueprintReview(blueprintId, clientBrief);
 
   const [showPreview, setShowPreview] = useState(false);
+  const [viewMode, setViewMode] = useState<'checklist' | 'professional'>('professional');
   const [isFinalizingProject, setIsFinalizingProject] = useState(false);
 
   const handleFinalizeProject = async () => {
@@ -135,18 +137,34 @@ export const BlueprintReview: React.FC<BlueprintReviewProps> = ({
             </div>
 
             <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setShowPreview(!showPreview)}
-                className="flex items-center space-x-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors"
-              >
-                <EyeIcon className="h-4 w-4" />
-                <span>{showPreview ? 'Hide' : 'Preview'}</span>
-              </button>
+              {/* View Mode Toggle */}
+              <div className="flex items-center bg-slate-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('professional')}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
+                    viewMode === 'professional'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  📄 Professional
+                </button>
+                <button
+                  onClick={() => setViewMode('checklist')}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
+                    viewMode === 'checklist'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  📋 Checklist
+                </button>
+              </div>
 
               <button
                 onClick={handleFinalizeProject}
                 disabled={isFinalizingProject}
-                className="flex items-center space-x-2 px-6 py-2 bg-slate-700 hover:bg-slate-800 disabled:bg-slate-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed"
+                className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:bg-slate-400 text-white font-medium rounded-lg transition-all duration-200 disabled:cursor-not-allowed shadow-lg"
               >
                 {isFinalizingProject ? (
                   <>
@@ -165,55 +183,69 @@ export const BlueprintReview: React.FC<BlueprintReviewProps> = ({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Main Content - Blueprint */}
-          <div className="lg:col-span-3">
-            <BlueprintDisplay
-              blueprint={blueprint}
-              clientBrief={clientBrief}
-              clientNotes={clientNotes}
-              referenceImages={referenceImages}
-              onNotesChange={updateClientNotes}
-              onImageAdd={addReferenceImage}
-              onImageRemove={removeReferenceImage}
-              isSaving={isSaving}
-            />
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Client Brief Summary */}
-            <ClientBriefSummary
-              clientBrief={clientBrief}
-              blueprint={blueprint}
-            />
-
-            {/* Project Preview */}
-            {showPreview && (
-              <ProjectPreview
+      {viewMode === 'professional' ? (
+        /* Professional Blueprint View - Full Width */
+        <ProfessionalBlueprint
+          blueprint={blueprint}
+          clientBrief={clientBrief}
+          clientNotes={clientNotes}
+          referenceImages={referenceImages}
+          onNotesChange={updateClientNotes}
+          onLaunchProject={handleFinalizeProject}
+          isSaving={isSaving}
+        />
+      ) : (
+        /* Checklist View - With Sidebar */
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Main Content - Blueprint */}
+            <div className="lg:col-span-3">
+              <BlueprintDisplay
                 blueprint={blueprint}
                 clientBrief={clientBrief}
                 clientNotes={clientNotes}
                 referenceImages={referenceImages}
+                onNotesChange={updateClientNotes}
+                onImageAdd={addReferenceImage}
+                onImageRemove={removeReferenceImage}
+                isSaving={isSaving}
               />
-            )}
+            </div>
 
-            {/* Planning Tips */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-              <div className="text-center">
-                <div className="text-2xl mb-3">⚒️</div>
-                <h4 className="font-medium text-slate-900 text-sm mb-2">Planning Tips</h4>
-                <div className="text-xs text-slate-600 leading-relaxed space-y-2">
-                  <p>• Add detailed notes to help professionals understand your vision</p>
-                  <p>• Upload reference images to show your style preferences</p>
-                  <p>• Your blueprint becomes the project specification for bidding</p>
+            {/* Sidebar */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* Client Brief Summary */}
+              <ClientBriefSummary
+                clientBrief={clientBrief}
+                blueprint={blueprint}
+              />
+
+              {/* Project Preview */}
+              {showPreview && (
+                <ProjectPreview
+                  blueprint={blueprint}
+                  clientBrief={clientBrief}
+                  clientNotes={clientNotes}
+                  referenceImages={referenceImages}
+                />
+              )}
+
+              {/* Planning Tips */}
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                <div className="text-center">
+                  <div className="text-2xl mb-3">⚒️</div>
+                  <h4 className="font-medium text-slate-900 text-sm mb-2">Planning Tips</h4>
+                  <div className="text-xs text-slate-600 leading-relaxed space-y-2">
+                    <p>• Add detailed notes to help professionals understand your vision</p>
+                    <p>• Upload reference images to show your style preferences</p>
+                    <p>• Your blueprint becomes the project specification for bidding</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

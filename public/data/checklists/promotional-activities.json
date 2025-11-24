@@ -1,0 +1,212 @@
+{
+  "eventType": "promotional-activities",
+  "displayName": "Promotional Activities Checklist",
+  "categories": [
+    {
+      "id": "campaign_details",
+      "title": "Campaign Details",
+      "icon": "🎯",
+      "items": [
+        {
+          "id": "activity_type",
+          "question": "Type of promotional activity",
+          "type": "select",
+          "options": ["Road Show", "Mall Activation", "Street Marketing", "Flash Mob", "Product Sampling", "Brand Activation", "Guerrilla Marketing", "Pop-up Event"]
+        },
+        {
+          "id": "campaign_objective",
+          "question": "Primary campaign objective",
+          "type": "select",
+          "options": ["Brand awareness", "Product launch", "Sales promotion", "Lead generation", "Customer engagement", "Market research", "Event announcement"]
+        },
+        {
+          "id": "target_audience",
+          "question": "Target audience profile",
+          "type": "checkbox",
+          "options": ["Youth (18-25)", "Young professionals (25-35)", "Families", "Corporate professionals", "Students", "Seniors", "Mass market"]
+        },
+        {
+          "id": "campaign_duration",
+          "question": "Campaign duration",
+          "type": "select",
+          "options": ["Single day", "Weekend (2-3 days)", "One week", "Multiple weeks", "Month-long campaign"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "locations_logistics",
+      "title": "Locations & Logistics",
+      "icon": "📍",
+      "items": [
+        {
+          "id": "location_type",
+          "question": "Location preferences",
+          "type": "checkbox",
+          "options": ["Shopping malls", "High streets/markets", "Corporate parks", "Educational institutions", "Residential areas", "Transit hubs (stations/airports)", "Event venues"]
+        },
+        {
+          "id": "route_planning",
+          "question": "Route planning (for road shows)",
+          "type": "checkbox",
+          "options": ["Multi-city tour", "Single city multiple locations", "Fixed location activation", "Mobile brand van", "Route mapping needed", "Not applicable"]
+        },
+        {
+          "id": "permits_approvals",
+          "question": "Permits and approvals needed",
+          "type": "checkbox",
+          "options": ["Municipal permissions", "Mall management approvals", "Police permissions", "Traffic management clearance", "Sound permit", "Vendor licenses"]
+        },
+        {
+          "id": "setup_requirements",
+          "question": "Setup and infrastructure",
+          "type": "checkbox",
+          "options": ["Branded canopy/tent", "Display tables and stands", "Product display fixtures", "Generator/power supply", "Branded vehicle/van", "Storage facilities"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "branding_collateral",
+      "title": "Branding & Collateral",
+      "icon": "🎨",
+      "items": [
+        {
+          "id": "branding_elements",
+          "question": "Branding materials needed",
+          "type": "checkbox",
+          "options": ["Banners and standees", "Branded tent/canopy", "Posters and signage", "Vehicle branding", "Flags and buntings", "T-shirts/uniforms for staff", "Promotional backdrop"]
+        },
+        {
+          "id": "promotional_materials",
+          "question": "Promotional collateral",
+          "type": "checkbox",
+          "options": ["Brochures and flyers", "Product samples", "Business cards", "Discount vouchers/coupons", "Branded merchandise", "QR code materials", "Contest forms"]
+        },
+        {
+          "id": "giveaways",
+          "question": "Promotional giveaways",
+          "type": "checkbox",
+          "options": ["Branded pens/stationery", "T-shirts/caps", "Bags/totes", "Water bottles", "Keychains", "Phone accessories", "Custom branded items"]
+        },
+        {
+          "id": "digital_integration",
+          "question": "Digital integration elements",
+          "type": "checkbox",
+          "options": ["QR codes for landing pages", "Social media hashtag campaign", "Photo booth with instant sharing", "Mobile app downloads", "Online contest integration", "WhatsApp/SMS campaigns"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "engagement_activities",
+      "title": "Engagement Activities",
+      "icon": "🎪",
+      "items": [
+        {
+          "id": "interactive_elements",
+          "question": "Interactive engagement activities",
+          "type": "checkbox",
+          "options": ["Product demonstrations", "Games and contests", "Spin the wheel", "Photo booth with props", "Virtual reality experience", "Taste testing", "Live performances"]
+        },
+        {
+          "id": "entertainment",
+          "question": "Entertainment components",
+          "type": "checkbox",
+          "options": ["DJ and music", "Live band/singers", "Dance troupe", "Emcee/anchor", "Celebrity appearance", "Mascot characters", "Street performers"]
+        },
+        {
+          "id": "sampling_distribution",
+          "question": "Product sampling and distribution",
+          "type": "checkbox",
+          "options": ["Free product samples", "Trial packs", "Discount coupons", "Gift hampers", "Contest prizes", "Loyalty cards", "Product catalog"]
+        },
+        {
+          "id": "data_capture",
+          "question": "Data capture and lead generation",
+          "type": "checkbox",
+          "options": ["Registration forms", "Digital data capture (tablets)", "Business card collection", "Contest participation forms", "QR code scans", "Email newsletter signup"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "team_staffing",
+      "title": "Team & Staffing",
+      "icon": "👥",
+      "items": [
+        {
+          "id": "promotional_staff",
+          "question": "Promotional staff requirements",
+          "type": "checkbox",
+          "options": ["Brand ambassadors", "Product demonstrators", "Samplers/distributors", "Registration desk staff", "Contest coordinators", "Crowd managers", "Supervisors"]
+        },
+        {
+          "id": "staff_training",
+          "question": "Staff training needs",
+          "type": "checkbox",
+          "options": ["Product knowledge training", "Customer engagement skills", "Brand messaging", "Contest rules briefing", "Safety protocols", "Data privacy compliance"]
+        },
+        {
+          "id": "staff_logistics",
+          "question": "Staff logistics",
+          "type": "checkbox",
+          "options": ["Branded uniforms/T-shirts", "ID badges", "Daily transportation", "Meal arrangements", "Accommodation (multi-city)", "Insurance coverage"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "technology_equipment",
+      "title": "Technology & Equipment",
+      "icon": "🔊",
+      "items": [
+        {
+          "id": "audio_visual",
+          "question": "Audio-visual equipment",
+          "type": "checkbox",
+          "options": ["Sound system and speakers", "Microphones", "LED screens/TVs", "Projector setup", "Stage lighting", "Generator/power backup"]
+        },
+        {
+          "id": "digital_tools",
+          "question": "Digital tools and technology",
+          "type": "checkbox",
+          "options": ["Tablets for registration", "Mobile POS systems", "WiFi hotspot", "Charging stations", "Photo booth equipment", "Social media live streaming"]
+        },
+        {
+          "id": "branded_assets",
+          "question": "Branded vehicles and assets",
+          "type": "checkbox",
+          "options": ["Branded promotional van", "Mobile sampling unit", "Bike/scooter branding", "Rickshaw branding", "Mobile LED screen", "Not needed"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "measurement_reporting",
+      "title": "Measurement & Reporting",
+      "icon": "📊",
+      "items": [
+        {
+          "id": "tracking_metrics",
+          "question": "Key metrics to track",
+          "type": "checkbox",
+          "options": ["Footfall/visitor count", "Samples distributed", "Leads captured", "Contest participation", "Social media engagement", "Sales conversions", "Brand recall"]
+        },
+        {
+          "id": "documentation",
+          "question": "Documentation requirements",
+          "type": "checkbox",
+          "options": ["Photography coverage", "Videography", "Attendance logs", "Feedback forms", "Activity reports", "Expense tracking"]
+        },
+        {
+          "id": "post_campaign",
+          "question": "Post-campaign activities",
+          "type": "checkbox",
+          "options": ["Lead follow-up", "Contest winner announcement", "Campaign report", "ROI analysis", "Customer feedback compilation", "Social media summary"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

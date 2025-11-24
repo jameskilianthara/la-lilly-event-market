@@ -1,0 +1,244 @@
+{
+  "eventType": "employee-engagement",
+  "displayName": "Employee Engagement Event Checklist",
+  "categories": [
+    {
+      "id": "event_type_objectives",
+      "title": "Event Type & Objectives",
+      "icon": "🎯",
+      "items": [
+        {
+          "id": "event_category",
+          "question": "Type of employee event",
+          "type": "select",
+          "options": ["Team Building Activity", "Annual Day/Celebration", "Dealer/Partner Meet", "Training Workshop", "Town Hall Meeting", "Recognition/Awards Ceremony", "Offsites/Retreat", "Family Day"]
+        },
+        {
+          "id": "primary_objective",
+          "question": "Primary event objective",
+          "type": "select",
+          "options": ["Team bonding", "Skill development", "Morale boosting", "Communication/updates", "Recognition and rewards", "Strategic planning", "Network building"]
+        },
+        {
+          "id": "participant_profile",
+          "question": "Participant profile",
+          "type": "checkbox",
+          "options": ["All employees", "Specific department", "Leadership team", "Dealers/partners", "Sales team", "New joiners", "Employees + families"]
+        },
+        {
+          "id": "event_duration",
+          "question": "Event duration",
+          "type": "select",
+          "options": ["Half day", "Full day", "Weekend (1-2 days)", "Multi-day offsite (3+ days)"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "venue_logistics",
+      "title": "Venue & Logistics",
+      "icon": "🏨",
+      "items": [
+        {
+          "id": "venue_type",
+          "question": "Venue preference",
+          "type": "select",
+          "options": ["Resort/hotel", "Conference center", "Company premises", "Outdoor adventure location", "Banquet hall", "Training facility", "Farmhouse/villa"]
+        },
+        {
+          "id": "accommodation",
+          "question": "Accommodation requirements",
+          "type": "radio",
+          "options": ["Not needed (local event)", "Day use only", "Overnight stay (1 night)", "Multiple nights", "Premium rooms for leadership"]
+        },
+        {
+          "id": "room_setup",
+          "question": "Room setup and seating",
+          "type": "checkbox",
+          "options": ["Theater style (presentations)", "Classroom style (training)", "U-shape (discussions)", "Round tables (networking)", "Open space (team activities)", "Breakout rooms"]
+        },
+        {
+          "id": "transportation",
+          "question": "Transportation arrangements",
+          "type": "checkbox",
+          "options": ["Bus/coach from office", "Individual transport reimbursement", "Carpool coordination", "Airport transfers", "Inter-venue transport", "Not needed"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "program_content",
+      "title": "Program Content",
+      "icon": "📚",
+      "items": [
+        {
+          "id": "training_workshops",
+          "question": "Training and workshop elements",
+          "type": "checkbox",
+          "options": ["Leadership training", "Skill development sessions", "Product training", "Sales techniques", "Team management", "Compliance training", "Not applicable"]
+        },
+        {
+          "id": "team_activities",
+          "question": "Team building activities",
+          "type": "checkbox",
+          "options": ["Outdoor adventure activities", "Indoor team games", "Problem-solving challenges", "Trust-building exercises", "Sports tournaments", "Treasure hunts", "Not needed"]
+        },
+        {
+          "id": "recognition_awards",
+          "question": "Recognition and awards",
+          "type": "checkbox",
+          "options": ["Performance awards ceremony", "Long service recognition", "Achievement certificates", "Trophy/memento distribution", "Spot awards", "Not applicable"]
+        },
+        {
+          "id": "communication_sessions",
+          "question": "Communication sessions",
+          "type": "checkbox",
+          "options": ["Leadership addresses", "Company updates/town hall", "Strategy presentations", "Department showcases", "Open Q&A sessions", "Not needed"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "entertainment_engagement",
+      "title": "Entertainment & Engagement",
+      "icon": "🎪",
+      "items": [
+        {
+          "id": "entertainment_options",
+          "question": "Entertainment elements",
+          "type": "checkbox",
+          "options": ["DJ and music", "Live band performance", "Cultural performances", "Stand-up comedy", "Celebrity appearance", "Magic show", "Not needed"]
+        },
+        {
+          "id": "employee_participation",
+          "question": "Employee participation activities",
+          "type": "checkbox",
+          "options": ["Talent show", "Team performances", "Quiz competitions", "Lucky draw", "Photo booth", "Karaoke", "Games and contests"]
+        },
+        {
+          "id": "theme_decor",
+          "question": "Theme and decoration",
+          "type": "radio",
+          "options": ["Corporate theme with branding", "Fun casual theme", "Bollywood/retro theme", "Specific theme (carnival, superhero, etc.)", "Minimal/no decoration"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "food_beverage",
+      "title": "Food & Beverage",
+      "icon": "🍽️",
+      "items": [
+        {
+          "id": "meal_plan",
+          "question": "Meal plan",
+          "type": "checkbox",
+          "options": ["Welcome tea/coffee", "Breakfast", "Mid-morning snacks", "Lunch", "Evening tea and snacks", "Dinner", "Late-night refreshments"]
+        },
+        {
+          "id": "catering_style",
+          "question": "Catering service style",
+          "type": "select",
+          "options": ["Buffet service", "Plated meals", "Food stations/live counters", "Packed meals/boxed lunch", "BBQ/outdoor catering", "Mix of styles"]
+        },
+        {
+          "id": "beverage_service",
+          "question": "Beverage arrangements",
+          "type": "checkbox",
+          "options": ["Continuous tea/coffee", "Soft drinks and juice", "Mocktails", "Limited bar (evening)", "Full bar service", "Special beverages"]
+        },
+        {
+          "id": "dietary_requirements",
+          "question": "Special dietary accommodations",
+          "type": "checkbox",
+          "options": ["Vegetarian menu", "Vegan options", "Jain food", "Gluten-free", "Regional cuisines", "Custom requirements"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "technology_av",
+      "title": "Technology & AV",
+      "icon": "🎤",
+      "items": [
+        {
+          "id": "av_requirements",
+          "question": "Audio-visual equipment",
+          "type": "checkbox",
+          "options": ["Projector and screens", "LED video walls", "Microphones (wired/wireless)", "Sound system", "Stage lighting", "Clickers and remotes", "Recording equipment"]
+        },
+        {
+          "id": "presentation_support",
+          "question": "Presentation support",
+          "type": "checkbox",
+          "options": ["Laptop/computer", "Technical support staff", "Teleconferencing setup", "Live streaming", "Presentation templates", "Content management"]
+        },
+        {
+          "id": "engagement_tech",
+          "question": "Engagement technology",
+          "type": "checkbox",
+          "options": ["Event app", "Live polling/surveys", "Digital feedback", "QR code check-in", "Photo sharing platform", "Social wall"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "branding_collateral",
+      "title": "Branding & Collateral",
+      "icon": "🎨",
+      "items": [
+        {
+          "id": "branding_elements",
+          "question": "Event branding",
+          "type": "checkbox",
+          "options": ["Event backdrop", "Company logo displays", "Banners and standees", "Stage branding", "Table branding", "Welcome signage"]
+        },
+        {
+          "id": "participant_materials",
+          "question": "Participant materials",
+          "type": "checkbox",
+          "options": ["Welcome kits", "Training materials/workbooks", "Notepads and pens", "Certificates", "ID badges/lanyards", "Agenda cards"]
+        },
+        {
+          "id": "giveaways",
+          "question": "Giveaways and merchandiseise",
+          "type": "checkbox",
+          "options": ["T-shirts with company logo", "Bags/backpacks", "Water bottles", "Tech accessories", "Award trophies/mementos", "Gift hampers"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "support_services",
+      "title": "Support Services",
+      "icon": "🛠️",
+      "items": [
+        {
+          "id": "event_staff",
+          "question": "Event staff requirements",
+          "type": "checkbox",
+          "options": ["Event coordinators", "Registration desk staff", "Facilitators/trainers", "Emcee/anchor", "Ushers and guides", "Technical support team"]
+        },
+        {
+          "id": "photography_video",
+          "question": "Photography and documentation",
+          "type": "checkbox",
+          "options": ["Professional photographer", "Videography team", "Drone coverage", "Candid photography", "Group photos", "Social media coverage"]
+        },
+        {
+          "id": "special_requirements",
+          "question": "Special requirements",
+          "type": "checkbox",
+          "options": ["Medical/first aid team", "Security personnel", "Accessibility accommodations", "Kids' activity zone (family day)", "Prayer room", "Smoking area"]
+        },
+        {
+          "id": "post_event_deliverables",
+          "question": "Post-event deliverables",
+          "type": "checkbox",
+          "options": ["Event report", "Photo/video compilation", "Feedback survey", "Certificate distribution", "Expense report", "Learnings document"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

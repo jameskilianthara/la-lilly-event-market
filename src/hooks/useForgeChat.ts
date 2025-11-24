@@ -8,6 +8,8 @@ import { useForgeSession } from './useForgeSession';
 import { useAuth } from '../contexts/AuthContext';
 import { createEvent } from '../lib/database';
 import type { ClientBrief } from '../types/blueprint';
+import { mapEventTypeToChecklist } from '../lib/checklistMapper';
+import { parseEventDate } from '../lib/dateParser';
 
 export const useForgeChat = () => {
   const router = useRouter();
@@ -18,6 +20,7 @@ export const useForgeChat = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [blueprintId, setBlueprintId] = useState<string | null>(null);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
+  const [postAuthWelcome, setPostAuthWelcome] = useState(false);
 
   const { saveSession, loadSession, clearSession } = useForgeSession();
 
@@ -75,6 +78,194 @@ export const useForgeChat = () => {
     setMessages(prev => [...prev, message]);
   }, []);
 
+  // Extract event creation logic to reusable function
+  const triggerEventCreation = useCallback(async () => {
+    if (isCreatingEvent) return;
+
+    setIsCreatingEvent(true);
+
+    try {
+      // Check authentication
+      if (!isAuthenticated || !user) {
+        // Save state before redirecting to auth
+        localStorage.setItem('forgeChat_pendingAuth', JSON.stringify({
+          timestamp: Date.now(),
+          step: currentStep,
+          briefSnapshot: clientBrief
+        }));
+
+        const authMessage: ForgeMessageData = {
+          id: `auth-required-${Date.now()}`,
+          type: 'assistant',
+          content: `To create your event, please sign in or create an account. Your event details will be saved for you.`,
+          timestamp: new Date(),
+          action: {
+            type: 'navigate',
+            label: 'Sign In / Register →',
+            href: '/login'
+          }
+        };
+        addMessage(authMessage);
+        setIsCreatingEvent(false);
+        return;
+      }
+
+      // Select blueprint
+      const selectedBlueprint = await selectForgeBlueprint(clientBrief);
+      setBlueprintId(selectedBlueprint.id);
+
+      // Parse date to SQL-compatible format
+      const parsedDate = parseEventDate(clientBrief.date);
+      console.log('Date parsing:', {
+        original: clientBrief.date,
+        parsed: parsedDate
+      });
+
+      // Create event title
+      const eventTitle = `${clientBrief.event_type || 'Event'} - ${clientBrief.city || 'TBD'} - ${clientBrief.date || 'Date TBD'}`;
+
+      // Prepare event data for database
+      const eventData = {
+        owner_user_id: user.userId,
+        title: eventTitle,
+        event_type: clientBrief.event_type || 'General Event',
+        date: parsedDate, // Use parsed SQL-compatible date
+        city: clientBrief.city || null,
+        guest_count: parseInt(clientBrief.guest_count || '0') || null,
+        client_brief: {
+          event_type: clientBrief.event_type,
+          date: clientBrief.date, // Keep original human-readable format in brief
+          date_parsed: parsedDate, // Also store parsed version
+          city: clientBrief.city,
+          guest_count: clientBrief.guest_count,
+          venue_status: clientBrief.venue_status,
+          conversation: messages.slice(-10), // Last 10 messages for context
+          reference_images: []
+        },
+        forge_blueprint: selectedBlueprint,
+        forge_status: 'BLUEPRINT_READY' as const,
+      };
+
+      console.log('Creating event in database:', eventData);
+
+      // Create event in database
+      const result = await createEvent(eventData);
+
+      if (result.error) {
+        console.error('Error creating event:', result.error);
+        console.error('Error details:', {
+          message: result.error.message,
+          code: (result.error as any).code,
+          details: (result.error as any).details,
+          hint: (result.error as any).hint
+        });
+
+        // Check if it's a date-related error
+        const isDateError = result.error.message?.includes('invalid input syntax for type date') ||
+                           result.error.message?.includes('date');
+
+        const errorContent = isDateError
+          ? `I had trouble with the date format you provided ("${clientBrief.date}"). Please make sure to provide the event date in a format like "December 2025" or "June 15, 2025". Let's try creating your event again with the correct date format.`
+          : `I encountered an issue creating your event: ${result.error.message || 'Database error'}. Please try again or contact support at kerala@eventfoundry.com`;
+
+        const errorMessage: ForgeMessageData = {
+          id: `error-${Date.now()}`,
+          type: 'assistant',
+          content: errorContent,
+          timestamp: new Date()
+        };
+        addMessage(errorMessage);
+        setIsCreatingEvent(false);
+        return;
+      }
+
+      if (!result.data) {
+        console.error('Event creation returned no data');
+        const errorMessage: ForgeMessageData = {
+          id: `error-${Date.now()}`,
+          type: 'assistant',
+          content: `Event creation completed but returned no data. Please try again or contact support.`,
+          timestamp: new Date()
+        };
+        addMessage(errorMessage);
+        setIsCreatingEvent(false);
+        return;
+      }
+
+      const createdEvent = result.data;
+      console.log('Event created successfully:', createdEvent);
+
+      // Map event type to appropriate checklist
+      const checklistType = mapEventTypeToChecklist(clientBrief.event_type || '');
+      console.log('Mapped event type to checklist:', checklistType);
+
+      const completionMessage: ForgeMessageData = {
+        id: `completion-${Date.now()}`,
+        type: 'assistant',
+        content: `Perfect! Now let's customize your ${clientBrief.event_type || 'event'} requirements. I'll guide you through selecting exactly what you need for an extraordinary experience.`,
+        timestamp: new Date(),
+        action: {
+          type: 'navigate',
+          label: 'Customize Your Event Checklist →',
+          href: `/checklist?type=${checklistType}&eventId=${createdEvent?.id}`
+        },
+        metadata: {
+          blueprintId: selectedBlueprint.id,
+          eventId: createdEvent?.id,
+          checklistType: checklistType,
+          blueprintHint: "Select your requirements and we'll create your custom blueprint."
+        }
+      };
+
+      addMessage(completionMessage);
+      setIsComplete(true);
+      setIsCreatingEvent(false);
+
+    } catch (error) {
+      console.error('Unexpected error creating event:', error);
+      const errorMessage: ForgeMessageData = {
+        id: `error-${Date.now()}`,
+        type: 'assistant',
+        content: `An unexpected error occurred. Please try again or contact support.`,
+        timestamp: new Date()
+      };
+      addMessage(errorMessage);
+      setIsCreatingEvent(false);
+    }
+  }, [isCreatingEvent, isAuthenticated, user, clientBrief, messages, addMessage]);
+
+  // Detect post-authentication return and show welcome message
+  useEffect(() => {
+    // Check if user just authenticated and has pending ForgeChat session
+    const pendingAuth = localStorage.getItem('forgeChat_pendingAuth');
+
+    if (pendingAuth && user && isAuthenticated && currentStep === 5 && !isComplete) {
+      const pendingData = JSON.parse(pendingAuth);
+
+      // Show welcome message
+      const welcomeBackMessage: ForgeMessageData = {
+        id: `welcome-back-${Date.now()}`,
+        type: 'assistant',
+        content: `🎉 Welcome to EventFoundry, ${user.name || 'friend'}!\n\nThank you for joining us! I've saved all your event details:\n\n• **Event Type:** ${clientBrief.event_type}\n• **Date:** ${clientBrief.date}\n• **Location:** ${clientBrief.city}\n• **Guest Count:** ${clientBrief.guest_count}\n• **Venue:** ${clientBrief.venue_status}\n\nPerfect! Let me now create your personalized event checklist...`,
+        timestamp: new Date(),
+        metadata: {
+          isWelcomeBack: true
+        }
+      };
+
+      addMessage(welcomeBackMessage);
+      setPostAuthWelcome(true);
+
+      // Clean up pending auth flag
+      localStorage.removeItem('forgeChat_pendingAuth');
+
+      // Trigger event creation after short delay
+      setTimeout(() => {
+        triggerEventCreation();
+      }, 2000);
+    }
+  }, [user, isAuthenticated, currentStep, isComplete, clientBrief, addMessage, triggerEventCreation]);
+
   const getStepField = (step: number): keyof ClientBrief => {
     const stepFields: (keyof ClientBrief)[] = ['event_type', 'date', 'city', 'guest_count', 'venue_status'];
     return stepFields[step - 1];
@@ -125,115 +316,14 @@ export const useForgeChat = () => {
 
     // Move to next step or complete
     if (currentStep >= 5) {
-      // Complete the chat and select blueprint
-      setTimeout(async () => {
-        setIsCreatingEvent(true);
-
-        try {
-          // Check authentication
-          if (!isAuthenticated || !user) {
-            const authMessage: ForgeMessageData = {
-              id: `auth-required-${Date.now()}`,
-              type: 'assistant',
-              content: `To create your event, please sign in or create an account. Your event details will be saved for you.`,
-              timestamp: new Date(),
-              action: {
-                type: 'navigate',
-                label: 'Sign In / Register →',
-                href: '/login'
-              }
-            };
-            addMessage(authMessage);
-            setIsCreatingEvent(false);
-            return;
-          }
-
-          // Select blueprint
-          const selectedBlueprint = await selectForgeBlueprint(updatedBrief);
-          setBlueprintId(selectedBlueprint.id);
-
-          // Create event title
-          const eventTitle = `${updatedBrief.event_type || 'Event'} - ${updatedBrief.city || 'TBD'} - ${updatedBrief.date || 'Date TBD'}`;
-
-          // Prepare event data for database
-          const eventData = {
-            owner_user_id: user.userId,
-            title: eventTitle,
-            event_type: updatedBrief.event_type || 'General Event',
-            date: updatedBrief.date || null,
-            city: updatedBrief.city || null,
-            guest_count: parseInt(updatedBrief.guest_count || '0') || null,
-            client_brief: {
-              event_type: updatedBrief.event_type,
-              date: updatedBrief.date,
-              city: updatedBrief.city,
-              guest_count: updatedBrief.guest_count,
-              venue_status: updatedBrief.venue_status,
-              conversation: messages.slice(-10), // Last 10 messages for context
-              reference_images: []
-            },
-            forge_blueprint: selectedBlueprint.blueprint || {},
-            forge_status: 'BLUEPRINT_READY' as const,
-          };
-
-          console.log('Creating event in database:', eventData);
-
-          // Create event in database
-          const result = await createEvent(eventData);
-
-          if (result.error) {
-            console.error('Error creating event:', result.error);
-            const errorMessage: ForgeMessageData = {
-              id: `error-${Date.now()}`,
-              type: 'assistant',
-              content: `I encountered an issue creating your event. Please try again or contact support at kerala@eventfoundry.com`,
-              timestamp: new Date()
-            };
-            addMessage(errorMessage);
-            setIsCreatingEvent(false);
-            return;
-          }
-
-          const createdEvent = result.data;
-          console.log('Event created successfully:', createdEvent);
-
-          const completionMessage: ForgeMessageData = {
-            id: `completion-${Date.now()}`,
-            type: 'assistant',
-            content: `Perfect! I've created your event blueprint. Click below to review and customize your requirements:`,
-            timestamp: new Date(),
-            action: {
-              type: 'navigate',
-              label: 'Review Event Blueprint →',
-              href: `/blueprint/${createdEvent?.id}`
-            },
-            metadata: {
-              blueprintId: selectedBlueprint.id,
-              eventId: createdEvent?.id,
-              blueprintHint: "Your custom blueprint is ready for review."
-            }
-          };
-
-          addMessage(completionMessage);
-          setIsComplete(true);
-          setIsCreatingEvent(false);
-
-        } catch (error) {
-          console.error('Unexpected error creating event:', error);
-          const errorMessage: ForgeMessageData = {
-            id: `error-${Date.now()}`,
-            type: 'assistant',
-            content: `An unexpected error occurred. Please try again or contact support.`,
-            timestamp: new Date()
-          };
-          addMessage(errorMessage);
-          setIsCreatingEvent(false);
-        }
+      // Complete the chat and trigger event creation
+      setTimeout(() => {
+        triggerEventCreation();
       }, 1500);
     } else {
       setCurrentStep(prev => prev + 1);
     }
-  }, [currentStep, clientBrief, messages, user, isAuthenticated, addMessage]);
+  }, [currentStep, clientBrief, addMessage, triggerEventCreation]);
 
   const resetChat = useCallback(() => {
     clearSession();
@@ -278,6 +368,7 @@ export const useForgeChat = () => {
     isComplete,
     blueprintId,
     isCreatingEvent,
+    postAuthWelcome,
     addMessage,
     handleAnswer,
     resetChat

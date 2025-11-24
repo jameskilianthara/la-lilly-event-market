@@ -21,6 +21,7 @@ import {
   XMarkIcon,
   PhotoIcon
 } from '@heroicons/react/24/outline';
+import { updateEvent } from '../../lib/database';
 
 interface ChecklistItem {
   id: string;
@@ -71,6 +72,7 @@ function ChecklistPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const eventType = searchParams?.get('type') || 'wedding';
+  const eventId = searchParams?.get('eventId'); // NEW: Get eventId from URL
 
   const [checklist, setChecklist] = useState<ChecklistData | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
@@ -79,6 +81,7 @@ function ChecklistPageContent() {
   const [imageReferences, setImageReferences] = useState<Record<string, string[]>>({});
   const [imageInputs, setImageInputs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false); // NEW: Track save state
 
   useEffect(() => {
     loadChecklist();
@@ -87,23 +90,38 @@ function ChecklistPageContent() {
 
   const loadChecklist = async () => {
     try {
+      console.log('Loading checklist for event type:', eventType);
       const response = await fetch(`/data/checklists/${eventType}.json`);
-      if (!response.ok) throw new Error('Checklist not found');
+
+      if (!response.ok) {
+        console.error(`Checklist not found: ${eventType}.json`);
+        throw new Error('Checklist not found');
+      }
+
       const data = await response.json();
+      console.log('Checklist loaded successfully:', data.displayName);
       setChecklist(data);
+
       // Expand first category by default
       if (data.categories.length > 0) {
         setExpandedCategories(new Set([data.categories[0].id]));
       }
     } catch (error) {
       console.error('Error loading checklist:', error);
-      // Fallback to wedding if type not found
-      if (eventType !== 'wedding') {
-        const response = await fetch('/data/checklists/wedding.json');
-        const data = await response.json();
-        setChecklist(data);
-        if (data.categories.length > 0) {
-          setExpandedCategories(new Set([data.categories[0].id]));
+      console.log('Attempting fallback to party.json...');
+
+      // Fallback to party checklist (most versatile) if type not found
+      if (eventType !== 'party') {
+        try {
+          const response = await fetch('/data/checklists/party.json');
+          const data = await response.json();
+          console.log('Fallback checklist loaded:', data.displayName);
+          setChecklist(data);
+          if (data.categories.length > 0) {
+            setExpandedCategories(new Set([data.categories[0].id]));
+          }
+        } catch (fallbackError) {
+          console.error('Fallback also failed:', fallbackError);
         }
       }
     } finally {
@@ -255,6 +273,48 @@ function ChecklistPageContent() {
   // Handle image input change
   const handleImageInputChange = (itemId: string, value: string) => {
     setImageInputs({ ...imageInputs, [itemId]: value });
+  };
+
+  // NEW: Handle saving checklist and continuing to blueprint
+  const handleContinueToBlueprint = async () => {
+    if (!eventId) {
+      // If no eventId, just navigate (old behavior for compatibility)
+      const blueprintId = eventType.toLowerCase().replace(/\s+/g, '_') + '_forge';
+      router.push(`/blueprint/${blueprintId}?type=${eventType}`);
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      // Save checklist selections to event
+      const checklistData = {
+        selections,
+        categoryNotes,
+        imageReferences,
+        completedAt: new Date().toISOString()
+      };
+
+      const { error } = await updateEvent(eventId, {
+        client_brief: {
+          checklist: checklistData
+        }
+      });
+
+      if (error) {
+        console.error('Error saving checklist:', error);
+        alert('Failed to save checklist. Please try again.');
+        setSaving(false);
+        return;
+      }
+
+      // Navigate to blueprint page with eventId
+      router.push(`/blueprint/${eventId}`);
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      alert('An unexpected error occurred. Please try again.');
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -589,14 +649,21 @@ function ChecklistPageContent() {
         {hasAnySelections() && (
           <div className="mt-10 flex justify-center">
             <button
-              onClick={() => {
-                const blueprintId = eventType.toLowerCase().replace(/\s+/g, '_') + '_forge';
-                router.push(`/blueprint/${blueprintId}?type=${eventType}`);
-              }}
-              className="group flex items-center space-x-3 px-10 py-5 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-bold rounded-2xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105 border border-orange-400/50"
+              onClick={handleContinueToBlueprint}
+              disabled={saving}
+              className="group flex items-center space-x-3 px-10 py-5 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-bold rounded-2xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 transform hover:scale-105 border border-orange-400/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              <span className="text-lg">Continue to Blueprint Review</span>
-              <ArrowRightIcon className="h-6 w-6 group-hover:translate-x-1 transition-transform duration-200" />
+              {saving ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-lg">Saving Checklist...</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-lg">Continue to Blueprint Review</span>
+                  <ArrowRightIcon className="h-6 w-6 group-hover:translate-x-1 transition-transform duration-200" />
+                </>
+              )}
             </button>
           </div>
         )}

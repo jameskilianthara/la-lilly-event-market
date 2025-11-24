@@ -1,0 +1,230 @@
+{
+  "eventType": "engagement",
+  "displayName": "Engagement Ceremony Checklist",
+  "categories": [
+    {
+      "id": "ceremony_details",
+      "title": "Ceremony Details",
+      "icon": "💍",
+      "items": [
+        {
+          "id": "ceremony_type",
+          "question": "Type of engagement ceremony",
+          "type": "select",
+          "options": ["Ring Ceremony", "Roka Ceremony", "Sagai", "Formal Engagement", "Intimate Family Ceremony", "Grand Celebration", "Inter-faith Engagement"]
+        },
+        {
+          "id": "ceremony_style",
+          "question": "Ceremony style preference",
+          "type": "radio",
+          "options": ["Traditional and formal", "Modern and contemporary", "Fusion of both", "Intimate and simple"]
+        },
+        {
+          "id": "religious_customs",
+          "question": "Religious or cultural customs to include",
+          "type": "checkbox",
+          "options": ["Hindu rituals", "Christian blessings", "Muslim traditions", "Sikh ceremonies", "Regional customs", "Family traditions", "No specific religious customs"]
+        },
+        {
+          "id": "ceremony_timing",
+          "question": "Preferred ceremony timing",
+          "type": "select",
+          "options": ["Morning ceremony", "Afternoon ceremony", "Evening ceremony", "Night celebration", "Flexible timing"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "venue_setup",
+      "title": "Venue & Setup",
+      "icon": "🏛️",
+      "items": [
+        {
+          "id": "venue_preference",
+          "question": "Venue preference",
+          "type": "radio",
+          "options": ["Banquet hall", "Home/residence", "Garden/outdoor venue", "Hotel ballroom", "Temple/religious venue"]
+        },
+        {
+          "id": "seating_arrangement",
+          "question": "Seating arrangement style",
+          "type": "select",
+          "options": ["Traditional floor seating", "Chairs and tables", "Mixed seating", "Stage seating for couple", "Open standing arrangement"]
+        },
+        {
+          "id": "stage_setup",
+          "question": "Stage and backdrop requirements",
+          "type": "checkbox",
+          "options": ["Engagement stage/mandap", "Floral backdrop", "Photo booth area", "Traditional jhula/swing", "Modern LED backdrop", "Family seating area"]
+        },
+        {
+          "id": "entrance_decor",
+          "question": "Entrance and pathway decoration",
+          "type": "checkbox",
+          "options": ["Floral entrance arch", "Welcome signage", "Pathway lighting", "Red carpet", "Traditional rangoli", "Photo wall"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "decoration_theme",
+      "title": "Decoration & Theme",
+      "icon": "🎨",
+      "items": [
+        {
+          "id": "color_scheme",
+          "question": "Preferred color scheme",
+          "type": "checkbox",
+          "options": ["Pastels (pink, peach, mint)", "Traditional (red, gold, maroon)", "Royal (purple, blue, gold)", "Modern (white, silver, rose gold)", "Floral (mixed natural colors)", "Custom palette"]
+        },
+        {
+          "id": "floral_arrangements",
+          "question": "Floral decoration requirements",
+          "type": "checkbox",
+          "options": ["Stage/mandap flowers", "Table centerpieces", "Ceiling installations", "Flower curtains", "Garlands for couple", "Entrance flower arrangements"]
+        },
+        {
+          "id": "lighting_setup",
+          "question": "Lighting and ambiance",
+          "type": "checkbox",
+          "options": ["Fairy lights", "Traditional diyas/candles", "LED uplighting", "Chandeliers", "Spotlights for stage", "Ambient mood lighting"]
+        },
+        {
+          "id": "special_elements",
+          "question": "Special decorative elements",
+          "type": "checkbox",
+          "options": ["Customized name boards", "Photo displays (couple's journey)", "Gift display area", "Traditional props (kalash, coconuts)", "Modern art installations"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "guest_management",
+      "title": "Guest Management",
+      "icon": "👥",
+      "items": [
+        {
+          "id": "invitation_requirements",
+          "question": "Invitation requirements",
+          "type": "checkbox",
+          "options": ["Printed invitations", "Digital invitations", "Video invitations", "Personalized cards", "RSVP management", "Guest list tracking"]
+        },
+        {
+          "id": "guest_services",
+          "question": "Guest services needed",
+          "type": "checkbox",
+          "options": ["Welcome drinks on arrival", "Valet parking", "Guest seating coordination", "Coat/bag check", "Restroom attendants", "Transportation for guests"]
+        },
+        {
+          "id": "accommodation",
+          "question": "Accommodation arrangements",
+          "type": "radio",
+          "options": ["Not needed", "For close family only", "For out-of-town guests", "For all guests", "Hotel block booking"]
+        },
+        {
+          "id": "special_guests",
+          "question": "Special guest considerations",
+          "type": "checkbox",
+          "options": ["Elderly guest accessibility", "Kids' play area", "VIP seating area", "Separate family rooms", "Prayer/meditation room"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "food_beverage",
+      "title": "Food & Beverage",
+      "icon": "🍽️",
+      "items": [
+        {
+          "id": "meal_service",
+          "question": "Meal service style",
+          "type": "select",
+          "options": ["Full meal (lunch/dinner)", "High tea and snacks", "Cocktail and appetizers", "Traditional thali service", "Buffet style", "Plated service"]
+        },
+        {
+          "id": "cuisine_preferences",
+          "question": "Cuisine preferences",
+          "type": "checkbox",
+          "options": ["North Indian", "South Indian", "Continental", "Chinese", "Fusion", "Regional specialties", "Traditional sweets"]
+        },
+        {
+          "id": "beverage_service",
+          "question": "Beverage and bar service",
+          "type": "checkbox",
+          "options": ["Welcome drinks", "Soft drinks and juices", "Tea and coffee service", "Mocktails", "Limited bar", "Full bar service"]
+        },
+        {
+          "id": "special_dietary",
+          "question": "Special dietary requirements",
+          "type": "checkbox",
+          "options": ["Vegetarian menu", "Vegan options", "Jain food", "Gluten-free options", "Kids' menu", "Diabetic-friendly options"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "entertainment_photography",
+      "title": "Entertainment & Photography",
+      "icon": "📸",
+      "items": [
+        {
+          "id": "photography_coverage",
+          "question": "Photography and videography",
+          "type": "checkbox",
+          "options": ["Professional photographer", "Videography team", "Candid photography", "Traditional posed photos", "Drone coverage", "Photo booth with props"]
+        },
+        {
+          "id": "music_entertainment",
+          "question": "Music and entertainment",
+          "type": "checkbox",
+          "options": ["DJ services", "Live band/singer", "Traditional musicians", "Background music", "Dance performances", "MC/anchor for ceremony"]
+        },
+        {
+          "id": "special_moments",
+          "question": "Special moments to capture",
+          "type": "checkbox",
+          "options": ["Ring exchange ceremony", "Family blessing moments", "Couple's first photos", "Group family photos", "Traditional rituals", "Surprise elements"]
+        },
+        {
+          "id": "live_streaming",
+          "question": "Live streaming for remote guests",
+          "type": "radio",
+          "options": ["Yes - professional streaming", "Yes - simple video call", "No streaming needed"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "additional_services",
+      "title": "Additional Services",
+      "icon": "✨",
+      "items": [
+        {
+          "id": "mehendi_ceremony",
+          "question": "Mehendi ceremony arrangements",
+          "type": "radio",
+          "options": ["Full mehendi ceremony (separate event)", "Combined with engagement", "Bride only", "Not needed"]
+        },
+        {
+          "id": "gifting_requirements",
+          "question": "Gift and favor requirements",
+          "type": "checkbox",
+          "options": ["Return gifts for guests", "Shagun envelopes", "Gift display and management", "Personalized favors", "Traditional gift hampers"]
+        },
+        {
+          "id": "coordination_support",
+          "question": "Event coordination support",
+          "type": "select",
+          "options": ["Full event planner", "Day-of coordinator", "Family coordination only", "Setup and breakdown crew", "Self-managed"]
+        },
+        {
+          "id": "security_safety",
+          "question": "Security and safety measures",
+          "type": "checkbox",
+          "options": ["Security personnel", "Fire safety arrangements", "First aid team", "Crowd management", "Lost and found desk"]
+        }
+      ],
+      "additionalNotes": true
+    }
+  ]
+}

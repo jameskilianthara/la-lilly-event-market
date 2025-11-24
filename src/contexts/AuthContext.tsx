@@ -52,21 +52,49 @@ interface AuthProviderProps {
 }
 
 // Helper: Convert Supabase user + metadata to our User type
+// VERIFIED: Only queries existing fields from users table (user_type, full_name)
 async function mapSupabaseUserToAppUser(supabaseUser: SupabaseUser): Promise<User | null> {
-  if (!supabase) return null;
+  if (!supabase) {
+    console.error('mapSupabaseUserToAppUser: Supabase client not available');
+    return null;
+  }
 
   try {
-    // Fetch user profile from public.users table
-    const { data: profile, error } = await supabase
-      .from('users')
-      .select('user_type, name, company_name, service_type')
-      .eq('id', supabaseUser.id)
-      .single();
+    console.log('mapSupabaseUserToAppUser: Fetching profile for user:', supabaseUser.id);
 
-    if (error || !profile) {
-      console.error('Error fetching user profile:', error);
+    // Fetch user profile from public.users table with timeout
+    // Note: users table only has id, email, user_type, full_name, phone, created_at
+    const { data: profile, error } = await Promise.race([
+      supabase
+        .from('users')
+        .select('user_type, full_name')
+        .eq('id', supabaseUser.id)
+        .single(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+      )
+    ]);
+
+    if (error) {
+      console.error('Error fetching user profile:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       return null;
     }
+
+    if (!profile) {
+      console.error('No profile found for user:', supabaseUser.id);
+      return null;
+    }
+
+    console.log('Profile fetched successfully:', {
+      userId: supabaseUser.id,
+      userType: profile.user_type,
+      hasName: !!profile.full_name
+    });
 
     const baseUser = {
       userId: supabaseUser.id,
@@ -78,17 +106,19 @@ async function mapSupabaseUserToAppUser(supabaseUser: SupabaseUser): Promise<Use
     };
 
     if (profile.user_type === 'vendor') {
+      // Note: company_name and service_type are in vendors table, not users table
+      // They should be fetched separately if needed
       return {
         ...baseUser,
         userType: 'vendor',
-        companyName: profile.company_name || undefined,
-        serviceType: profile.service_type || undefined,
+        companyName: undefined,
+        serviceType: undefined,
       } as VendorUser;
     } else {
       return {
         ...baseUser,
         userType: 'client',
-        name: profile.name || undefined,
+        name: profile.full_name || undefined,
       } as ClientUser;
     }
   } catch (error) {
@@ -203,9 +233,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     try {
+      console.log('Attempting login for:', email);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
+      });
+
+      console.log('Login response:', {
+        hasUser: !!data?.user,
+        hasSession: !!data?.session,
+        error: error?.message
       });
 
       if (error) {
@@ -213,29 +251,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { success: false, error: error.message };
       }
 
-      if (data.user) {
-        const appUser = await mapSupabaseUserToAppUser(data.user);
-        if (appUser) {
-          setUser(appUser);
-          setIsAuthenticated(true);
-          localStorage.setItem('currentUser', JSON.stringify(appUser));
-          if (rememberMe) {
-            localStorage.setItem('rememberMe', 'true');
-          }
-          console.log('Login successful:', {
-            userId: appUser.userId,
-            userType: appUser.userType
-          });
-          return { success: true };
-        } else {
-          return { success: false, error: 'User profile not found' };
-        }
+      if (!data.user) {
+        console.error('Login failed: No user in response');
+        return { success: false, error: 'Login failed - no user returned' };
       }
 
-      return { success: false, error: 'Login failed' };
+      console.log('Fetching user profile for:', data.user.id);
+      const appUser = await mapSupabaseUserToAppUser(data.user);
+
+      if (!appUser) {
+        console.error('Failed to map user profile');
+        return { success: false, error: 'User profile not found. Please ensure your account is properly set up.' };
+      }
+
+      // Update state immediately
+      setUser(appUser);
+      setIsAuthenticated(true);
+      localStorage.setItem('currentUser', JSON.stringify(appUser));
+
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+      }
+
+      console.log('Login successful:', {
+        userId: appUser.userId,
+        userType: appUser.userType,
+        email: appUser.email
+      });
+
+      return { success: true };
     } catch (error) {
       console.error('Unexpected login error:', error);
-      return { success: false, error: 'An unexpected error occurred' };
+      return { success: false, error: 'An unexpected error occurred during login. Please try again.' };
     }
   };
 
@@ -273,7 +320,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       // Create user profile in public.users table
-      const { error: profileError } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('users')
         .insert({
           id: authData.user.id,
@@ -281,12 +328,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           user_type: userType,
           full_name: metadata?.name || null,
           phone: metadata?.phone || null,
-        });
+        })
+        .select()
+        .single();
 
       if (profileError) {
-        console.error('Error creating user profile:', profileError);
-        return { success: false, error: 'Failed to create user profile' };
+        console.error('Error creating user profile:', {
+          error: profileError,
+          code: profileError.code,
+          message: profileError.message,
+          details: profileError.details,
+          hint: profileError.hint
+        });
+        return {
+          success: false,
+          error: `Failed to create user profile: ${profileError.message || 'Unknown error'}. This may be a permissions issue.`
+        };
       }
+
+      console.log('User profile created successfully:', profileData);
 
       // If email confirmation is not required, map user immediately
       if (authData.session) {
@@ -348,11 +408,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     try {
-      // Update public.users table
+      // Update public.users table (only has user_type, full_name, phone)
       const dbUpdates: Record<string, any> = {};
-      if ('name' in updates) dbUpdates.name = updates.name;
-      if ('companyName' in updates) dbUpdates.company_name = updates.companyName;
-      if ('serviceType' in updates) dbUpdates.service_type = updates.serviceType;
+      if ('name' in updates) dbUpdates.full_name = updates.name;
+      // Note: companyName and serviceType are in vendors table, not users table
 
       if (Object.keys(dbUpdates).length > 0) {
         const { error } = await supabase

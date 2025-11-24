@@ -6,6 +6,7 @@ import { useForgeChat } from '../../hooks/useForgeChat';
 import { ForgeMessage } from './ForgeMessage';
 import { ForgeProgress } from './ForgeProgress';
 import { BlueprintPreview } from './BlueprintPreview';
+import { EventDatePicker } from './EventDatePicker';
 import type { ClientBrief } from '../../types/blueprint';
 
 interface ForgeChatProps {
@@ -82,8 +83,8 @@ export const ForgeChat: React.FC<ForgeChatProps> = () => {
         examples: ["June 15, 2025", "December 2024", "Spring 2025"]
       },
       {
-        placeholder: "e.g., Mumbai, Delhi, Bangalore...",
-        examples: ["Mumbai", "Delhi", "Bangalore", "Chennai"]
+        placeholder: "e.g., Kochi, Mumbai, Bangalore...",
+        examples: ["Kochi", "Mumbai", "Bangalore", "Delhi"]
       },
       {
         placeholder: "e.g., 150 guests, Around 200 people...",
@@ -145,7 +146,7 @@ export const ForgeChat: React.FC<ForgeChatProps> = () => {
               </div>
 
               {/* Messages Area */}
-              <div className="h-[500px] overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-slate-900/30 to-slate-900/50">
+              <div className="h-[400px] overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-slate-900/30 to-slate-900/50">
                 {messages.map((message) => (
                   <ForgeMessage key={message.id} message={message} />
                 ))}
@@ -173,43 +174,68 @@ export const ForgeChat: React.FC<ForgeChatProps> = () => {
               {/* Input Area */}
               {!isComplete && (
                 <div className="border-t border-slate-700/50 p-4 bg-slate-800/95 backdrop-blur-sm">
-                  <form onSubmit={handleSubmit} className="space-y-3">
+                  {/* Step 2: Date Picker */}
+                  {currentStep === 2 ? (
+                    <EventDatePicker
+                      onDateSelect={(date) => {
+                        // Add user message with formatted date
+                        addMessage({
+                          id: Date.now().toString(),
+                          type: 'user',
+                          content: date,
+                          timestamp: new Date()
+                        });
 
-                    <div className="flex space-x-3">
-                      <input
-                        ref={inputRef}
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        placeholder={currentStepData.placeholder}
-                        disabled={isTyping}
-                        className="flex-1 bg-slate-700 border border-slate-600 rounded-full px-5 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 disabled:opacity-50 disabled:bg-slate-700/50 transition-all"
-                      />
-                      <button
-                        type="submit"
-                        disabled={!inputValue.trim() || isTyping}
-                        className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-slate-600 disabled:to-slate-700 w-12 h-12 rounded-full text-white font-semibold transition-all duration-200 flex items-center justify-center disabled:cursor-not-allowed shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 disabled:shadow-none disabled:scale-100"
-                      >
-                        <ChevronRightIcon className="h-5 w-5" />
-                      </button>
-                    </div>
+                        // Show typing indicator
+                        setIsTyping(true);
 
-                    {/* Quick Examples */}
-                    {currentStepData.examples.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {currentStepData.examples.map((example, index) => (
-                          <button
-                            key={index}
-                            type="button"
-                            onClick={() => setInputValue(example)}
-                            className="bg-slate-700 hover:bg-slate-600 border border-slate-600 px-3 py-1.5 rounded-full text-sm text-slate-200 hover:text-white transition-all font-medium shadow-sm hover:shadow-md"
-                          >
-                            {example}
-                          </button>
-                        ))}
+                        // Process answer
+                        setTimeout(async () => {
+                          await handleAnswer(date);
+                          setIsTyping(false);
+                        }, 800 + Math.random() * 1200);
+                      }}
+                      initialDate={clientBrief.date || ''}
+                    />
+                  ) : (
+                    /* Steps 1, 3, 4, 5: Regular Text Input */
+                    <form onSubmit={handleSubmit} className="space-y-3">
+                      <div className="flex space-x-3">
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={inputValue}
+                          onChange={(e) => setInputValue(e.target.value)}
+                          placeholder={currentStepData.placeholder}
+                          disabled={isTyping}
+                          className="flex-1 bg-slate-700 border border-slate-600 rounded-full px-5 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 disabled:opacity-50 disabled:bg-slate-700/50 transition-all"
+                        />
+                        <button
+                          type="submit"
+                          disabled={!inputValue.trim() || isTyping}
+                          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-slate-600 disabled:to-slate-700 w-12 h-12 rounded-full text-white font-semibold transition-all duration-200 flex items-center justify-center disabled:cursor-not-allowed shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 disabled:shadow-none disabled:scale-100"
+                        >
+                          <ChevronRightIcon className="h-5 w-5" />
+                        </button>
                       </div>
-                    )}
-                  </form>
+
+                      {/* Quick Examples */}
+                      {currentStepData.examples.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {currentStepData.examples.map((example, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => setInputValue(example)}
+                              className="bg-slate-700 hover:bg-slate-600 border border-slate-600 px-3 py-1.5 rounded-full text-sm text-slate-200 hover:text-white transition-all font-medium shadow-sm hover:shadow-md"
+                            >
+                              {example}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </form>
+                  )}
                 </div>
               )}
 
