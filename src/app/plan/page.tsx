@@ -329,7 +329,8 @@ const CHECKLIST_DATABASE = {
 
 const generateChecklistForEvent = (eventType: string, guestCount: string, venueStatus: string): Category[] => {
   // Determine which checklist to use based on event type
-  let selectedChecklist = CHECKLIST_DATABASE["General Checklist"];
+  // Type as Record to allow flexible structure (some categories are objects, some are arrays)
+  let selectedChecklist: Record<string, string[] | Record<string, string[]> | never[]> = CHECKLIST_DATABASE["General Checklist"];
   
   // Match event type to database keys
   const eventLower = eventType.toLowerCase();
@@ -670,10 +671,14 @@ export default function PlanEventPage() {
       setShowChecklist(false);
       
       // Reset memory fields from this point forward
+      // Only reset string fields (event_type, date, location, guest_count, venue_status)
       const fieldsToReset = questions.slice(questionIndex).map(q => q.field);
-      const updates: Partial<EventMemory> = {};
+      const updates: Partial<Pick<EventMemory, 'event_type' | 'date' | 'location' | 'guest_count' | 'venue_status'>> = {};
       fieldsToReset.forEach(field => {
-        updates[field] = '';
+        // Type guard: only reset string fields
+        if (field === 'event_type' || field === 'date' || field === 'location' || field === 'guest_count' || field === 'venue_status') {
+          updates[field] = '';
+        }
       });
       
       updateMemory(updates);

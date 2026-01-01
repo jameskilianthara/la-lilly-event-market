@@ -246,7 +246,7 @@ export const useForgeChat = () => {
       const welcomeBackMessage: ForgeMessageData = {
         id: `welcome-back-${Date.now()}`,
         type: 'assistant',
-        content: `🎉 Welcome to EventFoundry, ${user.name || 'friend'}!\n\nThank you for joining us! I've saved all your event details:\n\n• **Event Type:** ${clientBrief.event_type}\n• **Date:** ${clientBrief.date}\n• **Location:** ${clientBrief.city}\n• **Guest Count:** ${clientBrief.guest_count}\n• **Venue:** ${clientBrief.venue_status}\n\nPerfect! Let me now create your personalized event checklist...`,
+        content: `🎉 Welcome to EventFoundry, ${(user.userType === 'client' ? user.name : undefined) || 'friend'}!\n\nThank you for joining us! I've saved all your event details:\n\n• **Event Type:** ${clientBrief.event_type}\n• **Date:** ${clientBrief.date}\n• **Location:** ${clientBrief.city}\n• **Guest Count:** ${clientBrief.guest_count}\n• **Venue:** ${clientBrief.venue_status}\n\nPerfect! Let me now create your personalized event checklist...`,
         timestamp: new Date(),
         metadata: {
           isWelcomeBack: true

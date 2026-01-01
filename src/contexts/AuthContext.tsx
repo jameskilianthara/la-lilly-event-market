@@ -292,7 +292,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: string,
     userType: 'vendor' | 'client',
     metadata?: Record<string, any>
-  ): Promise<{ success: boolean; error?: string }> => {
+  ): Promise<{ success: boolean; userId?: string; error?: string }> => {
     if (!supabase) {
       return { success: false, error: 'Supabase client not initialized' };
     }

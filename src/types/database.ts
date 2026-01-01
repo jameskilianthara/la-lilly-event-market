@@ -210,6 +210,9 @@ export interface BidInsert {
 }
 
 export interface BidUpdate {
+  competitive_intelligence?: any;
+  shortlisted_at?: string | null;
+  rejected_at?: string | null;
   forge_items?: any;
   subtotal?: number;
   taxes?: number;

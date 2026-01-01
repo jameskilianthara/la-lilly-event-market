@@ -170,7 +170,14 @@ const generateProposalFromVendor = (vendor: VendorProfile, eventType: string, gu
   };
 
   // Generate proposal items based on selected checklist items
-  const proposalItems = [];
+  const proposalItems: {
+    category: string;
+    service: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+    notes?: string;
+  }[] = [];
   let totalCost = 0;
   
   if (checklistItems.length > 0) {

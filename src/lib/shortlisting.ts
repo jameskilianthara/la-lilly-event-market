@@ -3,6 +3,7 @@
 
 import { supabase } from '../../lib/supabase';
 import { getBidsByEventId, updateBid, updateEvent } from './database';
+import { calculateCompetitivePricing } from './competitive-pricing';
 import type { Bid, Event } from '../types/database';
 
 export interface CompetitiveIntelligence {
@@ -122,6 +123,15 @@ export async function processShortlisting(eventId: string): Promise<Shortlisting
       shortlist_finalized_at: new Date().toISOString(),
       final_bidding_closes_at: finalDeadline.toISOString()
     });
+
+    // Calculate competitive pricing for shortlisted bids
+    const pricingResult = await calculateCompetitivePricing(eventId);
+    if (pricingResult.success) {
+      console.log(`Competitive pricing calculated for ${pricingResult.totalBidsAnalyzed || 0} bids`);
+    } else {
+      console.warn('Competitive pricing calculation failed:', pricingResult.error);
+      // Don't fail shortlisting if pricing calculation fails
+    }
 
     console.log('Shortlisting completed successfully');
 
@@ -358,4 +368,47 @@ export function calculateShortlistingStats(bids: Bid[]): {
     averageBid: bids.reduce((sum, bid) => sum + bid.total_forge_cost, 0) / bids.length,
     medianBid: sortedBids[Math.floor(sortedBids.length / 2)].total_forge_cost
   };
+}
+
+/**
+ * Trigger automatic shortlisting when bidding window closes
+ * This function is called automatically when bidding closes
+ */
+export async function triggerAutomaticShortlisting(eventId: string) {
+  try {
+    console.log('Triggering automatic shortlisting for event:', eventId);
+
+    // Use the existing processShortlisting function
+    const result = await processShortlisting(eventId);
+
+    if (!result.success) {
+      console.error('Automatic shortlisting failed:', result.error);
+      return {
+        success: false,
+        error: result.error,
+        shortlistedCount: 0
+      };
+    }
+
+    // Calculate competitive pricing (already done in processShortlisting, but ensure it's called)
+    const pricingResult = await calculateCompetitivePricing(eventId);
+    console.log('Competitive pricing result:', pricingResult.success ? 'Success' : pricingResult.error);
+
+    console.log(`Automatic shortlisting completed: ${result.shortlisted.length} bids shortlisted`);
+
+    return {
+      success: true,
+      shortlistedCount: result.shortlisted.length,
+      rejectedCount: result.rejected.length,
+      lowestBid: result.lowestBid,
+      shortlistedBids: result.shortlisted
+    };
+  } catch (error) {
+    console.error('Error in automatic shortlisting:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      shortlistedCount: 0
+    };
+  }
 }

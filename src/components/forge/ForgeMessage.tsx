@@ -18,6 +18,9 @@ export interface ForgeMessageData {
     step?: number;
     blueprintHint?: string;
     blueprintId?: string;
+    eventId?: string;
+    checklistType?: string;
+    isWelcomeBack?: boolean;
   };
 }
 

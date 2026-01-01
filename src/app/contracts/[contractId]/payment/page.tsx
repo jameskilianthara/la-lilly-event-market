@@ -219,9 +219,9 @@ export default function ContractPaymentPage() {
             vendorName: contract.bids.vendors.company_name,
           }}
           clientDetails={{
-            name: user?.name || '',
+            name: (user?.userType === 'client' ? user.name : undefined) || '',
             email: user?.email || '',
-            phone: user?.phone || '',
+            phone: '', // Phone not available in User type, would need to fetch from database
           }}
           onSuccess={handlePaymentSuccess}
           onFailure={handlePaymentFailure}

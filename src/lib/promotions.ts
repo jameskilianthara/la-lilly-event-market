@@ -398,10 +398,19 @@ export async function recordPromoUsage(
 
     // If RPC not available, use update query
     if (updateError) {
-      await supabase
+      // Increment usage count - fetch current value first
+      const { data: currentCode } = await supabase
         .from('promo_codes')
-        .update({ usage_count: supabase.raw('usage_count + 1') })
-        .eq('id', promoCodeId);
+        .select('usage_count')
+        .eq('id', promoCodeId)
+        .single();
+      
+      if (currentCode) {
+        await supabase
+          .from('promo_codes')
+          .update({ usage_count: (currentCode.usage_count || 0) + 1 })
+          .eq('id', promoCodeId);
+      }
     }
 
     return { success: true };

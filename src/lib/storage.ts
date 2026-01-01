@@ -30,7 +30,7 @@ export const ALLOWED_IMAGE_TYPES = [
 /**
  * Validate image file before upload
  */
-export function validateImageFile(file, maxSize) {
+export function validateImageFile(file: File, maxSize: number): { valid: boolean; error?: string } {
   if (!file) {
     return { valid: false, error: 'No file provided' };
   }
@@ -56,7 +56,7 @@ export function validateImageFile(file, maxSize) {
 /**
  * Generate unique filename with timestamp
  */
-export function generateFileName(originalName) {
+export function generateFileName(originalName: string): string {
   const timestamp = Date.now();
   const randomStr = Math.random().toString(36).substring(2, 8);
   const ext = originalName.split('.').pop();
@@ -70,7 +70,7 @@ export function generateFileName(originalName) {
  * @param {string} type - 'logo' or 'headshot'
  * @returns {Promise<{success: boolean, url?: string, error?: string}>}
  */
-export async function uploadVendorProfileImage(file, userId, type = 'logo') {
+export async function uploadVendorProfileImage(file: File, userId: string, type: 'logo' | 'headshot' = 'logo'): Promise<{ success: boolean; url?: string; error?: string; path?: string }> {
   if (!supabase) {
     return { success: false, error: 'Supabase client not initialized' };
   }
@@ -110,7 +110,7 @@ export async function uploadVendorProfileImage(file, userId, type = 'logo') {
     };
   } catch (error) {
     console.error('Upload failed:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Upload failed' };
   }
 }
 
@@ -121,7 +121,7 @@ export async function uploadVendorProfileImage(file, userId, type = 'logo') {
  * @param {string} eventId - Optional event ID for categorization
  * @returns {Promise<{success: boolean, url?: string, error?: string}>}
  */
-export async function uploadVendorPortfolioImage(file, userId, eventId = 'general') {
+export async function uploadVendorPortfolioImage(file: File, userId: string, eventId: string = 'general'): Promise<{ success: boolean; url?: string; error?: string; path?: string }> {
   if (!supabase) {
     return { success: false, error: 'Supabase client not initialized' };
   }
@@ -161,7 +161,7 @@ export async function uploadVendorPortfolioImage(file, userId, eventId = 'genera
     };
   } catch (error) {
     console.error('Upload failed:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Upload failed' };
   }
 }
 
@@ -172,7 +172,7 @@ export async function uploadVendorPortfolioImage(file, userId, eventId = 'genera
  * @param {string} eventId - Event ID for categorization
  * @returns {Promise<{success: boolean, url?: string, error?: string}>}
  */
-export async function uploadEventReferenceImage(file, userId, eventId) {
+export async function uploadEventReferenceImage(file: File, userId: string, eventId: string): Promise<{ success: boolean; url?: string; error?: string; path?: string }> {
   if (!supabase) {
     return { success: false, error: 'Supabase client not initialized' };
   }
@@ -212,7 +212,7 @@ export async function uploadEventReferenceImage(file, userId, eventId) {
     };
   } catch (error) {
     console.error('Upload failed:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Upload failed' };
   }
 }
 
@@ -222,7 +222,7 @@ export async function uploadEventReferenceImage(file, userId, eventId) {
  * @param {string} filePath - File path in bucket
  * @returns {Promise<{success: boolean, error?: string}>}
  */
-export async function deleteImage(bucket, filePath) {
+export async function deleteImage(bucket: string, filePath: string): Promise<{ success: boolean; error?: string }> {
   if (!supabase) {
     return { success: false, error: 'Supabase client not initialized' };
   }
@@ -234,13 +234,13 @@ export async function deleteImage(bucket, filePath) {
 
     if (error) {
       console.error('Delete error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error.message || 'Delete failed' };
     }
 
     return { success: true };
   } catch (error) {
     console.error('Delete failed:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Delete failed' };
   }
 }
 
@@ -250,7 +250,7 @@ export async function deleteImage(bucket, filePath) {
  * @param {string} folderPath - Folder path
  * @returns {Promise<{success: boolean, files?: Array, error?: string}>}
  */
-export async function listImages(bucket, folderPath) {
+export async function listImages(bucket: string, folderPath: string): Promise<{ success: boolean; files?: any[]; error?: string }> {
   if (!supabase) {
     return { success: false, error: 'Supabase client not initialized' };
   }
@@ -262,13 +262,13 @@ export async function listImages(bucket, folderPath) {
 
     if (error) {
       console.error('List error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error.message || 'List failed' };
     }
 
     return { success: true, files: data };
   } catch (error) {
     console.error('List failed:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'List failed' };
   }
 }
 
@@ -279,7 +279,7 @@ export async function listImages(bucket, folderPath) {
  * @param {Function} onProgress - Progress callback (current, total)
  * @returns {Promise<Array<{success: boolean, url?: string, error?: string}>>}
  */
-export async function batchUploadImages(files, uploadFn, onProgress) {
+export async function batchUploadImages(files: File[], uploadFn: (file: File) => Promise<{ success: boolean; url?: string; error?: string }>, onProgress?: (current: number, total: number) => void): Promise<Array<{ success: boolean; url?: string; error?: string }>> {
   const results = [];
   const total = files.length;
 

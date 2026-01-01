@@ -28,8 +28,9 @@ export default function ClientSignupPage() {
   });
 
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | undefined>>({});
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -77,6 +78,7 @@ export default function ClientSignupPage() {
     setFormData({ ...formData, [field]: value });
     setFieldErrors({ ...fieldErrors, [field]: undefined });
     setError('');
+    setSuccess('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,8 +104,11 @@ export default function ClientSignupPage() {
       );
 
       if (result.success) {
-        // Successful signup - redirect to forge (event creation)
-        router.push('/forge');
+        // Successful signup - show success message then redirect
+        setSuccess('Account created successfully! Redirecting...');
+        setTimeout(() => {
+          router.push('/forge');
+        }, 1500);
       } else {
         setError(result.error || 'Signup failed. Please try again.');
       }
@@ -134,6 +139,14 @@ export default function ClientSignupPage() {
         {/* Signup Card */}
         <div className="bg-slate-800/90 backdrop-blur-lg rounded-2xl border border-slate-700 p-8 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Success Message */}
+            {success && (
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 flex items-start space-x-3">
+                <CheckCircleIcon className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-green-300 leading-relaxed">{success}</p>
+              </div>
+            )}
+
             {/* Global Error Message */}
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start space-x-3">

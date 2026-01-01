@@ -5,9 +5,30 @@ import { useParams, useRouter } from 'next/navigation';
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { getEventById, updateEvent } from '../../../lib/database';
 import { useAuth } from '../../../contexts/AuthContext';
+import { ComprehensiveBlueprint } from '../../../components/blueprint/ComprehensiveBlueprint';
 import { BlueprintReview } from '../../../components/blueprint/BlueprintReview';
-import { ProfessionalBlueprint } from '../../../components/blueprint/ProfessionalBlueprint';
 import type { Event } from '../../../types/database';
+
+interface ChecklistCategory {
+  id: string;
+  title: string;
+  icon: string;
+  items: ChecklistItem[];
+  additionalNotes?: boolean;
+}
+
+interface ChecklistItem {
+  id: string;
+  question: string;
+  type: 'radio' | 'select' | 'checkbox';
+  options: string[];
+}
+
+interface ChecklistData {
+  eventType: string;
+  displayName: string;
+  categories: ChecklistCategory[];
+}
 
 export default function BlueprintReviewPage() {
   const params = useParams();
@@ -18,6 +39,8 @@ export default function BlueprintReviewPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [checklistData, setChecklistData] = useState<ChecklistData | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     loadEvent();
@@ -57,11 +80,105 @@ export default function BlueprintReviewPage() {
       }
 
       setEvent(data);
+      
+      // Load checklist data based on event type
+      await loadChecklistData(data.event_type || 'wedding');
+      
       setIsLoading(false);
     } catch (err) {
       console.error('Unexpected error loading event:', err);
       setError('An unexpected error occurred');
       setIsLoading(false);
+    }
+  };
+
+  const loadChecklistData = async (eventType: string) => {
+    try {
+      // Map event type to checklist file name
+      const checklistType = eventType.toLowerCase().replace(/\s+/g, '-');
+      const response = await fetch(`/data/checklists/${checklistType}.json`);
+      
+      if (!response.ok) {
+        // Fallback to wedding if not found
+        if (checklistType !== 'wedding') {
+          const fallbackResponse = await fetch('/data/checklists/wedding.json');
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            setChecklistData(fallbackData);
+          }
+        }
+        return;
+      }
+
+      const data = await response.json();
+      setChecklistData(data);
+    } catch (err) {
+      console.error('Error loading checklist data:', err);
+      // Continue without checklist data - component will handle gracefully
+    }
+  };
+
+  const handleSaveBlueprint = async (blueprintData: any) => {
+    if (!event) return;
+
+    try {
+      setIsSaving(true);
+      
+      // Merge with existing client_brief data
+      const currentClientBrief = (event.client_brief as any) || {};
+      const updatedClientBrief = {
+        ...currentClientBrief,
+        blueprint: blueprintData.blueprint
+      };
+
+      const { error: updateError } = await updateEvent(event.id, {
+        client_brief: updatedClientBrief
+      });
+
+      if (updateError) {
+        console.error('Error saving blueprint:', updateError);
+        throw updateError;
+      }
+
+      // Update local event state
+      setEvent({
+        ...event,
+        client_brief: updatedClientBrief
+      });
+    } catch (err) {
+      console.error('Error saving blueprint:', err);
+      throw err;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLaunchProject = async () => {
+    if (!event) return;
+
+    try {
+      setIsSaving(true);
+      
+      const biddingClosesAt = new Date();
+      biddingClosesAt.setDate(biddingClosesAt.getDate() + 7);
+
+      const { error: updateError } = await updateEvent(event.id, {
+        forge_status: 'OPEN_FOR_BIDS',
+        bidding_closes_at: biddingClosesAt.toISOString()
+      });
+
+      if (updateError) {
+        console.error('Error launching project:', updateError);
+        throw updateError;
+      }
+
+      // Navigate to dashboard
+      router.push(`/dashboard/client?event=${event.id}`);
+    } catch (err) {
+      console.error('Error launching project:', err);
+      alert('Failed to launch project. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -104,55 +221,31 @@ export default function BlueprintReviewPage() {
     );
   }
 
-  // Use the event's stored blueprint data directly
-  const forgeBlueprint = event.forge_blueprint as any;
-  const clientBriefData = event.client_brief as any;
+  // Prepare client brief data
+  const clientBriefData = (event.client_brief as any) || {};
+  const checklistDataFromEvent = clientBriefData.checklist || null;
 
-  // If we have stored blueprint, use ProfessionalBlueprint directly
-  if (forgeBlueprint) {
-    return (
-      <div className="min-h-screen">
-        <ProfessionalBlueprint
-          blueprint={forgeBlueprint}
-          clientBrief={clientBriefData || {
-            event_type: event.event_type || 'Event',
-            date: event.date || '',
-            city: event.city || '',
-            guest_count: event.guest_count?.toString() || '',
-            venue_status: 'TBD'
-          }}
-          clientNotes={{}}
-          referenceImages={[]}
-          onNotesChange={() => {}}
-          onLaunchProject={async () => {
-            // Handle launch project
-            const biddingClosesAt = new Date();
-            biddingClosesAt.setDate(biddingClosesAt.getDate() + 7);
-
-            const { error: updateError } = await updateEvent(event.id, {
-              forge_status: 'OPEN_FOR_BIDS',
-              bidding_closes_at: biddingClosesAt.toISOString()
-            });
-
-            if (!updateError) {
-              router.push(`/dashboard/client?event=${event.id}`);
-            }
-          }}
-          isSaving={false}
-        />
-      </div>
-    );
-  }
-
-  // Fallback to BlueprintReview if no stored blueprint
-  const blueprintId = event.event_type || 'wedding';
   const clientBrief = {
     event_type: event.event_type || 'Event',
     date: event.date || '',
     city: event.city || '',
     guest_count: event.guest_count?.toString() || '',
-    venue_status: clientBriefData?.venue_status || 'TBD'
+    venue_status: clientBriefData.venue_status || event.venue_status || 'TBD',
+    checklist: checklistDataFromEvent
   };
 
-  return <BlueprintReview blueprintId={blueprintId} clientBrief={clientBrief} />;
+  // Use ComprehensiveBlueprint as the primary component
+  return (
+    <div className="min-h-screen">
+      <ComprehensiveBlueprint
+        eventId={event.id}
+        clientBrief={clientBrief}
+        checklistData={checklistDataFromEvent}
+        checklistCategories={checklistData?.categories || []}
+        onSave={handleSaveBlueprint}
+        onLaunchProject={handleLaunchProject}
+        isSaving={isSaving}
+      />
+    </div>
+  );
 }
