@@ -1,0 +1,302 @@
+{
+  "venue_id": "kochi_grand_hyatt_bolgatty_004",
+  "basic_info": {
+    "official_name": "Grand Hyatt Kochi Bolgatty",
+    "brand_name": "Hyatt Hotels Corporation",
+    "aliases": [
+      "Grand Hyatt Kochi",
+      "Grand Hyatt Bolgatty",
+      "Hyatt Kochi",
+      "Grand Hyatt Bolgatty Island"
+    ],
+    "venue_type": "luxury_hotel_resort",
+    "star_rating": 5,
+    "established_year": 2017,
+    "google_rating": 4.6,
+    "total_reviews": 3500
+  },
+  "location": {
+    "address": "Bolgatty Island, Mulavukad, Kochi, Kerala 682504",
+    "landmark": "Bolgatty Palace neighborhood, waterfront location",
+    "district": "Ernakulam",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pin_code": "682504",
+    "coordinates": {
+      "latitude": 9.9816,
+      "longitude": 76.2733
+    },
+    "accessibility": {
+      "airport_distance_km": 35,
+      "airport_drive_time": "55-70 min",
+      "railway_station_distance_km": 7,
+      "metro_access": false,
+      "landmarks_nearby": ["Bolgatty Palace", "Marine Drive", "Vypeen Island"]
+    }
+  },
+  "contact": {
+    "phone_primary": "+91-484-6191234",
+    "phone_secondary": null,
+    "email": "kochi.grandhyatt@hyatt.com",
+    "website": "https://www.hyatt.com/en-US/hotel/india/grand-hyatt-kochi-bolgatty/cokgh",
+    "whatsapp": "+91-9847123456",
+    "booking_manager": {
+      "name": "Events Team",
+      "designation": "Banquet Sales Manager",
+      "contact": "+91-484-6191234"
+    }
+  },
+  "capacity": {
+    "event_spaces": [
+      {
+        "space_name": "Grand Ballroom",
+        "min_guests": 400,
+        "max_guests": 1050,
+        "optimal_guests": 800,
+        "space_type": "indoor",
+        "ceiling_height_ft": 24,
+        "area_sqft": 12000,
+        "seating_styles": {
+          "theater": 1050,
+          "classroom": 600,
+          "banquet": 800,
+          "cocktail": 1200
+        },
+        "has_stage": true,
+        "has_dance_floor": true,
+        "natural_lighting": false
+      },
+      {
+        "space_name": "Waterfront Lawn",
+        "min_guests": 200,
+        "max_guests": 600,
+        "optimal_guests": 400,
+        "space_type": "outdoor",
+        "area_sqft": 8000,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      },
+      {
+        "space_name": "Poolside Deck",
+        "min_guests": 100,
+        "max_guests": 300,
+        "space_type": "outdoor",
+        "area_sqft": 4000,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      }
+    ],
+    "total_rooms": 264,
+    "parking_capacity": 350
+  },
+  "catering": {
+    "in_house_catering": true,
+    "in_house_menu_types": [
+      "north_indian",
+      "south_indian",
+      "continental",
+      "chinese",
+      "mediterranean",
+      "kerala_traditional",
+      "fusion",
+      "international"
+    ],
+    "outside_catering_allowed": false,
+    "kitchen_specifications": {
+      "type": "5_star_luxury_kitchen",
+      "capacity": "1500+ plates/hour",
+      "equipment": ["industrial_stoves", "tandoor", "live_counters", "refrigeration", "wine_cellar"]
+    },
+    "bar_service_available": true,
+    "alcohol_policy": "full_bar_premium_international_brands"
+  },
+  "facilities": {
+    "ac_available": true,
+    "backup_power": true,
+    "wifi_available": true,
+    "projector_screen": true,
+    "sound_system": true,
+    "lighting_setup": true,
+    "green_rooms": 6,
+    "wheelchair_accessible": true,
+    "parking_type": "both",
+    "accommodation_available": true,
+    "accommodation_rooms": 264
+  },
+  "timeline_logistics": {
+    "setup_time_hours": 8,
+    "teardown_time_hours": 4,
+    "booking_window_days": 365,
+    "min_advance_booking_days": 120,
+    "cancellation_policy": "80% refund if cancelled 90+ days before event",
+    "decoration_restrictions": [
+      "no_open_flames_indoors",
+      "eco_friendly_materials_preferred",
+      "vendor_insurance_required",
+      "island_access_coordination_required"
+    ],
+    "noise_curfew": "12:00 AM"
+  },
+  "pricing": {
+    "base_venue_charge": {
+      "weekday": 250000,
+      "weekend": 400000
+    },
+    "per_plate_cost_min": 2500,
+    "per_plate_cost_max": 6000,
+    "packages": [
+      {
+        "package_name": "Waterfront Dream Wedding",
+        "guest_count": 600,
+        "price_range_min": 2400000,
+        "price_range_max": 3600000,
+        "inclusions": [
+          "Grand Ballroom + Waterfront Lawn (12 hours)",
+          "Premium international catering",
+          "Luxury floral decoration",
+          "Professional lighting & sound",
+          "Valet parking",
+          "6 green rooms",
+          "Bridal suite (2 nights)",
+          "Guest room block discount"
+        ],
+        "duration_hours": 12
+      }
+    ],
+    "security_deposit": 200000,
+    "taxes_included": false,
+    "payment_terms": "40% advance, 40% two weeks before, 20% on event day"
+  },
+  "event_types_hosted": {
+    "weddings": true,
+    "corporate_events": true,
+    "conferences": true,
+    "exhibitions": true,
+    "birthday_parties": true,
+    "anniversaries": true,
+    "engagement_ceremonies": true,
+    "religious_ceremonies": true,
+    "photo_shoots": true
+  },
+  "vendor_relationships": {
+    "preferred_vendors": [
+      {
+        "vendor_type": "decorator",
+        "vendor_name": "Elite Events & Decor",
+        "partnership_type": "preferred",
+        "commission_available": true
+      },
+      {
+        "vendor_type": "photographer",
+        "vendor_name": "Premium Wedding Films",
+        "partnership_type": "preferred",
+        "commission_available": true
+      }
+    ],
+    "outside_vendors_policy": "allowed_with_insurance_and_approval"
+  },
+  "reviews_reputation": {
+    "overall_rating": 4.6,
+    "total_reviews_aggregated": 3500,
+    "review_snapshots": [
+      {
+        "source": "google",
+        "rating": 4.6,
+        "total_reviews": 2500,
+        "positive_highlights": [
+          "Stunning waterfront views",
+          "World-class service",
+          "Exceptional food quality",
+          "Beautiful island setting"
+        ],
+        "negative_highlights": [
+          "Premium pricing",
+          "Island access logistics",
+          "Weather dependency for outdoor events"
+        ]
+      },
+      {
+        "source": "weddingwire",
+        "rating": 4.8,
+        "total_reviews": 1000,
+        "positive_highlights": [
+          "Most luxurious venue in Kochi",
+          "Unforgettable waterfront weddings"
+        ],
+        "negative_highlights": []
+      }
+    ],
+    "awards_certifications": [
+      "Best Luxury Wedding Venue Kerala 2025",
+      "Hyatt Brand Excellence Award",
+      "Top Waterfront Venue India 2024"
+    ],
+    "featured_events": [
+      "Celebrity destination weddings",
+      "International corporate conferences",
+      "High-profile political events"
+    ]
+  },
+  "checklist_automation": {
+    "auto_populate_items": [
+      "venue_confirmed",
+      "venue_capacity_confirmed",
+      "venue_contact_saved",
+      "ac_availability",
+      "backup_power",
+      "sound_system",
+      "projector_screen",
+      "parking_available",
+      "catering_confirmed",
+      "menu_types_available",
+      "accommodation_available",
+      "valet_parking",
+      "green_rooms_available",
+      "waterfront_views",
+      "outdoor_space_available"
+    ],
+    "conditional_removals": [
+      "venue_search_required",
+      "venue_shortlisting",
+      "parking_arrangement",
+      "external_caterer_search",
+      "accommodation_search"
+    ],
+    "conditional_additions": [
+      "island_access_coordination",
+      "room_block_booking",
+      "valet_parking_arrangement",
+      "weather_backup_plan_outdoor_events",
+      "decoration_restrictions_review"
+    ]
+  },
+  "search_keywords": {
+    "primary_keywords": [
+      "Grand Hyatt Kochi Bolgatty",
+      "Grand Hyatt Kochi",
+      "Grand Hyatt Bolgatty",
+      "Hyatt Kochi"
+    ],
+    "secondary_keywords": [
+      "luxury waterfront venue kochi",
+      "premium island venue",
+      "5 star wedding venue",
+      "bolgatty island events",
+      "grand ballroom kochi",
+      "destination wedding kochi"
+    ],
+    "location_keywords": [
+      "bolgatty island",
+      "mulavukad",
+      "kochi",
+      "waterfront",
+      "island venue"
+    ]
+  },
+  "data_source": "manual_entry_eventfoundry_premium_2026",
+  "last_updated": "2026-01-02T11:00:00Z",
+  "data_quality_score": 98.0,
+  "manual_verification_required": false
+}

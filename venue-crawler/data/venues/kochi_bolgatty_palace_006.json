@@ -1,0 +1,225 @@
+{
+  "venue_id": "kochi_bolgatty_palace_006",
+  "basic_info": {
+    "official_name": "Bolgatty Palace and Island Resort",
+    "brand_name": "Kerala Tourism Development Corporation",
+    "aliases": [
+      "Bolgatty Palace",
+      "Bolgatty Island Resort",
+      "Bolgatty Heritage Hotel"
+    ],
+    "venue_type": "heritage_palace_resort",
+    "star_rating": 4,
+    "established_year": 1744,
+    "google_rating": 4.2,
+    "total_reviews": 2800
+  },
+  "location": {
+    "address": "Bolgatty Island, Mulavukad, Kochi, Kerala 682504",
+    "landmark": "Historic Dutch Palace on Island",
+    "district": "Ernakulam",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pin_code": "682504",
+    "coordinates": {
+      "latitude": 9.9833,
+      "longitude": 76.2747
+    },
+    "accessibility": {
+      "airport_distance_km": 36,
+      "airport_drive_time": "60-75 min",
+      "railway_station_distance_km": 8,
+      "metro_access": false,
+      "landmarks_nearby": ["Grand Hyatt Kochi", "Marine Drive", "Vypeen"]
+    }
+  },
+  "contact": {
+    "phone_primary": "+91-484-2355003",
+    "phone_secondary": "+91-484-2355500",
+    "email": "bolgatty@ktdc.com",
+    "website": "https://www.ktdc.com/bolgatty-palace/",
+    "whatsapp": "+91-9495123456",
+    "booking_manager": {
+      "name": "KTDC Events Team",
+      "designation": "Banquet Manager",
+      "contact": "+91-484-2355003"
+    }
+  },
+  "capacity": {
+    "event_spaces": [
+      {
+        "space_name": "Palace Lawns",
+        "min_guests": 300,
+        "max_guests": 1500,
+        "optimal_guests": 1000,
+        "space_type": "outdoor",
+        "area_sqft": 20000,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      },
+      {
+        "space_name": "Waterfront Gardens",
+        "min_guests": 200,
+        "max_guests": 800,
+        "space_type": "outdoor",
+        "area_sqft": 12000,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      },
+      {
+        "space_name": "Indoor Banquet Hall",
+        "min_guests": 100,
+        "max_guests": 400,
+        "space_type": "indoor",
+        "area_sqft": 4500,
+        "has_stage": true,
+        "has_dance_floor": true,
+        "natural_lighting": false
+      }
+    ],
+    "total_rooms": 38,
+    "parking_capacity": 200
+  },
+  "catering": {
+    "in_house_catering": true,
+    "in_house_menu_types": [
+      "north_indian",
+      "south_indian",
+      "kerala_traditional",
+      "continental"
+    ],
+    "outside_catering_allowed": true,
+    "kitchen_specifications": {
+      "type": "traditional_commercial_kitchen",
+      "capacity": "1000+ plates/hour"
+    },
+    "bar_service_available": true,
+    "alcohol_policy": "full_bar_available"
+  },
+  "facilities": {
+    "ac_available": false,
+    "backup_power": true,
+    "wifi_available": true,
+    "projector_screen": false,
+    "sound_system": false,
+    "lighting_setup": false,
+    "green_rooms": 2,
+    "wheelchair_accessible": false,
+    "parking_type": "self",
+    "accommodation_available": true,
+    "accommodation_rooms": 38
+  },
+  "timeline_logistics": {
+    "setup_time_hours": 8,
+    "teardown_time_hours": 4,
+    "booking_window_days": 270,
+    "min_advance_booking_days": 90,
+    "cancellation_policy": "60% refund if cancelled 45+ days before event",
+    "decoration_restrictions": [
+      "heritage_palace_restrictions",
+      "no_damage_to_palace_structure",
+      "preserve_historical_integrity"
+    ],
+    "noise_curfew": "11:00 PM"
+  },
+  "pricing": {
+    "base_venue_charge": {
+      "weekday": 120000,
+      "weekend": 200000
+    },
+    "per_plate_cost_min": 800,
+    "per_plate_cost_max": 2000,
+    "packages": [],
+    "security_deposit": 75000,
+    "taxes_included": false,
+    "payment_terms": "30% advance, 50% one week before, 20% on event day"
+  },
+  "event_types_hosted": {
+    "weddings": true,
+    "corporate_events": true,
+    "conferences": true,
+    "exhibitions": false,
+    "birthday_parties": true,
+    "anniversaries": true,
+    "engagement_ceremonies": true,
+    "religious_ceremonies": true,
+    "photo_shoots": true
+  },
+  "vendor_relationships": {
+    "preferred_vendors": [],
+    "outside_vendors_policy": "allowed_with_coordination"
+  },
+  "reviews_reputation": {
+    "overall_rating": 4.2,
+    "total_reviews_aggregated": 2800,
+    "review_snapshots": [
+      {
+        "source": "google",
+        "rating": 4.2,
+        "total_reviews": 2000,
+        "positive_highlights": [
+          "Unique palace setting",
+          "Sprawling lawns",
+          "Fairy-tale atmosphere",
+          "Historic charm",
+          "Island location"
+        ],
+        "negative_highlights": [
+          "Older facilities",
+          "No AC in outdoor areas",
+          "Island access logistics"
+        ]
+      }
+    ],
+    "awards_certifications": [
+      "Heritage Property Preservation Award",
+      "Unique Wedding Venue Kerala"
+    ],
+    "featured_events": [
+      "Royal-themed weddings",
+      "Large outdoor celebrations"
+    ]
+  },
+  "checklist_automation": {
+    "auto_populate_items": [
+      "venue_confirmed",
+      "historic_palace_venue",
+      "sprawling_lawns",
+      "island_location"
+    ],
+    "conditional_removals": [
+      "venue_search_required"
+    ],
+    "conditional_additions": [
+      "island_access_coordination",
+      "external_av_equipment_required",
+      "weather_backup_plan_required",
+      "heritage_decoration_guidelines"
+    ]
+  },
+  "search_keywords": {
+    "primary_keywords": [
+      "Bolgatty Palace and Island Resort",
+      "Bolgatty Palace",
+      "Bolgatty Island Resort"
+    ],
+    "secondary_keywords": [
+      "palace wedding kochi",
+      "heritage venue",
+      "island palace",
+      "fairy tale wedding venue",
+      "sprawling lawns kochi"
+    ],
+    "location_keywords": [
+      "bolgatty island",
+      "mulavukad",
+      "kochi"
+    ]
+  },
+  "data_source": "manual_entry_eventfoundry_premium_2026",
+  "last_updated": "2026-01-02T11:30:00Z",
+  "data_quality_score": 92.0,
+  "manual_verification_required": false
+}

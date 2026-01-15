@@ -1,0 +1,162 @@
+{
+  "venue_id": "kochi_le_meridien_003",
+  "basic_info": {
+    "official_name": "Le Meridien Kochi",
+    "brand_name": "Marriott International",
+    "aliases": [
+      "Le Meridien",
+      "Le Meridien Cochin"
+    ],
+    "venue_type": "hotel_banquet",
+    "star_rating": 5,
+    "established_year": 2013,
+    "google_rating": 4.4,
+    "total_reviews": 1800
+  },
+  "location": {
+    "address": "Maradu, Kochi, Kerala 682304",
+    "landmark": "Near Lulu Mall",
+    "district": "Ernakulam",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pin_code": "682304",
+    "coordinates": {
+      "latitude": 9.9793,
+      "longitude": 76.3012
+    },
+    "accessibility": {
+      "airport_distance_km": 30,
+      "airport_drive_time": "45-55 min",
+      "railway_station_distance_km": 9,
+      "metro_access": true,
+      "landmarks_nearby": ["Lulu Mall", "Marine Drive", "Edappally"]
+    }
+  },
+  "contact": {
+    "phone_primary": "+91-484-2813777",
+    "email": "events.kochi@lemeridien.com",
+    "website": "https://www.marriott.com/hotels/travel/cokmd-le-meridien-kochi/",
+    "whatsapp": "+91-9447112233",
+    "booking_manager": {
+      "name": "Anita Sharma",
+      "designation": "Director of Events",
+      "contact": "+91-9447112233"
+    }
+  },
+  "capacity": {
+    "event_spaces": [
+      {
+        "space_name": "Grand Ballroom",
+        "min_guests": 250,
+        "max_guests": 700,
+        "optimal_guests": 500,
+        "space_type": "indoor",
+        "ceiling_height_ft": 20,
+        "area_sqft": 8500,
+        "seating_styles": {
+          "theater": 700,
+          "banquet": 500,
+          "cocktail": 850
+        },
+        "has_stage": true,
+        "has_dance_floor": true,
+        "natural_lighting": false
+      }
+    ],
+    "total_rooms": 224,
+    "parking_capacity": 200
+  },
+  "catering": {
+    "in_house_catering": true,
+    "in_house_menu_types": [
+      "north_indian",
+      "south_indian",
+      "continental",
+      "asian",
+      "kerala_traditional"
+    ],
+    "outside_catering_allowed": false,
+    "bar_service_available": true,
+    "alcohol_policy": "full_bar_available"
+  },
+  "facilities": {
+    "ac_available": true,
+    "backup_power": true,
+    "wifi_available": true,
+    "projector_screen": true,
+    "sound_system": true,
+    "lighting_setup": true,
+    "green_rooms": 3,
+    "wheelchair_accessible": true,
+    "parking_type": "valet",
+    "accommodation_available": true,
+    "accommodation_rooms": 224
+  },
+  "timeline_logistics": {
+    "setup_time_hours": 5,
+    "teardown_time_hours": 2,
+    "booking_window_days": 270,
+    "min_advance_booking_days": 75,
+    "cancellation_policy": "60% refund if cancelled 45+ days before event",
+    "decoration_restrictions": [
+      "no_wall_fixtures",
+      "eco_friendly_materials_preferred"
+    ],
+    "noise_curfew": "11:30 PM"
+  },
+  "pricing": {
+    "base_venue_charge": {
+      "weekday": 130000,
+      "weekend": 220000
+    },
+    "per_plate_cost_min": 1600,
+    "per_plate_cost_max": 3500,
+    "packages": [],
+    "security_deposit": 80000,
+    "taxes_included": false,
+    "payment_terms": "35% advance, 45% one week before, 20% on event day"
+  },
+  "event_types_hosted": {
+    "weddings": true,
+    "corporate_events": true,
+    "conferences": true,
+    "exhibitions": false,
+    "birthday_parties": true,
+    "anniversaries": true,
+    "engagement_ceremonies": true,
+    "religious_ceremonies": false,
+    "photo_shoots": true
+  },
+  "checklist_automation": {
+    "auto_populate_items": [
+      "venue_confirmed",
+      "venue_capacity_confirmed",
+      "venue_contact_saved"
+    ],
+    "conditional_removals": [
+      "venue_search_required",
+      "external_caterer_search"
+    ],
+    "conditional_additions": []
+  },
+  "search_keywords": {
+    "primary_keywords": [
+      "Le Meridien Kochi",
+      "Le Meridien"
+    ],
+    "secondary_keywords": [
+      "5 star venue",
+      "marriott hotel kochi",
+      "luxury wedding"
+    ],
+    "location_keywords": [
+      "maradu",
+      "kochi",
+      "lulu mall area"
+    ]
+  },
+  "data_source": "manual_entry_eventfoundry_2026",
+  "last_updated": "2026-01-02T10:30:00Z",
+  "data_quality_score": 88.0,
+  "manual_verification_required": false
+}

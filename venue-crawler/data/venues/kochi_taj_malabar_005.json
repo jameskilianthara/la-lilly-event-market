@@ -1,0 +1,253 @@
+{
+  "venue_id": "kochi_taj_malabar_005",
+  "basic_info": {
+    "official_name": "Taj Malabar Resort & Spa",
+    "brand_name": "Taj Hotels",
+    "aliases": [
+      "Taj Malabar",
+      "Taj Kochi",
+      "Taj Malabar Cochin"
+    ],
+    "venue_type": "luxury_heritage_resort",
+    "star_rating": 5,
+    "established_year": 1935,
+    "google_rating": 4.5,
+    "total_reviews": 4200
+  },
+  "location": {
+    "address": "Willingdon Island, Kochi, Kerala 682009",
+    "landmark": "Overlooking Arabian Sea and Cochin Harbour",
+    "district": "Ernakulam",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pin_code": "682009",
+    "coordinates": {
+      "latitude": 9.9677,
+      "longitude": 76.2621
+    },
+    "accessibility": {
+      "airport_distance_km": 30,
+      "airport_drive_time": "50-65 min",
+      "railway_station_distance_km": 5,
+      "metro_access": false,
+      "landmarks_nearby": ["Cochin Port", "Marine Drive", "Bolgatty Palace"]
+    }
+  },
+  "contact": {
+    "phone_primary": "+91-484-6643000",
+    "phone_secondary": null,
+    "email": "malabar.kochi@tajhotels.com",
+    "website": "https://www.tajhotels.com/en-in/taj/taj-malabar-resort-and-spa-kochi/",
+    "whatsapp": "+91-9447234567",
+    "booking_manager": {
+      "name": "Banquet Team",
+      "designation": "Events Manager",
+      "contact": "+91-484-6643000"
+    }
+  },
+  "capacity": {
+    "event_spaces": [
+      {
+        "space_name": "Bristow Hall",
+        "min_guests": 200,
+        "max_guests": 600,
+        "optimal_guests": 450,
+        "space_type": "indoor",
+        "ceiling_height_ft": 18,
+        "area_sqft": 7000,
+        "seating_styles": {
+          "theater": 600,
+          "classroom": 350,
+          "banquet": 450,
+          "cocktail": 700
+        },
+        "has_stage": true,
+        "has_dance_floor": true,
+        "natural_lighting": true
+      },
+      {
+        "space_name": "Harbour Lawn",
+        "min_guests": 150,
+        "max_guests": 400,
+        "space_type": "outdoor",
+        "area_sqft": 5000,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      },
+      {
+        "space_name": "Heritage Wing Courtyard",
+        "min_guests": 50,
+        "max_guests": 150,
+        "space_type": "semi_outdoor",
+        "area_sqft": 2500,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      }
+    ],
+    "total_rooms": 96,
+    "parking_capacity": 150
+  },
+  "catering": {
+    "in_house_catering": true,
+    "in_house_menu_types": [
+      "north_indian",
+      "south_indian",
+      "continental",
+      "chinese",
+      "mediterranean",
+      "kerala_traditional",
+      "seafood_specialty"
+    ],
+    "outside_catering_allowed": false,
+    "kitchen_specifications": {
+      "type": "heritage_luxury_kitchen",
+      "capacity": "800+ plates/hour",
+      "equipment": ["traditional_tandoor", "modern_equipment", "live_stations"]
+    },
+    "bar_service_available": true,
+    "alcohol_policy": "full_bar_premium_brands"
+  },
+  "facilities": {
+    "ac_available": true,
+    "backup_power": true,
+    "wifi_available": true,
+    "projector_screen": true,
+    "sound_system": true,
+    "lighting_setup": true,
+    "green_rooms": 4,
+    "wheelchair_accessible": true,
+    "parking_type": "valet",
+    "accommodation_available": true,
+    "accommodation_rooms": 96
+  },
+  "timeline_logistics": {
+    "setup_time_hours": 6,
+    "teardown_time_hours": 3,
+    "booking_window_days": 300,
+    "min_advance_booking_days": 90,
+    "cancellation_policy": "70% refund if cancelled 60+ days before event",
+    "decoration_restrictions": [
+      "heritage_property_restrictions",
+      "no_damage_to_historical_structures",
+      "eco_friendly_materials_only"
+    ],
+    "noise_curfew": "11:30 PM"
+  },
+  "pricing": {
+    "base_venue_charge": {
+      "weekday": 180000,
+      "weekend": 300000
+    },
+    "per_plate_cost_min": 2200,
+    "per_plate_cost_max": 5000,
+    "packages": [
+      {
+        "package_name": "Heritage Elegance Wedding",
+        "guest_count": 400,
+        "price_range_min": 1400000,
+        "price_range_max": 2200000,
+        "inclusions": [
+          "Bristow Hall + Harbour Lawn (10 hours)",
+          "Taj signature catering",
+          "Heritage decor theme",
+          "Professional AV setup",
+          "Valet parking",
+          "4 green rooms",
+          "Bridal suite complimentary"
+        ],
+        "duration_hours": 10
+      }
+    ],
+    "security_deposit": 150000,
+    "taxes_included": false,
+    "payment_terms": "40% advance, 40% two weeks before, 20% on event day"
+  },
+  "event_types_hosted": {
+    "weddings": true,
+    "corporate_events": true,
+    "conferences": true,
+    "exhibitions": false,
+    "birthday_parties": true,
+    "anniversaries": true,
+    "engagement_ceremonies": true,
+    "religious_ceremonies": true,
+    "photo_shoots": true
+  },
+  "vendor_relationships": {
+    "preferred_vendors": [],
+    "outside_vendors_policy": "allowed_with_taj_approval"
+  },
+  "reviews_reputation": {
+    "overall_rating": 4.5,
+    "total_reviews_aggregated": 4200,
+    "review_snapshots": [
+      {
+        "source": "google",
+        "rating": 4.5,
+        "total_reviews": 3000,
+        "positive_highlights": [
+          "Heritage property charm",
+          "Arabian Sea views",
+          "Taj hospitality excellence",
+          "Authentic Kerala experience"
+        ],
+        "negative_highlights": [
+          "Older property (heritage building)",
+          "Limited parking space"
+        ]
+      }
+    ],
+    "awards_certifications": [
+      "Heritage Property Award",
+      "Taj Brand Excellence",
+      "Best Heritage Venue Kerala"
+    ],
+    "featured_events": [
+      "Traditional Kerala weddings",
+      "Corporate galas with cultural theme"
+    ]
+  },
+  "checklist_automation": {
+    "auto_populate_items": [
+      "venue_confirmed",
+      "venue_capacity_confirmed",
+      "venue_contact_saved",
+      "heritage_venue_experience",
+      "arabian_sea_views",
+      "accommodation_available"
+    ],
+    "conditional_removals": [
+      "venue_search_required",
+      "external_caterer_search",
+      "accommodation_search"
+    ],
+    "conditional_additions": [
+      "heritage_property_decoration_guidelines",
+      "cultural_experience_coordination"
+    ]
+  },
+  "search_keywords": {
+    "primary_keywords": [
+      "Taj Malabar Resort & Spa",
+      "Taj Malabar",
+      "Taj Kochi"
+    ],
+    "secondary_keywords": [
+      "heritage venue kochi",
+      "arabian sea view venue",
+      "taj wedding",
+      "willingdon island resort"
+    ],
+    "location_keywords": [
+      "willingdon island",
+      "kochi",
+      "cochin harbour"
+    ]
+  },
+  "data_source": "manual_entry_eventfoundry_premium_2026",
+  "last_updated": "2026-01-02T11:15:00Z",
+  "data_quality_score": 96.0,
+  "manual_verification_required": false
+}

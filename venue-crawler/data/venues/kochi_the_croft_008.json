@@ -1,0 +1,219 @@
+{
+  "venue_id": "kochi_the_croft_008",
+  "basic_info": {
+    "official_name": "The Croft - Cochin",
+    "brand_name": null,
+    "aliases": [
+      "The Croft",
+      "Croft Kochi",
+      "The Croft Glass House"
+    ],
+    "venue_type": "boutique_garden_venue",
+    "star_rating": null,
+    "established_year": 2019,
+    "google_rating": 4.7,
+    "total_reviews": 650
+  },
+  "location": {
+    "address": "Kacheripady, Kochi, Kerala 682018",
+    "landmark": "Near St. Teresa's College",
+    "district": "Ernakulam",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pin_code": "682018",
+    "coordinates": {
+      "latitude": 9.9667,
+      "longitude": 76.2833
+    },
+    "accessibility": {
+      "airport_distance_km": 32,
+      "airport_drive_time": "55-70 min",
+      "railway_station_distance_km": 2,
+      "metro_access": true,
+      "landmarks_nearby": ["St. Teresa's College", "Ernakulam South", "Broadway"]
+    }
+  },
+  "contact": {
+    "phone_primary": "+91-9846012345",
+    "email": "events@thecroftkochi.com",
+    "website": "https://www.thecroftkochi.com",
+    "whatsapp": "+91-9846012345",
+    "booking_manager": {
+      "name": "Events Team",
+      "designation": "Venue Manager",
+      "contact": "+91-9846012345"
+    }
+  },
+  "capacity": {
+    "event_spaces": [
+      {
+        "space_name": "Glass House",
+        "min_guests": 50,
+        "max_guests": 150,
+        "optimal_guests": 100,
+        "space_type": "semi_outdoor",
+        "area_sqft": 2500,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      },
+      {
+        "space_name": "Garden Area",
+        "min_guests": 30,
+        "max_guests": 100,
+        "space_type": "outdoor",
+        "area_sqft": 1800,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      }
+    ],
+    "total_rooms": 0,
+    "parking_capacity": 30
+  },
+  "catering": {
+    "in_house_catering": false,
+    "in_house_menu_types": [],
+    "outside_catering_allowed": true,
+    "kitchen_specifications": {
+      "type": "prep_kitchen",
+      "capacity": "150 plates/hour"
+    },
+    "bar_service_available": true,
+    "alcohol_policy": "allowed_with_approved_vendors"
+  },
+  "facilities": {
+    "ac_available": false,
+    "backup_power": true,
+    "wifi_available": true,
+    "projector_screen": false,
+    "sound_system": false,
+    "lighting_setup": true,
+    "green_rooms": 1,
+    "wheelchair_accessible": false,
+    "parking_type": "self",
+    "accommodation_available": false,
+    "accommodation_rooms": 0
+  },
+  "timeline_logistics": {
+    "setup_time_hours": 3,
+    "teardown_time_hours": 2,
+    "booking_window_days": 180,
+    "min_advance_booking_days": 45,
+    "cancellation_policy": "50% refund if cancelled 21+ days before event",
+    "decoration_restrictions": [
+      "no_heavy_fixtures",
+      "preserve_glass_house_structure",
+      "eco_friendly_decor_only"
+    ],
+    "noise_curfew": "10:30 PM"
+  },
+  "pricing": {
+    "base_venue_charge": {
+      "weekday": 40000,
+      "weekend": 60000
+    },
+    "per_plate_cost_min": null,
+    "per_plate_cost_max": null,
+    "packages": [],
+    "security_deposit": 20000,
+    "taxes_included": false,
+    "payment_terms": "50% advance, 50% on event day"
+  },
+  "event_types_hosted": {
+    "weddings": false,
+    "corporate_events": true,
+    "conferences": false,
+    "exhibitions": false,
+    "birthday_parties": true,
+    "anniversaries": true,
+    "engagement_ceremonies": true,
+    "religious_ceremonies": false,
+    "photo_shoots": true
+  },
+  "vendor_relationships": {
+    "preferred_vendors": [
+      {
+        "vendor_type": "caterer",
+        "vendor_name": "Curated Caterers List",
+        "partnership_type": "preferred",
+        "commission_available": false
+      }
+    ],
+    "outside_vendors_policy": "encouraged_with_coordination"
+  },
+  "reviews_reputation": {
+    "overall_rating": 4.7,
+    "total_reviews_aggregated": 650,
+    "review_snapshots": [
+      {
+        "source": "google",
+        "rating": 4.7,
+        "total_reviews": 500,
+        "positive_highlights": [
+          "Unique glass house design",
+          "Intimate garden setting",
+          "Perfect for small curated events",
+          "Instagram-worthy aesthetics",
+          "Blend of nature and luxury"
+        ],
+        "negative_highlights": [
+          "Limited capacity",
+          "No in-house catering",
+          "Early noise curfew"
+        ]
+      }
+    ],
+    "awards_certifications": [
+      "Best Boutique Venue Kochi 2024",
+      "Unique Event Space Award"
+    ],
+    "featured_events": [
+      "Bridal showers",
+      "Intimate engagement ceremonies",
+      "Corporate product launches",
+      "Fashion shoots"
+    ]
+  },
+  "checklist_automation": {
+    "auto_populate_items": [
+      "venue_confirmed",
+      "unique_glass_house_setting",
+      "intimate_garden_venue"
+    ],
+    "conditional_removals": [
+      "venue_search_required",
+      "large_guest_accommodation"
+    ],
+    "conditional_additions": [
+      "external_caterer_coordination",
+      "external_av_equipment_required",
+      "weather_backup_plan_required",
+      "early_curfew_timeline_planning"
+    ]
+  },
+  "search_keywords": {
+    "primary_keywords": [
+      "The Croft - Cochin",
+      "The Croft",
+      "Croft Kochi"
+    ],
+    "secondary_keywords": [
+      "glass house venue kochi",
+      "boutique garden venue",
+      "intimate wedding venue",
+      "bridal shower venue",
+      "instagram wedding venue",
+      "unique event space kochi"
+    ],
+    "location_keywords": [
+      "kacheripady",
+      "ernakulam",
+      "kochi"
+    ]
+  },
+  "data_source": "manual_entry_eventfoundry_premium_2026",
+  "last_updated": "2026-01-02T12:00:00Z",
+  "data_quality_score": 94.0,
+  "manual_verification_required": false
+}

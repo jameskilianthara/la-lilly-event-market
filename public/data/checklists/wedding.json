@@ -1,189 +1,252 @@
 {
-  "eventType": "wedding",
-  "displayName": "Wedding Event Checklist",
+  "eventType": "Wedding",
+  "displayName": "Wedding Planning Checklist",
   "categories": [
     {
-      "id": "venue_logistics",
-      "title": "Venue & Logistics",
+      "id": "venue",
+      "title": "Venue & Location",
       "icon": "🏛️",
       "items": [
         {
+          "id": "venue_status",
+          "question": "Do you have a venue for your wedding?",
+          "type": "radio",
+          "options": [
+            "Yes, I have a venue",
+            "No, I need help finding one"
+          ],
+          "isDynamicVenueTrigger": true,
+          "children": [
+            {
+              "id": "venue_name",
+              "question": "Venue name",
+              "type": "text_with_autocomplete",
+              "options": [],
+              "autocompleteSource": "/api/venues/search"
+            },
+            {
+              "id": "venue_address",
+              "question": "Venue address",
+              "type": "text",
+              "options": []
+            },
+            {
+              "id": "venue_booking_status",
+              "question": "Is the venue booking confirmed?",
+              "type": "radio",
+              "options": [
+                "Yes, booking confirmed",
+                "Tentative/hold placed",
+                "Not booked yet"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "venue_capacity",
+          "question": "Venue capacity",
+          "type": "select",
+          "options": ["100-200", "200-500", "500-1000", "1000+"]
+        },
+        {
           "id": "indoor_outdoor",
-          "question": "Indoor or outdoor preference?",
+          "question": "Indoor or Outdoor?",
           "type": "radio",
           "options": ["Indoor", "Outdoor", "Both"]
-        },
-        {
-          "id": "ceremony_type",
-          "question": "Type of wedding ceremony",
-          "type": "select",
-          "options": ["Hindu Traditional", "Christian", "Muslim", "Sikh", "Inter-faith", "Civil", "Destination", "Other"]
-        },
-        {
-          "id": "venue_booking",
-          "question": "Venue booking requirements",
-          "type": "checkbox",
-          "options": ["Main ceremony venue", "Reception venue", "Backup venue for weather", "Bridal suite", "Groom's preparation room"]
-        },
-        {
-          "id": "accommodation",
-          "question": "Accommodation needs",
-          "type": "checkbox",
-          "options": ["Family accommodation", "Out-of-town guest hotels", "Bridal party accommodation", "Vendor accommodation"]
         }
       ],
       "additionalNotes": true
     },
     {
-      "id": "design_decoration",
-      "title": "Design & Decoration",
-      "icon": "🎨",
-      "items": [
-        {
-          "id": "invitations",
-          "question": "Invitation requirements",
-          "type": "checkbox",
-          "options": ["Save the date cards", "Wedding invitations", "RSVP cards", "Digital invitations", "Menu cards", "Thank you cards"]
-        },
-        {
-          "id": "theme_preferences",
-          "question": "Theme preference for decoration",
-          "type": "select",
-          "options": ["Traditional", "Modern Elegant", "Garden/Floral", "Vintage", "Beach", "Royal/Palace", "Rustic", "Minimal Contemporary"]
-        },
-        {
-          "id": "stage_decoration",
-          "question": "Stage decoration needs",
-          "type": "checkbox",
-          "options": ["Main ceremony stage", "Reception stage", "Photo booth backdrop", "Seating area decoration", "Lighting setup"]
-        },
-        {
-          "id": "entry_decoration",
-          "question": "Entry and pathway decoration",
-          "type": "checkbox",
-          "options": ["Main entrance arch", "Mandap decoration", "Pathway decoration", "Welcome signage", "Flower arrangements"]
-        },
-        {
-          "id": "floral_requirements",
-          "question": "Floral arrangement preferences",
-          "type": "select",
-          "options": ["Fresh flowers only", "Mix of fresh and artificial", "Artificial flowers", "Eco-friendly alternatives", "No preference"]
-        }
-      ],
-      "additionalNotes": true
-    },
-    {
-      "id": "entertainment_activities",
-      "title": "Entertainment & Activities",
-      "icon": "🎭",
-      "items": [
-        {
-          "id": "music_preferences",
-          "question": "Music and performance needs",
-          "type": "checkbox",
-          "options": ["Live band", "DJ services", "Traditional musicians", "Professional singers", "Sound system rental"]
-        },
-        {
-          "id": "dance_performances",
-          "question": "Dance and entertainment",
-          "type": "checkbox",
-          "options": ["Dance floor setup", "Choreographed performances", "Cultural performances", "Guest entertainment", "Photo booth"]
-        },
-        {
-          "id": "special_entertainment",
-          "question": "Special entertainment needs",
-          "type": "checkbox",
-          "options": ["Fireworks display", "Light shows", "Magic show", "Live art/painting", "Interactive games"]
-        },
-        {
-          "id": "traditional_arrival",
-          "question": "Traditional arrival arrangement",
-          "type": "select",
-          "options": ["Horse", "Vintage car", "Decorated car", "Traditional palanquin", "Boat", "None required"]
-        }
-      ],
-      "additionalNotes": true
-    },
-    {
-      "id": "food_beverage",
-      "title": "Food & Beverage",
+      "id": "catering",
+      "title": "Catering & Food",
       "icon": "🍽️",
       "items": [
         {
           "id": "catering_style",
           "question": "Catering style preference",
           "type": "radio",
-          "options": ["Buffet style", "Plated service", "Food stations", "Mix of styles"]
+          "options": ["Buffet", "Plated", "Food stations", "Mixed"]
         },
         {
-          "id": "menu_requirements",
-          "question": "Menu requirements",
+          "id": "cuisine_type",
+          "question": "Cuisine preferences",
           "type": "checkbox",
-          "options": ["Traditional Indian cuisine", "Multi-cuisine menu", "Live cooking stations", "Regional specialties", "International dishes", "Dessert bar"]
+          "options": ["North Indian", "South Indian", "Continental", "Chinese", "Kerala Traditional"]
         },
         {
-          "id": "beverage_requirements",
-          "question": "Beverage service",
+          "id": "guest_dietary",
+          "question": "Special dietary requirements?",
           "type": "radio",
-          "options": ["Alcoholic and non-alcoholic", "Non-alcoholic only", "Limited bar selection"]
+          "options": ["None", "Vegetarian options", "Vegan options", "Jain food", "Multiple"]
         },
         {
-          "id": "dietary_requirements",
-          "question": "Special dietary needs",
-          "type": "checkbox",
-          "options": ["Vegetarian options", "Vegan options", "Jain food", "Gluten-free", "Diabetic-friendly", "Children's menu"]
+          "id": "bar_service",
+          "question": "Bar/Beverage service",
+          "type": "radio",
+          "options": ["Full bar", "Beer and wine only", "No alcohol", "BYOB"]
         }
       ],
       "additionalNotes": true
     },
     {
-      "id": "photography_documentation",
-      "title": "Photography & Documentation",
+      "id": "decoration",
+      "title": "Decoration & Ambiance",
+      "icon": "✨",
+      "items": [
+        {
+          "id": "decor_theme",
+          "question": "Decoration theme",
+          "type": "select",
+          "options": ["Traditional", "Modern", "Rustic", "Royal", "Beach/Tropical", "Custom"]
+        },
+        {
+          "id": "color_scheme",
+          "question": "Primary color scheme",
+          "type": "select",
+          "options": ["Gold & Red", "Pink & White", "Purple & Gold", "Blue & White", "Custom"]
+        },
+        {
+          "id": "floral_requirements",
+          "question": "Floral decoration needs",
+          "type": "checkbox",
+          "options": ["Stage backdrop", "Mandap decoration", "Entrance arch", "Table centerpieces", "Bridal bouquet"]
+        },
+        {
+          "id": "lighting_setup",
+          "question": "Lighting requirements",
+          "type": "checkbox",
+          "options": ["Fairy lights", "Uplighting", "Chandeliers", "LED walls", "Dancefloor lighting"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "photography",
+      "title": "Photography & Videography",
       "icon": "📸",
       "items": [
         {
-          "id": "photography_services",
-          "question": "Photography services needed",
-          "type": "checkbox",
-          "options": ["Wedding photographer", "Videographer", "Candid photography", "Traditional photography", "Pre-wedding shoot", "Drone photography"]
-        },
-        {
-          "id": "deliverables",
-          "question": "Photo/video deliverable format",
-          "type": "checkbox",
-          "options": ["Digital album", "Physical photo album", "Highlight video", "Full ceremony video", "Same-day edit video"]
+          "id": "photo_video_package",
+          "question": "Photography/Videography package",
+          "type": "radio",
+          "options": ["Photography only", "Videography only", "Both", "Not needed"]
         },
         {
           "id": "coverage_duration",
-          "question": "Coverage duration needed",
+          "question": "Coverage duration",
           "type": "select",
-          "options": ["Ceremony only (4-6 hours)", "Full day (8-10 hours)", "Multiple days", "Custom package"]
+          "options": ["4-6 hours", "6-8 hours", "8-12 hours", "Full day", "Multi-day"]
+        },
+        {
+          "id": "special_shots",
+          "question": "Special requirements",
+          "type": "checkbox",
+          "options": ["Drone shots", "Pre-wedding shoot", "Candid photography", "Traditional portraits", "Live streaming"]
         }
       ],
       "additionalNotes": true
     },
     {
-      "id": "transportation",
-      "title": "Transportation & Logistics",
+      "id": "entertainment",
+      "title": "Entertainment & Music",
+      "icon": "🎵",
+      "items": [
+        {
+          "id": "music_type",
+          "question": "Music/Entertainment type",
+          "type": "checkbox",
+          "options": ["DJ", "Live band", "Classical musicians", "Folk performers", "Emcee/Host"]
+        },
+        {
+          "id": "special_performances",
+          "question": "Special performances",
+          "type": "radio",
+          "options": ["None", "Dance performances", "Cultural programs", "Celebrity performance", "Multiple"]
+        },
+        {
+          "id": "sound_requirements",
+          "question": "Sound system needs",
+          "type": "select",
+          "options": ["Basic PA system", "Professional sound", "Silent disco", "Multiple zones"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "logistics",
+      "title": "Logistics & Coordination",
       "icon": "🚗",
       "items": [
         {
-          "id": "guest_transport",
-          "question": "Guest transportation needs",
-          "type": "checkbox",
-          "options": ["Airport transfers", "Hotel to venue shuttle", "Parking arrangements", "Valet service"]
-        },
-        {
-          "id": "bridal_transport",
-          "question": "Bridal party transportation",
-          "type": "checkbox",
-          "options": ["Bridal car/vehicle", "Groom's transport", "Family transport", "VIP guest transport"]
-        },
-        {
-          "id": "coordination",
-          "question": "Event coordination support",
+          "id": "transportation",
+          "question": "Guest transportation",
           "type": "radio",
-          "options": ["Full event planner", "Day-of coordinator", "Vendor coordination only", "Self-managed"]
+          "options": ["Not required", "Shuttle service", "Valet parking", "Both"]
+        },
+        {
+          "id": "accommodation",
+          "question": "Guest accommodation",
+          "type": "radio",
+          "options": ["Not required", "Room block at venue", "Separate hotel", "Multiple hotels"]
+        },
+        {
+          "id": "permits_insurance",
+          "question": "Permits/Insurance needed?",
+          "type": "radio",
+          "options": ["Not sure", "Yes, we'll handle", "Need assistance", "Not required"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "ceremonies",
+      "title": "Ceremonies & Rituals",
+      "icon": "🙏",
+      "items": [
+        {
+          "id": "ceremony_type",
+          "question": "Type of ceremonies",
+          "type": "checkbox",
+          "options": ["Mehendi", "Sangeet", "Haldi", "Wedding ceremony", "Reception"]
+        },
+        {
+          "id": "religious_requirements",
+          "question": "Religious/Cultural requirements",
+          "type": "radio",
+          "options": ["Hindu traditional", "Christian", "Muslim", "Interfaith", "Custom"]
+        },
+        {
+          "id": "priest_services",
+          "question": "Priest/Officiant needed?",
+          "type": "radio",
+          "options": ["Yes", "No", "Already arranged"]
+        }
+      ],
+      "additionalNotes": true
+    },
+    {
+      "id": "additional_services",
+      "title": "Additional Services",
+      "icon": "💎",
+      "items": [
+        {
+          "id": "makeup_hair",
+          "question": "Makeup & Hair services",
+          "type": "radio",
+          "options": ["Bridal only", "Bridal + family", "Full service", "Not required"]
+        },
+        {
+          "id": "invitations",
+          "question": "Invitation/Stationery",
+          "type": "radio",
+          "options": ["Physical invitations", "Digital invitations", "Both", "Already done"]
+        },
+        {
+          "id": "wedding_favors",
+          "question": "Wedding favors/Return gifts",
+          "type": "radio",
+          "options": ["Yes, need suggestions", "Yes, we have ideas", "No", "Undecided"]
         }
       ],
       "additionalNotes": true

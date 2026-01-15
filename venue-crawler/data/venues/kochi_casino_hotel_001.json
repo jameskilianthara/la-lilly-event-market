@@ -1,0 +1,278 @@
+{
+  "venue_id": "kochi_casino_hotel_001",
+  "basic_info": {
+    "official_name": "Casino Hotel Kochi",
+    "brand_name": "Casino Group",
+    "aliases": [
+      "Casino Hotel",
+      "Casino Kochi",
+      "The Casino Willingdon Island",
+      "Casino Hotel Willingdon"
+    ],
+    "venue_type": "hotel_banquet",
+    "star_rating": 4,
+    "established_year": 1970,
+    "google_rating": 4.3,
+    "total_reviews": 1250
+  },
+  "location": {
+    "address": "Willingdon Island, Kochi, Kerala 682003",
+    "landmark": "Near Cochin Port Trust",
+    "district": "Ernakulam",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pin_code": "682003",
+    "coordinates": {
+      "latitude": 9.9674,
+      "longitude": 76.2634
+    },
+    "accessibility": {
+      "airport_distance_km": 28,
+      "airport_drive_time": "45-60 min",
+      "railway_station_distance_km": 4,
+      "metro_access": false,
+      "landmarks_nearby": ["Cochin Port", "Bolgatty Palace", "Marine Drive"]
+    }
+  },
+  "contact": {
+    "phone_primary": "+91-484-2668221",
+    "phone_secondary": "+91-484-2668001",
+    "email": "events@casinohotel.in",
+    "website": "https://www.casinohotel.in",
+    "whatsapp": "+91-9876543210",
+    "booking_manager": {
+      "name": "Rajesh Kumar",
+      "designation": "Banquet Sales Manager",
+      "contact": "+91-9876543210"
+    }
+  },
+  "capacity": {
+    "event_spaces": [
+      {
+        "space_name": "Grand Ballroom",
+        "min_guests": 200,
+        "max_guests": 500,
+        "optimal_guests": 350,
+        "space_type": "indoor",
+        "ceiling_height_ft": 18,
+        "area_sqft": 6000,
+        "seating_styles": {
+          "theater": 500,
+          "classroom": 300,
+          "banquet": 350,
+          "cocktail": 600
+        },
+        "has_stage": true,
+        "has_dance_floor": true,
+        "natural_lighting": false
+      },
+      {
+        "space_name": "Royal Hall",
+        "min_guests": 50,
+        "max_guests": 150,
+        "optimal_guests": 100,
+        "space_type": "indoor",
+        "area_sqft": 2000,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      }
+    ],
+    "total_rooms": 58,
+    "parking_capacity": 100
+  },
+  "catering": {
+    "in_house_catering": true,
+    "in_house_menu_types": [
+      "north_indian",
+      "south_indian",
+      "continental",
+      "chinese",
+      "kerala_traditional"
+    ],
+    "outside_catering_allowed": false,
+    "kitchen_specifications": {
+      "type": "commercial_kitchen",
+      "capacity": "500+ plates/hour",
+      "equipment": ["industrial_stoves", "tandoor", "refrigeration"]
+    },
+    "bar_service_available": true,
+    "alcohol_policy": "full_bar_available"
+  },
+  "facilities": {
+    "ac_available": true,
+    "backup_power": true,
+    "wifi_available": true,
+    "projector_screen": true,
+    "sound_system": true,
+    "lighting_setup": true,
+    "green_rooms": 2,
+    "wheelchair_accessible": true,
+    "parking_type": "valet",
+    "accommodation_available": true,
+    "accommodation_rooms": 58
+  },
+  "timeline_logistics": {
+    "setup_time_hours": 4,
+    "teardown_time_hours": 2,
+    "booking_window_days": 180,
+    "min_advance_booking_days": 60,
+    "cancellation_policy": "50% refund if cancelled 30+ days before event",
+    "decoration_restrictions": [
+      "no_nails_on_walls",
+      "no_open_flames",
+      "vendor_approval_required"
+    ],
+    "noise_curfew": "11:00 PM"
+  },
+  "pricing": {
+    "base_venue_charge": {
+      "weekday": 80000,
+      "weekend": 120000
+    },
+    "per_plate_cost_min": 1200,
+    "per_plate_cost_max": 2500,
+    "packages": [
+      {
+        "package_name": "Wedding Premium Package",
+        "guest_count": 300,
+        "price_range_min": 450000,
+        "price_range_max": 600000,
+        "inclusions": [
+          "Grand Ballroom (8 hours)",
+          "In-house catering (veg & non-veg)",
+          "Table & chair setup",
+          "Basic stage & lighting",
+          "Valet parking",
+          "2 green rooms"
+        ],
+        "duration_hours": 8
+      }
+    ],
+    "security_deposit": 50000,
+    "taxes_included": false,
+    "payment_terms": "30% advance, 50% one week before, 20% on event day"
+  },
+  "event_types_hosted": {
+    "weddings": true,
+    "corporate_events": true,
+    "conferences": true,
+    "exhibitions": true,
+    "birthday_parties": true,
+    "anniversaries": true,
+    "engagement_ceremonies": true,
+    "religious_ceremonies": false,
+    "photo_shoots": true
+  },
+  "vendor_relationships": {
+    "preferred_vendors": [
+      {
+        "vendor_type": "decorator",
+        "vendor_name": "Elite Decor Kochi",
+        "partnership_type": "preferred",
+        "commission_available": true
+      },
+      {
+        "vendor_type": "photographer",
+        "vendor_name": "Frames Photography",
+        "partnership_type": "preferred",
+        "commission_available": true
+      }
+    ],
+    "outside_vendors_policy": "allowed_with_approval"
+  },
+  "reviews_reputation": {
+    "overall_rating": 4.3,
+    "total_reviews_aggregated": 1250,
+    "review_snapshots": [
+      {
+        "source": "google",
+        "rating": 4.3,
+        "total_reviews": 850,
+        "positive_highlights": [
+          "Professional staff",
+          "Excellent food quality",
+          "Great location on Willingdon Island"
+        ],
+        "negative_highlights": [
+          "Parking can be tight during peak events",
+          "Noise curfew at 11 PM"
+        ]
+      },
+      {
+        "source": "weddingwire",
+        "rating": 4.5,
+        "total_reviews": 400,
+        "positive_highlights": [
+          "Beautiful ballroom",
+          "Experienced event coordinators"
+        ],
+        "negative_highlights": []
+      }
+    ],
+    "awards_certifications": [
+      "Best Wedding Venue Kochi 2024",
+      "ISO Certified Kitchen"
+    ],
+    "featured_events": [
+      "Corporate conferences for Fortune 500 companies",
+      "Celebrity weddings"
+    ]
+  },
+  "checklist_automation": {
+    "auto_populate_items": [
+      "venue_confirmed",
+      "venue_capacity_confirmed",
+      "venue_contact_saved",
+      "ac_availability",
+      "backup_power",
+      "sound_system",
+      "projector_screen",
+      "parking_available",
+      "catering_confirmed",
+      "menu_types_available",
+      "accommodation_available",
+      "valet_parking",
+      "green_rooms_available"
+    ],
+    "conditional_removals": [
+      "venue_search_required",
+      "venue_shortlisting",
+      "parking_arrangement",
+      "external_caterer_search",
+      "accommodation_search"
+    ],
+    "conditional_additions": [
+      "room_block_booking",
+      "valet_parking_arrangement",
+      "noise_curfew_planning",
+      "decoration_restrictions_review"
+    ]
+  },
+  "search_keywords": {
+    "primary_keywords": [
+      "Casino Hotel Kochi",
+      "Casino Hotel",
+      "Casino Kochi",
+      "The Casino Willingdon Island"
+    ],
+    "secondary_keywords": [
+      "wedding venue kochi",
+      "banquet hall kochi",
+      "willingdon island venue",
+      "4 star hotel venue",
+      "premium wedding venue"
+    ],
+    "location_keywords": [
+      "willingdon island",
+      "kochi",
+      "ernakulam",
+      "cochin port area",
+      "marine drive nearby"
+    ]
+  },
+  "data_source": "manual_entry_eventfoundry_2026",
+  "last_updated": "2026-01-02T10:00:00Z",
+  "data_quality_score": 95.0,
+  "manual_verification_required": false
+}

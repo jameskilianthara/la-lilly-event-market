@@ -1,0 +1,168 @@
+{
+  "venue_id": "kochi_ramada_resort_007",
+  "basic_info": {
+    "official_name": "Ramada Cochin Resort",
+    "brand_name": "Wyndham Hotels & Resorts",
+    "aliases": [
+      "Ramada Kochi",
+      "Ramada Cochin"
+    ],
+    "venue_type": "backwater_resort",
+    "star_rating": 4,
+    "established_year": 2008,
+    "google_rating": 4.3,
+    "total_reviews": 1900
+  },
+  "location": {
+    "address": "Nedumbassery, Kochi, Kerala 683585",
+    "landmark": "Overlooking backwaters near airport",
+    "district": "Ernakulam",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pin_code": "683585",
+    "coordinates": {
+      "latitude": 10.1520,
+      "longitude": 76.3897
+    },
+    "accessibility": {
+      "airport_distance_km": 3,
+      "airport_drive_time": "10-15 min",
+      "railway_station_distance_km": 30,
+      "metro_access": false,
+      "landmarks_nearby": ["Cochin International Airport", "Backwaters"]
+    }
+  },
+  "contact": {
+    "phone_primary": "+91-484-2610101",
+    "email": "info@ramadakochi.com",
+    "website": "https://www.wyndhamhotels.com/ramada/kochi-india/ramada-cochin/overview",
+    "whatsapp": "+91-9846789012",
+    "booking_manager": {
+      "name": "Events Coordinator",
+      "designation": "Banquet Sales Manager",
+      "contact": "+91-484-2610101"
+    }
+  },
+  "capacity": {
+    "event_spaces": [
+      {
+        "space_name": "Convention Center",
+        "min_guests": 200,
+        "max_guests": 600,
+        "optimal_guests": 450,
+        "space_type": "indoor",
+        "area_sqft": 6500,
+        "has_stage": true,
+        "has_dance_floor": true,
+        "natural_lighting": true
+      },
+      {
+        "space_name": "Backwater Lawn",
+        "min_guests": 150,
+        "max_guests": 500,
+        "space_type": "outdoor",
+        "area_sqft": 7000,
+        "has_stage": false,
+        "has_dance_floor": false,
+        "natural_lighting": true
+      }
+    ],
+    "total_rooms": 101,
+    "parking_capacity": 180
+  },
+  "catering": {
+    "in_house_catering": true,
+    "in_house_menu_types": [
+      "north_indian",
+      "south_indian",
+      "kerala_traditional",
+      "continental",
+      "chinese"
+    ],
+    "outside_catering_allowed": false,
+    "bar_service_available": true,
+    "alcohol_policy": "full_bar_available"
+  },
+  "facilities": {
+    "ac_available": true,
+    "backup_power": true,
+    "wifi_available": true,
+    "projector_screen": true,
+    "sound_system": true,
+    "lighting_setup": true,
+    "green_rooms": 3,
+    "wheelchair_accessible": true,
+    "parking_type": "both",
+    "accommodation_available": true,
+    "accommodation_rooms": 101
+  },
+  "timeline_logistics": {
+    "setup_time_hours": 5,
+    "teardown_time_hours": 2,
+    "booking_window_days": 240,
+    "min_advance_booking_days": 60,
+    "cancellation_policy": "65% refund if cancelled 30+ days before event",
+    "decoration_restrictions": [
+      "eco_friendly_materials_preferred",
+      "backwater_protection_required"
+    ],
+    "noise_curfew": "11:30 PM"
+  },
+  "pricing": {
+    "base_venue_charge": {
+      "weekday": 90000,
+      "weekend": 140000
+    },
+    "per_plate_cost_min": 1200,
+    "per_plate_cost_max": 2800,
+    "packages": [],
+    "security_deposit": 60000,
+    "taxes_included": false,
+    "payment_terms": "30% advance, 50% one week before, 20% on event day"
+  },
+  "event_types_hosted": {
+    "weddings": true,
+    "corporate_events": true,
+    "conferences": true,
+    "exhibitions": false,
+    "birthday_parties": true,
+    "anniversaries": true,
+    "engagement_ceremonies": true,
+    "religious_ceremonies": false,
+    "photo_shoots": true
+  },
+  "checklist_automation": {
+    "auto_populate_items": [
+      "venue_confirmed",
+      "backwater_views",
+      "near_airport"
+    ],
+    "conditional_removals": [
+      "venue_search_required",
+      "accommodation_search"
+    ],
+    "conditional_additions": [
+      "weather_backup_plan_outdoor_events"
+    ]
+  },
+  "search_keywords": {
+    "primary_keywords": [
+      "Ramada Cochin Resort",
+      "Ramada Kochi"
+    ],
+    "secondary_keywords": [
+      "backwater resort wedding",
+      "resort near airport",
+      "nature venue kochi"
+    ],
+    "location_keywords": [
+      "nedumbassery",
+      "airport area",
+      "kochi backwaters"
+    ]
+  },
+  "data_source": "manual_entry_eventfoundry_premium_2026",
+  "last_updated": "2026-01-02T11:45:00Z",
+  "data_quality_score": 90.0,
+  "manual_verification_required": false
+}

@@ -1,0 +1,201 @@
+{
+  "venue_id": "kochi_trinita_casa_009",
+  "basic_info": {
+    "official_name": "Trinita Casa Events & Banquet",
+    "brand_name": null,
+    "aliases": [
+      "Trinita Casa",
+      "Trinita Casa Edappally"
+    ],
+    "venue_type": "dedicated_banquet_hall",
+    "star_rating": null,
+    "established_year": 2018,
+    "google_rating": 4.4,
+    "total_reviews": 580
+  },
+  "location": {
+    "address": "Edappally, Kochi, Kerala 682024",
+    "landmark": "Near Lulu Mall",
+    "district": "Ernakulam",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pin_code": "682024",
+    "coordinates": {
+      "latitude": 10.0247,
+      "longitude": 76.3084
+    },
+    "accessibility": {
+      "airport_distance_km": 28,
+      "airport_drive_time": "40-50 min",
+      "railway_station_distance_km": 12,
+      "metro_access": true,
+      "landmarks_nearby": ["Lulu Mall", "Edappally Metro", "NH Bypass"]
+    }
+  },
+  "contact": {
+    "phone_primary": "+91-9447890123",
+    "email": "events@trinitacasa.com",
+    "website": "https://www.trinitacasa.com",
+    "whatsapp": "+91-9447890123",
+    "booking_manager": {
+      "name": "Events Manager",
+      "designation": "Venue Coordinator",
+      "contact": "+91-9447890123"
+    }
+  },
+  "capacity": {
+    "event_spaces": [
+      {
+        "space_name": "Main Banquet Hall",
+        "min_guests": 300,
+        "max_guests": 1000,
+        "optimal_guests": 700,
+        "space_type": "indoor",
+        "ceiling_height_ft": 20,
+        "area_sqft": 10000,
+        "seating_styles": {
+          "theater": 1000,
+          "banquet": 700,
+          "cocktail": 1200
+        },
+        "has_stage": true,
+        "has_dance_floor": true,
+        "natural_lighting": false
+      }
+    ],
+    "total_rooms": 0,
+    "parking_capacity": 300
+  },
+  "catering": {
+    "in_house_catering": true,
+    "in_house_menu_types": [
+      "north_indian",
+      "south_indian",
+      "kerala_traditional",
+      "chinese",
+      "continental"
+    ],
+    "outside_catering_allowed": true,
+    "kitchen_specifications": {
+      "type": "commercial_kitchen",
+      "capacity": "1000+ plates/hour"
+    },
+    "bar_service_available": true,
+    "alcohol_policy": "allowed_with_license"
+  },
+  "facilities": {
+    "ac_available": true,
+    "backup_power": true,
+    "wifi_available": true,
+    "projector_screen": true,
+    "sound_system": true,
+    "lighting_setup": true,
+    "green_rooms": 4,
+    "wheelchair_accessible": true,
+    "parking_type": "self",
+    "accommodation_available": false,
+    "accommodation_rooms": 0
+  },
+  "timeline_logistics": {
+    "setup_time_hours": 4,
+    "teardown_time_hours": 2,
+    "booking_window_days": 210,
+    "min_advance_booking_days": 45,
+    "cancellation_policy": "60% refund if cancelled 30+ days before event",
+    "decoration_restrictions": [
+      "no_open_flames",
+      "vendor_approval_required"
+    ],
+    "noise_curfew": "12:00 AM"
+  },
+  "pricing": {
+    "base_venue_charge": {
+      "weekday": 70000,
+      "weekend": 110000
+    },
+    "per_plate_cost_min": 800,
+    "per_plate_cost_max": 1800,
+    "packages": [],
+    "security_deposit": 40000,
+    "taxes_included": false,
+    "payment_terms": "30% advance, 50% one week before, 20% on event day"
+  },
+  "event_types_hosted": {
+    "weddings": true,
+    "corporate_events": true,
+    "conferences": true,
+    "exhibitions": false,
+    "birthday_parties": true,
+    "anniversaries": true,
+    "engagement_ceremonies": true,
+    "religious_ceremonies": true,
+    "photo_shoots": false
+  },
+  "vendor_relationships": {
+    "preferred_vendors": [],
+    "outside_vendors_policy": "allowed_with_coordination"
+  },
+  "reviews_reputation": {
+    "overall_rating": 4.4,
+    "total_reviews_aggregated": 580,
+    "review_snapshots": [
+      {
+        "source": "google",
+        "rating": 4.4,
+        "total_reviews": 450,
+        "positive_highlights": [
+          "Spacious and well-maintained",
+          "Ample parking",
+          "Full AC",
+          "Elegant decor",
+          "Professional staff"
+        ],
+        "negative_highlights": [
+          "No accommodation",
+          "Location can be congested during peak hours"
+        ]
+      }
+    ],
+    "awards_certifications": [],
+    "featured_events": [
+      "Large weddings",
+      "Corporate annual events"
+    ]
+  },
+  "checklist_automation": {
+    "auto_populate_items": [
+      "venue_confirmed",
+      "large_capacity_hall",
+      "ample_parking",
+      "full_ac"
+    ],
+    "conditional_removals": [
+      "venue_search_required",
+      "parking_arrangement"
+    ],
+    "conditional_additions": [
+      "nearby_accommodation_arrangement"
+    ]
+  },
+  "search_keywords": {
+    "primary_keywords": [
+      "Trinita Casa Events & Banquet",
+      "Trinita Casa"
+    ],
+    "secondary_keywords": [
+      "banquet hall edappally",
+      "large wedding venue kochi",
+      "spacious banquet kochi",
+      "near lulu mall venue"
+    ],
+    "location_keywords": [
+      "edappally",
+      "lulu mall area",
+      "kochi"
+    ]
+  },
+  "data_source": "manual_entry_eventfoundry_premium_2026",
+  "last_updated": "2026-01-02T12:15:00Z",
+  "data_quality_score": 91.0,
+  "manual_verification_required": false
+}

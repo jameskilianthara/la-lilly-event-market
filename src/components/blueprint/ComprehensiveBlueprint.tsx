@@ -16,6 +16,9 @@ import {
   CheckBadgeIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import { parseEventDate } from '../../lib/dateParser';
+import DynamicChecklistItem from '../checklist/DynamicChecklistItem';
+import VenueSelectionSection from '../checklist/VenueSelectionSection';
 
 interface ChecklistData {
   selections: Record<string, any>;
@@ -35,8 +38,15 @@ interface ChecklistCategory {
 interface ChecklistItem {
   id: string;
   question: string;
-  type: 'radio' | 'select' | 'checkbox';
+  type: 'radio' | 'select' | 'checkbox' | 'text' | 'text_with_autocomplete' | 'dynamic_venue_selector';
   options: string[];
+  isDynamicVenueTrigger?: boolean;
+  dependsOn?: {
+    questionId: string;
+    triggerValue: string | string[];
+  };
+  autocompleteSource?: string;
+  children?: ChecklistItem[];
 }
 
 interface ClientBrief {
@@ -55,6 +65,7 @@ interface TimelineMilestone {
   description: string;
   category: 'planning' | 'booking' | 'execution' | 'event';
   editable?: boolean;
+  daysUntil?: string;
 }
 
 interface SuccessCriteria {
@@ -111,6 +122,10 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
   );
   const [timeline, setTimeline] = useState<TimelineMilestone[]>([]);
   const [showLaunchModal, setShowLaunchModal] = useState(false);
+  const [checklistAnswers, setChecklistAnswers] = useState<Record<string, any>>(
+    checklistData?.selections || {}
+  );
+  const [selectedVenue, setSelectedVenue] = useState<any>(null);
 
   // Define helper functions before they're used in useEffect
   const formatDate = (dateString: string): string => {
@@ -160,8 +175,80 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
     return `This document outlines the complete specifications for a ${eventType} event scheduled for ${date} in ${location}. The event will host approximately ${guests} guests and includes the following key requirements: ${keyRequirements}. This blueprint serves as the authoritative specification for vendor proposals and project execution.`;
   };
 
+  const parseEventDateSafely = (dateInput: string | undefined): Date | null => {
+    if (!dateInput) return null;
+
+    try {
+      // Strategy 1: Try parsing from client_brief.date_parsed (database format)
+      const briefData = (clientBrief as any).client_brief;
+      if (briefData?.date_parsed) {
+        const date = new Date(briefData.date_parsed);
+        if (!isNaN(date.getTime())) {
+          console.log('✅ Parsed date from client_brief.date_parsed:', briefData.date_parsed);
+          return date;
+        }
+      }
+
+      // Strategy 2: Try direct Date parsing (works for ISO formats)
+      let date = new Date(dateInput);
+      if (!isNaN(date.getTime())) {
+        console.log('✅ Parsed date directly:', dateInput);
+        return date;
+      }
+
+      // Strategy 3: Use our date parser utility
+      const parsedDateStr = parseEventDate(dateInput);
+      date = new Date(parsedDateStr);
+      if (!isNaN(date.getTime())) {
+        console.log('✅ Parsed date using parseEventDate:', dateInput, '→', parsedDateStr);
+        return date;
+      }
+
+      console.warn('⚠️ All date parsing strategies failed for:', dateInput);
+      return null;
+    } catch (error) {
+      console.error('❌ Error parsing date:', error, 'Input:', dateInput);
+      return null;
+    }
+  };
+
+  const calculateDaysUntil = (milestoneDate: Date, eventDate: Date): string => {
+    const diffTime = eventDate.getTime() - milestoneDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Event Day';
+    if (diffDays < 0) return `${Math.abs(diffDays)} days after event`;
+
+    const weeks = Math.floor(diffDays / 7);
+    if (weeks > 0) {
+      return `${diffDays} days before event (${weeks} ${weeks === 1 ? 'week' : 'weeks'})`;
+    }
+    return `${diffDays} days before event`;
+  };
+
   const generateTimeline = (): TimelineMilestone[] => {
-    const eventDate = new Date(clientBrief.date || Date.now());
+    // Parse event date with multiple fallback strategies
+    const eventDate = parseEventDateSafely(clientBrief.date);
+
+    // If parsing fails, return placeholder timeline
+    if (!eventDate || isNaN(eventDate.getTime())) {
+      console.warn('⚠️ Invalid event date, returning placeholder timeline');
+      const now = new Date();
+      now.setMonth(now.getMonth() + 3); // Default to 3 months from now
+
+      return [{
+        id: 'placeholder',
+        date: 'TBD',
+        title: 'Event Planning',
+        description: 'Please set a valid event date to see your planning timeline',
+        category: 'planning',
+        editable: true,
+        daysUntil: 'Date required'
+      }];
+    }
+
+    console.log('📅 Generating timeline for event date:', eventDate.toISOString().split('T')[0]);
+
     const milestones: TimelineMilestone[] = [];
 
     // 8 weeks before
@@ -173,7 +260,8 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
       title: 'Project Launch & Vendor Selection',
       description: 'Review vendor proposals and finalize service providers',
       category: 'planning',
-      editable: true
+      editable: true,
+      daysUntil: calculateDaysUntil(week8, eventDate)
     });
 
     // 6 weeks before
@@ -185,7 +273,8 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
       title: 'Contract Finalization',
       description: 'Sign contracts and confirm booking deposits',
       category: 'booking',
-      editable: true
+      editable: true,
+      daysUntil: calculateDaysUntil(week6, eventDate)
     });
 
     // 4 weeks before
@@ -197,7 +286,8 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
       title: 'Detailed Planning Phase',
       description: 'Finalize event flow, layout, and vendor coordination',
       category: 'planning',
-      editable: true
+      editable: true,
+      daysUntil: calculateDaysUntil(week4, eventDate)
     });
 
     // 2 weeks before
@@ -209,7 +299,8 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
       title: 'Final Confirmations',
       description: 'Confirm all vendor schedules and delivery timelines',
       category: 'execution',
-      editable: true
+      editable: true,
+      daysUntil: calculateDaysUntil(week2, eventDate)
     });
 
     // 1 week before
@@ -221,7 +312,8 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
       title: 'Pre-Event Week',
       description: 'Final walkthrough and last-minute adjustments',
       category: 'execution',
-      editable: true
+      editable: true,
+      daysUntil: calculateDaysUntil(week1, eventDate)
     });
 
     // Event day
@@ -231,7 +323,8 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
       title: 'Event Day',
       description: `${clientBrief.event_type || 'Event'} execution and coordination`,
       category: 'event',
-      editable: false
+      editable: false,
+      daysUntil: 'Event Day'
     });
 
     return milestones;
@@ -332,6 +425,65 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
   const handleCategoryNotesChange = (categoryId: string, notes: string) => {
     const newNotes = { ...categoryNotes, [categoryId]: notes };
     setCategoryNotes(newNotes);
+  };
+
+  const handleChecklistAnswerChange = (questionId: string, value: any) => {
+    const newAnswers = { ...checklistAnswers, [questionId]: value };
+    setChecklistAnswers(newAnswers);
+
+    // Auto-save checklist answers
+    if (onSave) {
+      onSave({
+        blueprint: {
+          ...savedBlueprint,
+          checklistAnswers: newAnswers
+        }
+      }).catch(console.error);
+    }
+  };
+
+  const handleVenueSelected = async (venue: any) => {
+    setSelectedVenue(venue);
+
+    // Auto-populate venue fields
+    const venueAnswers = {
+      ...checklistAnswers,
+      venue_name: venue.basic_info.official_name,
+      venue_address: venue.location.address,
+      venue_booking_status: 'pending'
+    };
+    setChecklistAnswers(venueAnswers);
+
+    // Trigger checklist optimization
+    try {
+      const response = await fetch('/api/venues/optimize-checklist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          venue_id: venue.venue_id,
+          checklist: {
+            eventType: clientBrief.event_type,
+            sections: checklistCategories
+          }
+        })
+      });
+
+      if (response.ok) {
+        const optimizedData = await response.json();
+        console.log('✅ Checklist optimized:', optimizedData);
+
+        // Update checklist with auto-populated items
+        if (optimizedData.auto_populated_items) {
+          const updatedAnswers = { ...venueAnswers };
+          optimizedData.auto_populated_items.forEach((item: any) => {
+            updatedAnswers[item.item_id] = item.value;
+          });
+          setChecklistAnswers(updatedAnswers);
+        }
+      }
+    } catch (error) {
+      console.error('Error optimizing checklist:', error);
+    }
   };
 
   const handleLaunchProject = async () => {
@@ -644,6 +796,9 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
                             <div className={`bg-gradient-to-br ${colors.from} ${colors.to} text-white px-4 py-2 rounded-xl shadow-lg`}>
                               <div className="text-xs font-medium opacity-90 uppercase tracking-wide">Date</div>
                               <div className="text-sm lg:text-base font-bold">{milestone.date}</div>
+                              {milestone.daysUntil && (
+                                <div className="text-xs opacity-75 mt-1">{milestone.daysUntil}</div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -702,15 +857,56 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
 
                     <div className="divide-y divide-slate-100">
                       {category.items.map((item) => {
-                        const value = renderRequirementValue(item);
+                        // Check if this is a dynamic venue trigger
+                        if (item.isDynamicVenueTrigger && item.id === 'venue_status') {
+                          return (
+                            <div key={item.id} className="p-5">
+                              <DynamicChecklistItem
+                                item={item}
+                                currentAnswers={checklistAnswers}
+                                onAnswerChange={handleChecklistAnswerChange}
+                              />
+
+                              {/* Show venue selection section if "No, I need help finding one" is selected */}
+                              {checklistAnswers[item.id] === 'No, I need help finding one' && (
+                                <div className="mt-6">
+                                  <VenueSelectionSection
+                                    eventRequirements={{
+                                      eventType: clientBrief.event_type || 'Event',
+                                      guestCount: parseInt(clientBrief.guest_count || '0'),
+                                      city: clientBrief.city || '',
+                                      date: clientBrief.date || ''
+                                    }}
+                                    onVenueSelected={handleVenueSelected}
+                                  />
+                                </div>
+                              )}
+
+                              {/* Render conditional children for "Yes" path */}
+                              {item.children && checklistAnswers[item.id] === 'Yes, I have a venue' && (
+                                <div className="mt-4 space-y-4 pl-6 border-l-4 border-blue-200">
+                                  {item.children.map((childItem) => (
+                                    <DynamicChecklistItem
+                                      key={childItem.id}
+                                      item={childItem}
+                                      currentAnswers={checklistAnswers}
+                                      onAnswerChange={handleChecklistAnswerChange}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        // Regular dynamic checklist item
                         return (
                           <div key={item.id} className="p-5 hover:bg-purple-50/30 transition-all duration-200">
-                            <label className="block text-sm font-semibold text-slate-800 mb-3">
-                              {item.question}
-                            </label>
-                            <div className="bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-slate-700 text-sm">
-                              {value}
-                            </div>
+                            <DynamicChecklistItem
+                              item={item}
+                              currentAnswers={checklistAnswers}
+                              onAnswerChange={handleChecklistAnswerChange}
+                            />
                           </div>
                         );
                       })}
