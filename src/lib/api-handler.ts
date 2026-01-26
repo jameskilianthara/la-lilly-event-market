@@ -2,12 +2,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFriendlyErrorMessage, logError, EventFoundryError, ValidationError, AuthenticationError } from './errors';
 
-type ApiHandler = (req: NextRequest) => Promise<NextResponse>;
+type ApiHandler = (req: NextRequest, context?: any) => Promise<NextResponse>;
 
 export function withErrorHandler(handler: ApiHandler): ApiHandler {
-  return async (req: NextRequest) => {
+  return async (req: NextRequest, context?: any) => {
     try {
-      return await handler(req);
+      return await handler(req, context);
     } catch (error) {
       logError(error, {
         method: req.method,
@@ -54,7 +54,5 @@ export function requireAuth(userId?: string): string {
   }
   return userId;
 }
-
-
 
 

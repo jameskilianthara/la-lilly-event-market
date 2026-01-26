@@ -72,7 +72,7 @@ function ChecklistPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const eventType = searchParams?.get('type') || 'wedding';
-  const eventId = searchParams?.get('eventId'); // NEW: Get eventId from URL
+  const eventId = searchParams?.get('eventId'); // Get eventId from URL
 
   const [checklist, setChecklist] = useState<ChecklistData | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
@@ -81,12 +81,72 @@ function ChecklistPageContent() {
   const [imageReferences, setImageReferences] = useState<Record<string, string[]>>({});
   const [imageInputs, setImageInputs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false); // NEW: Track save state
+  const [saving, setSaving] = useState(false);
+  const [forgeData, setForgeData] = useState<any>(null); // Store Forge chat data
 
   useEffect(() => {
     loadChecklist();
-    loadFromLocalStorage();
-  }, [eventType]);
+    if (eventId) {
+      loadForgeData();
+    } else {
+      loadFromLocalStorage();
+    }
+  }, [eventType, eventId]);
+
+  const loadForgeData = async () => {
+    try {
+      console.log('Loading Forge data for event:', eventId);
+
+      // Fetch event from database
+      const response = await fetch(`/api/forge/projects/${eventId}`);
+
+      if (!response.ok) {
+        console.error('Failed to load event data');
+        loadFromLocalStorage(); // Fallback to localStorage
+        return;
+      }
+
+      const { forgeProject } = await response.json();
+
+      if (!forgeProject) {
+        console.error('No forge project found');
+        loadFromLocalStorage(); // Fallback to localStorage
+        return;
+      }
+
+      console.log('Forge project loaded:', forgeProject);
+
+      // Extract client_brief data
+      const clientBrief = forgeProject.client_brief || {};
+
+      // Store for display
+      setForgeData({
+        event_type: clientBrief.event_type || forgeProject.event_type,
+        date: clientBrief.date || forgeProject.date,
+        city: clientBrief.city || forgeProject.city,
+        guest_count: clientBrief.guest_count || forgeProject.guest_count,
+        venue_status: clientBrief.venue_status || forgeProject.venue_status,
+      });
+
+      // Check if checklist data already exists (user returning to edit)
+      const existingChecklist = clientBrief.checklist;
+
+      if (existingChecklist) {
+        // User is returning to edit - restore their previous checklist answers
+        console.log('Restoring previous checklist data');
+        setSelections(existingChecklist.selections || {});
+        setCategoryNotes(existingChecklist.categoryNotes || {});
+        setImageReferences(existingChecklist.imageReferences || {});
+      } else {
+        // First time on checklist - load from localStorage as fallback
+        loadFromLocalStorage();
+      }
+
+    } catch (error) {
+      console.error('Error loading Forge data:', error);
+      loadFromLocalStorage(); // Fallback to localStorage
+    }
+  };
 
   const loadChecklist = async () => {
     try {
@@ -138,6 +198,171 @@ function ChecklistPageContent() {
       setImageReferences(savedImages || {});
     }
   };
+
+  // Auto-fill checklist from Forge data
+  const autoFillFromForgeData = () => {
+    if (!forgeData || !checklist) {
+      console.log('[Auto-fill] Skipping - missing forgeData or checklist');
+      return;
+    }
+
+    console.log('[Auto-fill] Starting auto-fill with forgeData:', forgeData);
+
+    const newSelections: Record<string, any> = { ...selections };
+    let filledCount = 0;
+
+    // Helper function to check if a field is already filled
+    const isFieldEmpty = (itemId: string) => {
+      const currentValue = newSelections[itemId];
+      if (Array.isArray(currentValue)) return currentValue.length === 0;
+      return !currentValue || currentValue === '';
+    };
+
+    // Iterate through all checklist items and match with forgeData
+    checklist.categories.forEach((category) => {
+      category.items.forEach((item) => {
+        // Only fill if field is currently empty
+        if (!isFieldEmpty(item.id)) {
+          console.log(`[Auto-fill] Skipping ${item.id} - already has value`);
+          return;
+        }
+
+        const questionLower = item.question.toLowerCase();
+
+        // Match event type / party type
+        if (
+          (questionLower.includes('type of party') ||
+           questionLower.includes('party type') ||
+           questionLower.includes('event type')) &&
+          forgeData.event_type
+        ) {
+          // Find matching option (case-insensitive)
+          const matchingOption = item.options.find(
+            (opt) => opt.toLowerCase().includes(forgeData.event_type.toLowerCase())
+          );
+          if (matchingOption) {
+            newSelections[item.id] = matchingOption;
+            filledCount++;
+            console.log(`[Auto-fill] ${item.id} = ${matchingOption}`);
+          }
+        }
+
+        // Match date-related fields
+        if (
+          (questionLower.includes('date') ||
+           questionLower.includes('when')) &&
+          forgeData.date &&
+          item.type !== 'checkbox'
+        ) {
+          // For date fields, we might need to format or find closest option
+          // For now, just log - dates are usually free text or date pickers
+          console.log(`[Auto-fill] Found date field ${item.id}, but no auto-fill logic yet`);
+        }
+
+        // Match location / city / venue
+        if (
+          (questionLower.includes('location') ||
+           questionLower.includes('city') ||
+           questionLower.includes('venue') ||
+           questionLower.includes('where')) &&
+          forgeData.city
+        ) {
+          // Check if city is in options (for select/radio)
+          const matchingOption = item.options.find(
+            (opt) => opt.toLowerCase().includes(forgeData.city.toLowerCase()) ||
+                     forgeData.city.toLowerCase().includes(opt.toLowerCase())
+          );
+          if (matchingOption) {
+            newSelections[item.id] = matchingOption;
+            filledCount++;
+            console.log(`[Auto-fill] ${item.id} = ${matchingOption}`);
+          }
+        }
+
+        // Match guest count / number of guests
+        if (
+          (questionLower.includes('guest') ||
+           questionLower.includes('attendees') ||
+           questionLower.includes('people') ||
+           questionLower.includes('number of')) &&
+          forgeData.guest_count
+        ) {
+          // Try to find matching range in options
+          const guestNum = parseInt(forgeData.guest_count);
+          const matchingOption = item.options.find((opt) => {
+            const optLower = opt.toLowerCase();
+            // Match ranges like "100-200", "200+", "under 50", etc.
+            if (optLower.includes('-')) {
+              const [min, max] = optLower.split('-').map((s) => parseInt(s.trim()));
+              return guestNum >= min && guestNum <= max;
+            }
+            if (optLower.includes('+') || optLower.includes('above')) {
+              const min = parseInt(optLower);
+              return guestNum >= min;
+            }
+            if (optLower.includes('under') || optLower.includes('below')) {
+              const max = parseInt(optLower);
+              return guestNum <= max;
+            }
+            // Exact match
+            return optLower.includes(forgeData.guest_count);
+          });
+          if (matchingOption) {
+            newSelections[item.id] = matchingOption;
+            filledCount++;
+            console.log(`[Auto-fill] ${item.id} = ${matchingOption}`);
+          }
+        }
+
+        // Match venue status
+        if (
+          (questionLower.includes('venue') &&
+           (questionLower.includes('status') ||
+            questionLower.includes('preference') ||
+            questionLower.includes('booked'))) &&
+          forgeData.venue_status
+        ) {
+          // Map venue_status values to options
+          const venueStatusMap: Record<string, string[]> = {
+            'booked': ['venue booked', 'already booked', 'confirmed venue', 'venue secured'],
+            'not_booked': ['venue not booked', 'need venue', 'looking for venue', 'venue needed'],
+            'need_help': ['need help finding venue', 'help needed', 'assistance required', 'flexible']
+          };
+
+          const possibleMatches = venueStatusMap[forgeData.venue_status] || [];
+          const matchingOption = item.options.find((opt) => {
+            const optLower = opt.toLowerCase();
+            return possibleMatches.some((match) => optLower.includes(match.toLowerCase()));
+          });
+
+          if (matchingOption) {
+            newSelections[item.id] = matchingOption;
+            filledCount++;
+            console.log(`[Auto-fill] ${item.id} = ${matchingOption}`);
+          }
+        }
+      });
+    });
+
+    if (filledCount > 0) {
+      console.log(`[Auto-fill] Successfully auto-filled ${filledCount} fields`);
+      setSelections(newSelections);
+      saveToLocalStorage(newSelections, categoryNotes, imageReferences);
+    } else {
+      console.log('[Auto-fill] No fields were auto-filled');
+    }
+  };
+
+  // Trigger auto-fill when both checklist and forgeData are loaded
+  useEffect(() => {
+    if (checklist && forgeData && eventId) {
+      console.log('[Auto-fill] Both checklist and forgeData loaded, triggering auto-fill');
+      // Small delay to ensure state is settled
+      setTimeout(() => {
+        autoFillFromForgeData();
+      }, 100);
+    }
+  }, [checklist, forgeData]);
 
   const saveToLocalStorage = (newSelections: Record<string, any>, newNotes: Record<string, string>, newImages?: Record<string, string[]>) => {
     localStorage.setItem(`checklist_${eventType}`, JSON.stringify({
@@ -287,6 +512,14 @@ function ChecklistPageContent() {
     setSaving(true);
 
     try {
+      // Fetch current event to preserve existing client_brief
+      console.log('Fetching current event data...');
+      const response = await fetch(`/api/forge/projects/${eventId}`);
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+      const { forgeProject } = await response.json();
+
       // Save checklist selections to event
       const checklistData = {
         selections,
@@ -295,21 +528,56 @@ function ChecklistPageContent() {
         completedAt: new Date().toISOString()
       };
 
-      const { error } = await updateEvent(eventId, {
-        client_brief: {
-          checklist: checklistData
-        }
+      // Merge with existing client_brief to preserve Forge data
+      const updatedClientBrief = {
+        ...(forgeProject?.client_brief || {}),
+        checklist: checklistData
+      };
+
+      // Convert checklist template to blueprint format for bid template
+      const blueprintStructure = {
+        eventType: checklist?.eventType || eventType,
+        displayName: checklist?.displayName || `${eventType} Forge Blueprint`,
+        sections: checklist?.categories?.map((category: ChecklistCategory) => ({
+          id: category.id,
+          title: category.title,
+          items: category.items.map((item: ChecklistItem) => ({
+            id: item.id,
+            label: item.question,
+            description: item.question,
+            type: item.type,
+            options: item.options
+          }))
+        })) || []
+      };
+
+      console.log('Saving checklist data and blueprint structure...');
+      // Use API route instead of direct database call
+      const updateResponse = await fetch(`/api/forge/projects/${eventId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client_brief: updatedClientBrief,
+          forge_blueprint: blueprintStructure
+        })
       });
 
-      if (error) {
-        console.error('Error saving checklist:', error);
-        alert('Failed to save checklist. Please try again.');
-        setSaving(false);
-        return;
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json();
+        throw new Error(`Update failed: ${errorData.error || updateResponse.status}`);
       }
 
-      // Navigate to blueprint page with eventId
-      router.push(`/blueprint/${eventId}`);
+      const updateResult = await updateResponse.json();
+      console.log('Checklist saved successfully:', updateResult);
+
+      // Brief delay to ensure state update, then navigate
+      setTimeout(() => {
+        setSaving(false);
+        router.push(`/blueprint/${eventId}`);
+      }, 500);
+
     } catch (err) {
       console.error('Unexpected error:', err);
       alert('An unexpected error occurred. Please try again.');
@@ -385,6 +653,71 @@ function ChecklistPageContent() {
 
       {/* Checklist Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Forge Data Confirmation Banner */}
+        {forgeData && (
+          <div className="mb-8 bg-gradient-to-br from-green-900/40 to-green-800/40 rounded-2xl p-6 border border-green-700/50 shadow-xl">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <CheckCircleIcon className="h-8 w-8 text-green-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-green-100 mb-3">
+                  Great! From your Forge conversation, we already have:
+                </h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  {forgeData.event_type && (
+                    <li className="flex items-center space-x-2 text-green-200">
+                      <SparklesIcon className="h-4 w-4 text-green-400 flex-shrink-0" />
+                      <span>
+                        <strong>Event:</strong> {forgeData.event_type}
+                      </span>
+                    </li>
+                  )}
+                  {forgeData.date && (
+                    <li className="flex items-center space-x-2 text-green-200">
+                      <CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" />
+                      <span>
+                        <strong>Date:</strong> {new Date(forgeData.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </li>
+                  )}
+                  {forgeData.city && (
+                    <li className="flex items-center space-x-2 text-green-200">
+                      <CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" />
+                      <span>
+                        <strong>Location:</strong> {forgeData.city}
+                      </span>
+                    </li>
+                  )}
+                  {forgeData.guest_count && (
+                    <li className="flex items-center space-x-2 text-green-200">
+                      <CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" />
+                      <span>
+                        <strong>Guests:</strong> {forgeData.guest_count}
+                      </span>
+                    </li>
+                  )}
+                  {forgeData.venue_status && (
+                    <li className="flex items-center space-x-2 text-green-200">
+                      <CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" />
+                      <span>
+                        <strong>Venue:</strong> {forgeData.venue_status.replace(/_/g, ' ')}
+                      </span>
+                    </li>
+                  )}
+                </ul>
+                <p className="text-green-300 text-sm mt-4 font-medium">
+                  Now complete the details below to customize your event forge requirements.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-6">
           {checklist.categories.map((category, index) => {
             const isExpanded = expandedCategories.has(category.id);
