@@ -13,9 +13,20 @@ import {
   DocumentArrowDownIcon,
   ShareIcon,
   ClockIcon,
-  CheckBadgeIcon
+  CheckBadgeIcon,
+  XMarkIcon,
+  CheckIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline';
 import type { ForgeBlueprint, ClientBrief, ClientNotes, ReferenceImage } from '../../types/blueprint';
+import { generateBlueprintPDF } from '../../lib/pdfGenerator';
+import {
+  copyBlueprintShareUrl,
+  shareBlueprint,
+  shareBlueprintViaWhatsApp,
+  shareBlueprintViaEmail,
+  getSocialShareUrls
+} from '../../lib/blueprintSharing';
 
 interface ProfessionalBlueprintProps {
   blueprint: ForgeBlueprint;
@@ -59,6 +70,11 @@ export const ProfessionalBlueprint: React.FC<ProfessionalBlueprintProps> = ({
       'Zero critical issues or major delays'
     ]
   });
+
+  // Share modal state
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareCopySuccess, setShareCopySuccess] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Auto-generate executive summary on mount
   useEffect(() => {
@@ -180,6 +196,42 @@ export const ProfessionalBlueprint: React.FC<ProfessionalBlueprintProps> = ({
     month: 'long',
     day: 'numeric'
   });
+
+  // Handler functions
+  const handleDownloadPDF = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      await generateBlueprintPDF({
+        blueprint,
+        clientBrief,
+        clientNotes,
+        referenceImages,
+        blueprintId,
+        generatedDate,
+        executiveSummary: executiveSummary || 'No executive summary provided.',
+        specialInstructions: specialInstructions || ''
+      });
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  const handleShareBlueprint = () => {
+    setShowShareModal(true);
+  };
+
+  const handleCopyShareLink = async () => {
+    const success = await copyBlueprintShareUrl(blueprintId);
+    if (success) {
+      setShareCopySuccess(true);
+      setTimeout(() => setShareCopySuccess(false), 2000);
+    }
+  };
+
+  const socialUrls = getSocialShareUrls(blueprintId, clientBrief);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
@@ -665,12 +717,21 @@ export const ProfessionalBlueprint: React.FC<ProfessionalBlueprintProps> = ({
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <button className="group flex items-center justify-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-2 border-white/20 hover:border-white/30 text-white px-6 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[44px]">
+                <button
+                  onClick={handleDownloadPDF}
+                  disabled={isGeneratingPDF}
+                  className="group flex items-center justify-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-2 border-white/20 hover:border-white/30 text-white px-6 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                >
                   <DocumentArrowDownIcon className="h-6 w-6 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="font-semibold">Download PDF</span>
+                  <span className="font-semibold">
+                    {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}
+                  </span>
                 </button>
 
-                <button className="group flex items-center justify-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-2 border-white/20 hover:border-white/30 text-white px-6 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[44px]">
+                <button
+                  onClick={handleShareBlueprint}
+                  className="group flex items-center justify-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-2 border-white/20 hover:border-white/30 text-white px-6 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[44px]"
+                >
                   <ShareIcon className="h-6 w-6 group-hover:scale-110 transition-transform duration-300" />
                   <span className="font-semibold">Share Blueprint</span>
                 </button>
@@ -802,6 +863,120 @@ export const ProfessionalBlueprint: React.FC<ProfessionalBlueprintProps> = ({
             </p>
           </div>
         </section>
+
+        {/* Share Modal */}
+        {showShareModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setShowShareModal(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <ShareIcon className="h-6 w-6 text-white" />
+                    <h3 className="text-xl font-bold text-white">Share Blueprint</h3>
+                  </div>
+                  <button
+                    onClick={() => setShowShareModal(false)}
+                    className="text-white/70 hover:text-white transition-colors"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
+                </div>
+                <p className="text-blue-100 text-sm mt-1">
+                  Share this professional {clientBrief.event_type || 'event'} blueprint
+                </p>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-4">
+                {/* Copy Link */}
+                <button
+                  onClick={handleCopyShareLink}
+                  className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <LinkIcon className="h-5 w-5 text-slate-600 group-hover:text-blue-600" />
+                    <div className="text-left">
+                      <div className="font-medium text-slate-900">Copy Link</div>
+                      <div className="text-sm text-slate-600">Share via any platform</div>
+                    </div>
+                  </div>
+                  {shareCopySuccess ? (
+                    <CheckIcon className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <div className="text-xs text-slate-500">Click to copy</div>
+                  )}
+                </button>
+
+                {/* Social Sharing Options */}
+                <div className="space-y-3">
+                  <div className="text-sm font-medium text-slate-700 mb-2">Share on social media</div>
+
+                  {/* WhatsApp */}
+                  <button
+                    onClick={() => shareBlueprintViaWhatsApp(blueprintId, clientBrief)}
+                    className="w-full flex items-center space-x-3 p-3 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">W</span>
+                    </div>
+                    <span className="font-medium text-slate-900">WhatsApp</span>
+                  </button>
+
+                  {/* Email */}
+                  <button
+                    onClick={() => shareBlueprintViaEmail(blueprintId, clientBrief)}
+                    className="w-full flex items-center space-x-3 p-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">@</span>
+                    </div>
+                    <span className="font-medium text-slate-900">Email</span>
+                  </button>
+
+                  {/* Twitter/X */}
+                  <a
+                    href={socialUrls.twitter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center space-x-3 p-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">X</span>
+                    </div>
+                    <span className="font-medium text-slate-900">Twitter/X</span>
+                  </a>
+
+                  {/* Facebook */}
+                  <a
+                    href={socialUrls.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center space-x-3 p-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">f</span>
+                    </div>
+                    <span className="font-medium text-slate-900">Facebook</span>
+                  </a>
+
+                  {/* LinkedIn */}
+                  <a
+                    href={socialUrls.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center space-x-3 p-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">in</span>
+                    </div>
+                    <span className="font-medium text-slate-900">LinkedIn</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

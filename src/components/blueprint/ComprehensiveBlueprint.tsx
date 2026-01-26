@@ -487,15 +487,112 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
   };
 
   const handleLaunchProject = async () => {
+    console.log('[Blueprint] Launch button clicked, showing modal...');
     setShowLaunchModal(true);
   };
 
   const confirmLaunch = async () => {
+    console.log('[Blueprint] User confirmed launch in modal');
     setShowLaunchModal(false);
     try {
+      console.log('[Blueprint] Calling onLaunchProject()...');
       await onLaunchProject();
+      console.log('[Blueprint] ✅ onLaunchProject completed successfully');
     } catch (error) {
-      console.error('Error launching project:', error);
+      console.error('[Blueprint] ❌ Error in onLaunchProject:', error);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      // Import PDF generator
+      const { generateBlueprintPDF } = await import('../../lib/pdfGenerator');
+
+      // Prepare blueprint sections from checklist
+      const blueprintSections = checklistCategories.map((category) => ({
+        id: category.id,
+        title: category.title,
+        description: `${category.title} requirements and specifications`,
+        items: category.items.map((item) => ({
+          id: item.question,
+          label: item.question
+        }))
+      }));
+
+      // Prepare client notes from checklist answers and category notes
+      const clientNotes: Record<string, string> = {};
+      checklistCategories.forEach((category) => {
+        category.items.forEach((item) => {
+          const answer = checklistAnswers[item.id];
+          if (answer) {
+            const answerText = Array.isArray(answer) ? answer.join(', ') : answer.toString();
+            clientNotes[item.question] = answerText;
+          }
+        });
+        // Add category notes
+        if (categoryNotes[category.id]) {
+          clientNotes[`${category.title}_notes`] = categoryNotes[category.id];
+        }
+      });
+
+      const pdfData = {
+        blueprint: {
+          eventType: clientBrief.event_type || 'Event',
+          displayName: `${clientBrief.event_type || 'Event'} Blueprint`,
+          sections: blueprintSections
+        },
+        clientBrief: {
+          event_type: clientBrief.event_type || 'Event',
+          date: clientBrief.date || '',
+          city: clientBrief.city || '',
+          guest_count: clientBrief.guest_count || '',
+          venue_status: clientBrief.venue_status || 'TBD'
+        },
+        clientNotes,
+        referenceImages: [],
+        blueprintId: eventId,
+        generatedDate: new Date().toLocaleDateString('en-IN', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        executiveSummary: executiveSummary || 'Professional event blueprint',
+        specialInstructions: specialInstructions || ''
+      };
+
+      await generateBlueprintPDF(pdfData);
+      console.log('✅ PDF generated successfully');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
+  };
+
+  const handleShareBlueprint = async () => {
+    try {
+      const shareUrl = `${window.location.origin}/blueprint/${eventId}`;
+      const shareText = `Check out my ${clientBrief.event_type || 'event'} blueprint on EventFoundry!`;
+
+      // Check if Web Share API is available
+      if (navigator.share) {
+        await navigator.share({
+          title: `${clientBrief.event_type || 'Event'} Blueprint - EventFoundry`,
+          text: shareText,
+          url: shareUrl
+        });
+        console.log('✅ Blueprint shared successfully');
+      } else {
+        // Fallback: Copy link to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Blueprint link copied to clipboard!\n\n' + shareUrl);
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Error sharing blueprint:', error);
+        // Fallback: Show share URL
+        const shareUrl = `${window.location.origin}/blueprint/${eventId}`;
+        alert('Share this link:\n\n' + shareUrl);
+      }
     }
   };
 
@@ -844,86 +941,103 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
                   return value && value.toString().trim() !== '';
                 });
 
+                // Helper function to format answer values
+                const formatAnswer = (value: any): string => {
+                  if (!value) return 'Not specified';
+                  if (Array.isArray(value)) {
+                    if (value.length === 0) return 'Not specified';
+                    return value.map(v => {
+                      // Convert snake_case or kebab-case to Title Case
+                      return v.toString().replace(/[_-]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
+                    }).join(', ');
+                  }
+                  // Convert single values: buffet_style → Buffet Style
+                  return value.toString().replace(/[_-]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
+                };
+
+                // Show all categories - even empty ones can have notes added
+                // Users can add vendor-specific notes for any category
+
                 return (
                   <div key={category.id} className="bg-gradient-to-br from-white to-slate-50 border-2 border-slate-200 rounded-2xl overflow-hidden">
+                    {/* Category Header */}
                     <div className="bg-gradient-to-r from-slate-50 to-purple-50/30 px-5 py-4 border-b-2 border-slate-200">
                       <h3 className="font-bold text-slate-900 text-lg flex items-center space-x-3">
                         <span className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl text-white text-sm font-bold flex items-center justify-center shadow-lg">
                           {categoryIndex + 1}
                         </span>
                         <span>{category.title}</span>
+                        <span className="ml-auto text-sm font-normal text-slate-500">
+                          {itemsWithSelections.length} {itemsWithSelections.length === 1 ? 'requirement' : 'requirements'}
+                        </span>
                       </h3>
                     </div>
 
-                    <div className="divide-y divide-slate-100">
-                      {category.items.map((item) => {
-                        // Check if this is a dynamic venue trigger
-                        if (item.isDynamicVenueTrigger && item.id === 'venue_status') {
-                          return (
-                            <div key={item.id} className="p-5">
-                              <DynamicChecklistItem
-                                item={item}
-                                currentAnswers={checklistAnswers}
-                                onAnswerChange={handleChecklistAnswerChange}
-                              />
+                    {/* Captured Requirements (Read-Only) */}
+                    {itemsWithSelections.length > 0 && (
+                      <div className="bg-white">
+                        <div className="px-5 py-3 bg-gradient-to-r from-slate-50 to-blue-50/30 border-b border-slate-200">
+                          <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center space-x-2">
+                            <CheckCircleIcon className="h-4 w-4 text-purple-500" />
+                            <span>Captured Requirements</span>
+                          </h4>
+                        </div>
+                        <div className="divide-y divide-slate-100">
+                          {itemsWithSelections.map((item) => {
+                            const answer = checklistAnswers[item.id];
+                            const formattedAnswer = formatAnswer(answer);
 
-                              {/* Show venue selection section if "No, I need help finding one" is selected */}
-                              {checklistAnswers[item.id] === 'No, I need help finding one' && (
-                                <div className="mt-6">
-                                  <VenueSelectionSection
-                                    eventRequirements={{
-                                      eventType: clientBrief.event_type || 'Event',
-                                      guestCount: parseInt(clientBrief.guest_count || '0'),
-                                      city: clientBrief.city || '',
-                                      date: clientBrief.date || ''
-                                    }}
-                                    onVenueSelected={handleVenueSelected}
-                                  />
+                            return (
+                              <div key={item.id} className="p-4 hover:bg-purple-50/20 transition-all duration-200">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                  <div className="flex-1">
+                                    <div className="text-sm font-semibold text-slate-600 mb-1">
+                                      {item.question}
+                                    </div>
+                                    <div className="text-base font-medium text-slate-900">
+                                      {formattedAnswer}
+                                    </div>
+                                  </div>
+                                  <div className="flex-shrink-0">
+                                    <span className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+                                      {item.type === 'checkbox' && Array.isArray(answer) ? `${answer.length} selected` : 'Specified'}
+                                    </span>
+                                  </div>
                                 </div>
-                              )}
-
-                              {/* Render conditional children for "Yes" path */}
-                              {item.children && checklistAnswers[item.id] === 'Yes, I have a venue' && (
-                                <div className="mt-4 space-y-4 pl-6 border-l-4 border-blue-200">
-                                  {item.children.map((childItem) => (
-                                    <DynamicChecklistItem
-                                      key={childItem.id}
-                                      item={childItem}
-                                      currentAnswers={checklistAnswers}
-                                      onAnswerChange={handleChecklistAnswerChange}
-                                    />
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-
-                        // Regular dynamic checklist item
-                        return (
-                          <div key={item.id} className="p-5 hover:bg-purple-50/30 transition-all duration-200">
-                            <DynamicChecklistItem
-                              item={item}
-                              currentAnswers={checklistAnswers}
-                              onAnswerChange={handleChecklistAnswerChange}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {category.additionalNotes && (
-                      <div className="p-5 border-t-2 border-slate-200 bg-slate-50/50">
-                        <h4 className="font-semibold text-slate-800 mb-3">Additional Notes - {category.title}</h4>
-                        <textarea
-                          value={categoryNote}
-                          onChange={(e) => handleCategoryNotesChange(category.id, e.target.value)}
-                          placeholder="Add specific requirements or preferences..."
-                          rows={3}
-                          className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-slate-700 text-sm focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-400 resize-none"
-                        />
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
+
+                    {/* Additional Notes Section (Always Editable) */}
+                    <div className="p-5 border-t-2 border-slate-200 bg-gradient-to-br from-slate-50/50 to-purple-50/20">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-slate-800 text-sm uppercase tracking-wide flex items-center space-x-2">
+                          <PencilSquareIcon className="h-4 w-4 text-purple-500" />
+                          <span>Additional Notes for {category.title}</span>
+                        </h4>
+                        {categoryNote && (
+                          <span className="text-xs text-purple-600 font-medium bg-purple-100 px-2 py-1 rounded-full">
+                            Notes Added
+                          </span>
+                        )}
+                      </div>
+                      <textarea
+                        value={categoryNote}
+                        onChange={(e) => handleCategoryNotesChange(category.id, e.target.value)}
+                        placeholder={`Add any special instructions or preferences for ${category.title.toLowerCase()}...`}
+                        rows={4}
+                        className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-slate-700 text-sm leading-relaxed focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-400 resize-none transition-all duration-200 hover:border-purple-300"
+                      />
+                      <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                        <span>💡 Tip: Add vendor-specific instructions, cultural preferences, or budget constraints</span>
+                        {categoryNote && (
+                          <span className="text-purple-600 font-medium">{categoryNote.length} characters</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -1147,17 +1261,27 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <button className="group flex items-center justify-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-2 border-white/20 hover:border-white/30 text-white px-6 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[44px]">
+                <button
+                  onClick={handleDownloadPDF}
+                  className="group flex items-center justify-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-2 border-white/20 hover:border-white/30 text-white px-6 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[44px]"
+                >
                   <DocumentArrowDownIcon className="h-6 w-6 group-hover:scale-110 transition-transform duration-300" />
                   <span className="font-semibold">Download PDF</span>
                 </button>
 
-                <button className="group flex items-center justify-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-2 border-white/20 hover:border-white/30 text-white px-6 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[44px]">
+                <button
+                  onClick={handleShareBlueprint}
+                  className="group flex items-center justify-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-2 border-white/20 hover:border-white/30 text-white px-6 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[44px]"
+                >
                   <ShareIcon className="h-6 w-6 group-hover:scale-110 transition-transform duration-300" />
                   <span className="font-semibold">Share Blueprint</span>
                 </button>
 
-                <button className="group flex items-center justify-center space-x-3 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:from-orange-600 hover:via-pink-600 hover:to-purple-600 text-white px-6 py-4 rounded-xl transition-all duration-300 font-bold shadow-2xl hover:shadow-orange-500/50 hover:scale-105 min-h-[44px]">
+                <button
+                  onClick={handleLaunchProject}
+                  disabled={isSaving}
+                  className="group flex items-center justify-center space-x-3 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:from-orange-600 hover:via-pink-600 hover:to-purple-600 text-white px-6 py-4 rounded-xl transition-all duration-300 font-bold shadow-2xl hover:shadow-orange-500/50 hover:scale-105 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <RocketLaunchIcon className="h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Launch Project</span>
                 </button>
