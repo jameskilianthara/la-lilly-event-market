@@ -1,8 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '../../lib/supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 // Types
 interface VendorUser {
@@ -48,13 +49,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Provider Props
 interface AuthProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 // Helper: Convert Supabase user + metadata to our User type
 // VERIFIED: Only queries existing fields from users table (user_type, full_name)
-async function mapSupabaseUserToAppUser(supabaseUser: SupabaseUser): Promise<User | null> {
-  if (!supabase) {
+async function mapSupabaseUserToAppUser(supabaseClient: SupabaseClient, supabaseUser: SupabaseUser): Promise<User | null> {
+  if (!supabaseClient) {
     console.error('mapSupabaseUserToAppUser: Supabase client not available');
     return null;
   }
@@ -62,26 +63,54 @@ async function mapSupabaseUserToAppUser(supabaseUser: SupabaseUser): Promise<Use
   try {
     console.log('mapSupabaseUserToAppUser: Fetching profile for user:', supabaseUser.id);
 
-    // Fetch user profile from public.users table with timeout
+    // Fetch user profile from public.users table
     // Note: users table only has id, email, user_type, full_name, phone, created_at
-    const { data: profile, error } = await Promise.race([
-      supabase
-        .from('users')
-        .select('user_type, full_name')
-        .eq('id', supabaseUser.id)
-        .single(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
-      )
-    ]);
+    const { data: profile, error } = await supabaseClient
+      .from('users')
+      .select('user_type, full_name')
+      .eq('id', supabaseUser.id)
+      .single() as { data: { user_type: string; full_name: string | null } | null; error: any };
 
     if (error) {
       console.error('Error fetching user profile:', {
         code: error.code,
         message: error.message,
         details: error.details,
-        hint: error.hint
+        hint: error.hint,
+        fullError: JSON.stringify(error)
       });
+
+      // If RLS policy blocks read, try to use auth metadata as fallback
+      console.warn('Falling back to auth metadata for user type');
+      const userTypeFromMeta = supabaseUser.user_metadata?.user_type;
+
+      if (userTypeFromMeta) {
+        console.log('Using user_type from auth metadata:', userTypeFromMeta);
+        const baseUser = {
+          userId: supabaseUser.id,
+          email: supabaseUser.email!,
+          isAuthenticated: true as const,
+          persistent: true,
+          loginTime: new Date().toISOString(),
+          expiresAt: null as null,
+        };
+
+        if (userTypeFromMeta === 'vendor') {
+          return {
+            ...baseUser,
+            userType: 'vendor',
+            companyName: undefined,
+            serviceType: undefined,
+          } as VendorUser;
+        } else {
+          return {
+            ...baseUser,
+            userType: 'client',
+            name: supabaseUser.user_metadata?.name || undefined,
+          } as ClientUser;
+        }
+      }
+
       return null;
     }
 
@@ -129,6 +158,11 @@ async function mapSupabaseUserToAppUser(supabaseUser: SupabaseUser): Promise<Use
 
 // Provider Component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  // Use the singleton Supabase client from lib/supabase.ts
+  // Make Supabase client available globally for debugging (development only)
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    (window as any).supabase = supabase;
+  }
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -166,7 +200,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         if (session?.user) {
-          const appUser = await mapSupabaseUserToAppUser(session.user);
+          const appUser = await mapSupabaseUserToAppUser(supabase, session.user);
           if (appUser) {
             setUser(appUser);
             setIsAuthenticated(true);
@@ -179,16 +213,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             });
           }
         } else {
-          // Check localStorage fallback
-          const currentUserStr = localStorage.getItem('currentUser');
-          if (currentUserStr) {
-            const userData = JSON.parse(currentUserStr);
-            if (userData.isAuthenticated) {
-              setUser(userData);
-              setIsAuthenticated(true);
-              console.log('Auth initialized from localStorage fallback');
-            }
-          }
+          // Supabase has no session - clear any stale localStorage data
+          // This fixes the currentUser vs supabase.auth.token mismatch
+          console.warn('Supabase returned no session, clearing stale localStorage data');
+          localStorage.removeItem('currentUser');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('rememberMe');
+          setUser(null);
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -205,7 +237,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('Auth state changed:', event);
 
         if (event === 'SIGNED_IN' && session?.user) {
-          const appUser = await mapSupabaseUserToAppUser(session.user);
+          const appUser = await mapSupabaseUserToAppUser(supabase, session.user);
           if (appUser) {
             setUser(appUser);
             setIsAuthenticated(true);
@@ -248,7 +280,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error('Login error:', error);
-        return { success: false, error: error.message };
+
+        // Provide user-friendly error messages
+        let errorMessage = error.message;
+        if (error.message.toLowerCase().includes('invalid login credentials') ||
+            error.message.toLowerCase().includes('invalid email or password')) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (error.message.toLowerCase().includes('email not confirmed')) {
+          errorMessage = 'Please confirm your email address before logging in.';
+        }
+
+        return { success: false, error: errorMessage };
       }
 
       if (!data.user) {
@@ -257,7 +299,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       console.log('Fetching user profile for:', data.user.id);
-      const appUser = await mapSupabaseUserToAppUser(data.user);
+      const appUser = await mapSupabaseUserToAppUser(supabase, data.user);
 
       if (!appUser) {
         console.error('Failed to map user profile');
@@ -293,12 +335,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     userType: 'vendor' | 'client',
     metadata?: Record<string, any>
   ): Promise<{ success: boolean; userId?: string; error?: string }> => {
+    console.log('[AuthContext signup] Starting signup for:', email, 'userType:', userType);
+
     if (!supabase) {
+      console.error('[AuthContext signup] Supabase client not initialized');
       return { success: false, error: 'Supabase client not initialized' };
     }
 
     try {
       // Sign up with Supabase Auth
+      console.log('[AuthContext signup] Calling supabase.auth.signUp...');
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -310,16 +356,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       });
 
+      console.log('[AuthContext signup] signUp response:', {
+        hasUser: !!authData?.user,
+        hasSession: !!authData?.session,
+        userId: authData?.user?.id,
+        error: authError?.message
+      });
+
       if (authError) {
-        console.error('Signup error:', authError);
-        return { success: false, error: authError.message };
+        console.error('[AuthContext signup] Signup error:', authError);
+
+        // Provide user-friendly error messages
+        let errorMessage = authError.message;
+        if (authError.message.toLowerCase().includes('already registered') ||
+            authError.message.toLowerCase().includes('already exists') ||
+            authError.message.toLowerCase().includes('duplicate')) {
+          errorMessage = 'This email is already registered. Please login instead.';
+        }
+
+        return { success: false, error: errorMessage };
       }
 
       if (!authData.user) {
+        console.error('[AuthContext signup] No user in signup response');
         return { success: false, error: 'Signup failed' };
       }
 
       // Create user profile in public.users table
+      console.log('[AuthContext signup] Creating user profile in users table...');
       const { data: profileData, error: profileError } = await supabase
         .from('users')
         .insert({
@@ -332,8 +396,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .select()
         .single();
 
+      console.log('[AuthContext signup] User profile insert response:', {
+        hasData: !!profileData,
+        error: profileError?.message
+      });
+
       if (profileError) {
-        console.error('Error creating user profile:', {
+        console.error('[AuthContext signup] Error creating user profile:', {
           error: profileError,
           code: profileError.code,
           message: profileError.message,
@@ -346,58 +415,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         };
       }
 
-      console.log('User profile created successfully:', profileData);
+      console.log('[AuthContext signup] ✅ User profile created successfully:', profileData);
 
       // If email confirmation is not required, map user immediately
       if (authData.session) {
-        const appUser = await mapSupabaseUserToAppUser(authData.user);
+        console.log('[AuthContext signup] Session exists, mapping user...');
+        const appUser = await mapSupabaseUserToAppUser(supabase, authData.user);
         if (appUser) {
           setUser(appUser);
           setIsAuthenticated(true);
           localStorage.setItem('currentUser', JSON.stringify(appUser));
+          console.log('[AuthContext signup] ✅ User mapped and stored');
+        } else {
+          console.warn('[AuthContext signup] Failed to map user');
         }
+      } else {
+        console.log('[AuthContext signup] No session - email confirmation may be required');
       }
 
-      console.log('Signup successful:', { userId: authData.user.id, userType });
+      console.log('[AuthContext signup] ✅ Signup successful:', { userId: authData.user.id, userType });
       return { success: true, userId: authData.user.id };
     } catch (error) {
-      console.error('Unexpected signup error:', error);
+      console.error('[AuthContext signup] Unexpected signup error:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   };
 
   // Logout function with Supabase Auth
   const logout = async (): Promise<void> => {
+    console.log('[AuthContext] Starting logout...');
+
+    // Immediately clear state first to prevent any race conditions
+    setUser(null);
+    setIsAuthenticated(false);
+
+    // Clear all localStorage
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('rememberMe');
+    localStorage.removeItem('vendor_session');
+
     if (!supabase) {
-      // Fallback to localStorage clear
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('rememberMe');
-      setUser(null);
-      setIsAuthenticated(false);
+      console.log('[AuthContext] Logout complete (no Supabase)');
       return;
     }
 
     try {
+      // Clear Supabase session
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Logout error:', error);
+        console.error('[AuthContext] Logout error:', error);
+      } else {
+        console.log('[AuthContext] Supabase signOut successful');
       }
-
-      // Clear localStorage
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('rememberMe');
-      localStorage.removeItem('vendor_session');
-
-      // Update state
-      setUser(null);
-      setIsAuthenticated(false);
-
-      console.log('Logout successful');
     } catch (error) {
-      console.error('Unexpected logout error:', error);
+      console.error('[AuthContext] Unexpected logout error:', error);
     }
+
+    console.log('[AuthContext] Logout complete');
   };
 
   // Update user function

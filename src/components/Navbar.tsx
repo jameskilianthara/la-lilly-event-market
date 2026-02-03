@@ -10,6 +10,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
@@ -24,15 +25,16 @@ export default function Navbar() {
     const handleClickOutside = () => {
       if (loginDropdownOpen) setLoginDropdownOpen(false);
       if (userMenuOpen) setUserMenuOpen(false);
+      if (vendorDropdownOpen) setVendorDropdownOpen(false);
     };
-    if (loginDropdownOpen || userMenuOpen) {
+    if (loginDropdownOpen || userMenuOpen || vendorDropdownOpen) {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
-  }, [loginDropdownOpen, userMenuOpen]);
+  }, [loginDropdownOpen, userMenuOpen, vendorDropdownOpen]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push('/');
   };
 
@@ -41,18 +43,41 @@ export default function Navbar() {
     return pathname.startsWith(path);
   };
 
+  // Vendor dropdown menu items
+  const vendorMenuItems = [
+    { name: 'Join as Vendor', href: '/craftsmen/signup', description: 'Start your journey' },
+    { name: 'Vendor Login', href: '/craftsmen/login', description: 'Access your dashboard' },
+    { name: 'How It Works', href: '/craftsmen', description: 'Learn about our platform' },
+  ];
+
   // Smart navigation links based on user type
   const getNavLinks = () => {
-    const baseLinks = [
-      { name: 'Plan My Event', href: '/forge' },
-      { name: 'Browse Vendors', href: '/vendors' },
-      // Show dashboard for logged-in vendors, onboarding for others
-      isAuthenticated && user?.userType === 'vendor'
-        ? { name: 'Vendor Dashboard', href: '/craftsmen/dashboard' }
-        : { name: 'For Vendors', href: '/craftsmen' },
-      { name: 'How It Works', href: '/how-it-works' }
-    ];
-    return baseLinks;
+    if (isAuthenticated && user?.userType === 'vendor') {
+      // Vendor is logged in - show vendor dashboard
+      return [
+        { name: 'Plan My Event', href: '/forge' },
+        { name: 'Browse Vendors', href: '/vendors' },
+        { name: 'Vendor Dashboard', href: '/craftsmen/dashboard' },
+        { name: 'How It Works', href: '/how-it-works' }
+      ];
+    } else if (isAuthenticated && user?.userType === 'client') {
+      // Client is logged in - show For Vendors dropdown
+      return [
+        { name: 'Plan My Event', href: '/forge' },
+        { name: 'Browse Vendors', href: '/vendors' },
+        { name: 'For Vendors', href: '/craftsmen', hasDropdown: true }, // Dropdown
+        { name: 'My Dashboard', href: '/dashboard/client' },
+        { name: 'How It Works', href: '/how-it-works' }
+      ];
+    } else {
+      // Not logged in - show For Vendors dropdown
+      return [
+        { name: 'Plan My Event', href: '/forge' },
+        { name: 'Browse Vendors', href: '/vendors' },
+        { name: 'For Vendors', href: '/craftsmen', hasDropdown: true }, // Dropdown
+        { name: 'How It Works', href: '/how-it-works' }
+      ];
+    }
   };
 
   const navLinks = getNavLinks();
@@ -79,6 +104,50 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => {
                 const isActive = isActivePath(link.href);
+
+                // Render dropdown for "For Vendors"
+                if (link.hasDropdown) {
+                  return (
+                    <div key={link.name} className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setVendorDropdownOpen(!vendorDropdownOpen);
+                        }}
+                        className={`relative text-sm font-medium transition-colors duration-200 flex items-center space-x-1 ${
+                          isActive
+                            ? 'text-orange-500'
+                            : 'text-slate-300 hover:text-orange-500'
+                        }`}
+                      >
+                        <span>{link.name}</span>
+                        <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${vendorDropdownOpen ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      {vendorDropdownOpen && (
+                        <div className="absolute left-0 mt-4 w-64 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden">
+                          {vendorMenuItems.map((item) => (
+                            <Link
+                              key={item.name}
+                              href={item.href}
+                              className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
+                              onClick={() => setVendorDropdownOpen(false)}
+                            >
+                              <div className="font-medium">{item.name}</div>
+                              <div className="text-xs text-slate-400 mt-0.5">{item.description}</div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {isActive && (
+                        <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full" />
+                      )}
+                    </div>
+                  );
+                }
+
+                // Regular link
                 return (
                   <Link
                     key={link.name}
@@ -109,6 +178,7 @@ export default function Navbar() {
                         e.stopPropagation();
                         setUserMenuOpen(!userMenuOpen);
                       }}
+                      data-testid="user-menu-button"
                       className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200"
                     >
                       <UserCircleIcon className="w-5 h-5" />
@@ -129,6 +199,7 @@ export default function Navbar() {
                         <div className="border-t border-slate-700/50" />
                         <button
                           onClick={handleLogout}
+                          data-testid="logout-button"
                           className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200 flex items-center space-x-2"
                         >
                           <ArrowRightOnRectangleIcon className="w-4 h-4" />

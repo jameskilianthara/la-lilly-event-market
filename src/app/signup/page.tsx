@@ -106,16 +106,22 @@ export default function ClientSignupPage() {
       if (result.success) {
         // Successful signup - show success message then redirect
         setSuccess('Account created successfully! Redirecting...');
+        setIsLoading(false); // Stop loading immediately
+
+        // Redirect after short delay to show success message
         setTimeout(() => {
+          console.log('[Signup] Redirecting to /forge');
           router.push('/forge');
-        }, 1500);
+        }, 1000);
       } else {
-        setError(result.error || 'Signup failed. Please try again.');
+        // Show error message
+        const errorMessage = result.error || 'Signup failed. Please try again.';
+        setError(errorMessage);
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Signup error:', error);
       setError('An unexpected error occurred. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -138,7 +144,7 @@ export default function ClientSignupPage() {
 
         {/* Signup Card */}
         <div className="bg-slate-800/90 backdrop-blur-lg rounded-2xl border border-slate-700 p-8 shadow-2xl">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {/* Success Message */}
             {success && (
               <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 flex items-start space-x-3">
@@ -166,6 +172,7 @@ export default function ClientSignupPage() {
                 </div>
                 <input
                   type="text"
+                  name="fullName"
                   value={formData.fullName}
                   onChange={(e) => handleChange('fullName', e.target.value)}
                   placeholder="John Doe"
@@ -192,6 +199,7 @@ export default function ClientSignupPage() {
                 </div>
                 <input
                   type="email"
+                  name="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
                   placeholder="your@email.com"
@@ -244,6 +252,7 @@ export default function ClientSignupPage() {
                 </div>
                 <input
                   type="password"
+                  name="password"
                   value={formData.password}
                   onChange={(e) => handleChange('password', e.target.value)}
                   placeholder="Min. 8 characters"

@@ -13,47 +13,96 @@ import {
   CheckCircleIcon,
   InboxIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../../../contexts/AuthContext';
+import { getEventsByClientId, getBidsByEventId } from '../../../lib/database';
+import type { Event } from '../../../types/database';
 
-interface PostedEvent {
-  eventId: string;
-  eventMemory: {
-    event_type: string;
-    date: string;
-    location: string;
-    guest_count: string;
-    venue_status: string;
-  };
-  checklistData?: any;
-  postedAt: string;
-  status: 'open' | 'bidding' | 'in_progress' | 'completed';
-  bids: any[];
+interface DashboardEvent extends Event {
+  bids?: any[];
+  bidsCount?: number;
 }
 
 export default function ClientDashboardPage() {
   const router = useRouter();
-  const [events, setEvents] = useState<PostedEvent[]>([]);
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const [events, setEvents] = useState<DashboardEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Immediate redirect if not authenticated (after initial loading)
   useEffect(() => {
-    loadEvents();
-  }, []);
-
-  const loadEvents = () => {
-    setLoading(true);
-    const storedEvents = localStorage.getItem('posted_events');
-    if (storedEvents) {
-      const parsedEvents = JSON.parse(storedEvents);
-      setEvents(parsedEvents);
+    if (!authLoading && !isAuthenticated) {
+      console.log('[Client Dashboard] Not authenticated, redirecting to login');
+      router.push('/login');
     }
-    setLoading(false);
+  }, [authLoading, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      loadEvents();
+    }
+  }, [authLoading, isAuthenticated]);
+
+  const loadEvents = async () => {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user.userType !== 'client') {
+      router.push('/craftsmen/dashboard');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      console.log('[Client Dashboard] Loading events for user:', user.userId, user.email);
+
+      // Load events for this client
+      const { data: eventsData, error: eventsError } = await getEventsByClientId(user.userId);
+
+      if (eventsError) {
+        console.error('[Client Dashboard] Error loading events:', eventsError);
+        setLoading(false);
+        return;
+      }
+
+      if (!eventsData) {
+        console.log('[Client Dashboard] No events found for user:', user.userId);
+        setEvents([]);
+        setLoading(false);
+        return;
+      }
+
+      console.log('[Client Dashboard] Found events:', eventsData.length, eventsData);
+
+      // Load bids for each event
+      const eventsWithBids = await Promise.all(
+        eventsData.map(async (event) => {
+          const { data: bidsData } = await getBidsByEventId(event.id);
+          return {
+            ...event,
+            bids: bidsData || [],
+            bidsCount: bidsData?.length || 0
+          };
+        })
+      );
+
+      setEvents(eventsWithBids);
+    } catch (error) {
+      console.error('Error loading dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getStatusDisplay = (event: PostedEvent) => {
-    const bidsCount = event.bids?.length || 0;
+  const getStatusDisplay = (event: DashboardEvent) => {
+    const bidsCount = event.bidsCount || 0;
+    const status = event.forge_status || 'OPEN_FOR_BIDS';
 
-    if (event.status === 'completed') {
+    if (status === 'COMMISSIONED') {
       return {
-        label: 'Completed',
+        label: 'Commissioned',
         color: 'from-emerald-500 to-green-600',
         bgColor: 'bg-emerald-900/30',
         borderColor: 'border-emerald-500/30',
@@ -62,14 +111,25 @@ export default function ClientDashboardPage() {
       };
     }
 
-    if (event.status === 'in_progress') {
+    if (status === 'SHORTLIST_REVIEW') {
       return {
-        label: 'In Progress',
+        label: 'Reviewing Bids',
         color: 'from-blue-500 to-blue-600',
         bgColor: 'bg-blue-900/30',
         borderColor: 'border-blue-500/30',
         textColor: 'text-blue-300',
         icon: ClockIcon
+      };
+    }
+
+    if (status === 'BLUEPRINT_READY') {
+      return {
+        label: 'Blueprint Ready',
+        color: 'from-yellow-500 to-orange-600',
+        bgColor: 'bg-yellow-900/30',
+        borderColor: 'border-yellow-500/30',
+        textColor: 'text-yellow-300',
+        icon: CheckCircleIcon
       };
     }
 
@@ -106,9 +166,9 @@ export default function ClientDashboardPage() {
     }
   };
 
-  const formatPostedDate = (postedAt: string) => {
+  const formatPostedDate = (createdAt: string) => {
     try {
-      const date = new Date(postedAt);
+      const date = new Date(createdAt);
       const now = new Date();
       const diffMs = now.getTime() - date.getTime();
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -123,7 +183,7 @@ export default function ClientDashboardPage() {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center">
         <div className="text-center">
@@ -190,7 +250,7 @@ export default function ClientDashboardPage() {
 
               return (
                 <div
-                  key={event.eventId}
+                  key={event.id}
                   className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-2xl overflow-hidden hover:border-slate-600/50 transition-all duration-200"
                 >
                   {/* Event Header */}
@@ -198,10 +258,10 @@ export default function ClientDashboardPage() {
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h3 className="text-xl font-bold text-white capitalize mb-1">
-                          {event.eventMemory.event_type}
+                          {event.event_type || 'Event'}
                         </h3>
                         <p className="text-xs text-slate-400">
-                          Posted {formatPostedDate(event.postedAt)}
+                          Posted {formatPostedDate(event.created_at)}
                         </p>
                       </div>
                       <div className={`px-3 py-1.5 ${statusInfo.bgColor} border ${statusInfo.borderColor} rounded-full flex items-center space-x-2`}>
@@ -216,7 +276,7 @@ export default function ClientDashboardPage() {
                     <div className="bg-slate-700/30 rounded-lg px-3 py-2 border border-slate-600/50">
                       <p className="text-xs text-slate-400 mb-1">Event ID</p>
                       <code className="text-sm font-mono text-orange-400 break-all">
-                        {event.eventId}
+                        {event.id}
                       </code>
                     </div>
                   </div>
@@ -229,7 +289,7 @@ export default function ClientDashboardPage() {
                         <div className="min-w-0">
                           <p className="text-xs text-slate-500">Date</p>
                           <p className="text-sm text-white font-medium truncate">
-                            {formatDate(event.eventMemory.date)}
+                            {formatDate(event.date || '')}
                           </p>
                         </div>
                       </div>
@@ -239,7 +299,7 @@ export default function ClientDashboardPage() {
                         <div className="min-w-0">
                           <p className="text-xs text-slate-500">Guests</p>
                           <p className="text-sm text-white font-medium truncate">
-                            {event.eventMemory.guest_count}
+                            {event.guest_count || 'TBD'}
                           </p>
                         </div>
                       </div>
@@ -250,7 +310,7 @@ export default function ClientDashboardPage() {
                       <div className="min-w-0 flex-1">
                         <p className="text-xs text-slate-500">Location</p>
                         <p className="text-sm text-white font-medium truncate">
-                          {event.eventMemory.location}
+                          {event.city || 'TBD'}
                         </p>
                       </div>
                     </div>
@@ -261,13 +321,13 @@ export default function ClientDashboardPage() {
                     <button
                       onClick={() => {
                         // Navigate to event details or bids page
-                        router.push(`/dashboard/client/events/${event.eventId}`);
+                        router.push(`/dashboard/client/events/${event.id}`);
                       }}
                       className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 hover:border-slate-500 text-white font-semibold rounded-lg transition-all duration-200"
                     >
                       <EyeIcon className="h-4 w-4" />
                       <span>
-                        {event.bids?.length > 0 ? `View ${event.bids.length} Bid${event.bids.length > 1 ? 's' : ''}` : 'View Event'}
+                        {event.bidsCount && event.bidsCount > 0 ? `View ${event.bidsCount} Bid${event.bidsCount > 1 ? 's' : ''}` : 'View Event'}
                       </span>
                     </button>
                   </div>
@@ -297,7 +357,7 @@ export default function ClientDashboardPage() {
                 <div>
                   <p className="text-xs text-slate-400 mb-1">Open for Bids</p>
                   <p className="text-2xl font-bold text-white">
-                    {events.filter(e => e.status === 'open' && (!e.bids || e.bids.length === 0)).length}
+                    {events.filter(e => (e.forge_status === 'OPEN_FOR_BIDS' || e.forge_status === 'CRAFTSMEN_BIDDING') && (!e.bidsCount || e.bidsCount === 0)).length}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center">
@@ -311,7 +371,7 @@ export default function ClientDashboardPage() {
                 <div>
                   <p className="text-xs text-slate-400 mb-1">Total Bids</p>
                   <p className="text-2xl font-bold text-white">
-                    {events.reduce((sum, e) => sum + (e.bids?.length || 0), 0)}
+                    {events.reduce((sum, e) => sum + (e.bidsCount || 0), 0)}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
