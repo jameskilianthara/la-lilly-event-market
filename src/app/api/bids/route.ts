@@ -6,14 +6,33 @@ import { supabase } from '@/lib/supabase';
 import { createBid as createBidDb } from '@/lib/database';
 import type { BidInsert } from '@/types/database';
 import { withErrorHandler, validateRequired } from '@/lib/api-handler';
+import { withAuth, type AuthenticatedUser } from '@/lib/api-auth';
 import { ValidationError, DatabaseError, ERROR_MESSAGES } from '@/lib/errors';
 
-export const POST = withErrorHandler(async (request: NextRequest) => {
+const handleCreateBid = withErrorHandler(async (request: NextRequest, user: AuthenticatedUser) => {
+  // Only vendors can create bids
+  if (user.user_type !== 'vendor') {
+    throw new ValidationError('Only vendors can submit bids');
+  }
+
   const body = await request.json();
-  const { event_id, vendor_id, ...bidData } = body;
+  const { event_id, vendor_id: _ignored_vendor_id, ...bidData } = body;
+
+  // Look up vendor ID from vendors table using auth user ID
+  const { data: vendor, error: vendorError } = await supabase
+    .from('vendors')
+    .select('id')
+    .eq('user_id', user.id)
+    .single();
+
+  if (vendorError || !vendor) {
+    throw new ValidationError('Vendor profile not found. Please complete your vendor registration.');
+  }
+
+  const vendor_id = vendor.id;
 
   // Validate required fields
-  validateRequired(body, ['event_id', 'vendor_id']);
+  validateRequired({ event_id, vendor_id }, ['event_id', 'vendor_id']);
 
   // Validate business rules
   if (bidData.totalAmount && bidData.totalAmount <= 0) {
@@ -84,6 +103,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     message: 'Bid submitted successfully'
   }, { status: 201 });
 });
+
+export const POST = withAuth(handleCreateBid, { requiredUserType: ['vendor'] });
 
 // GET /api/bids?event_id=xxx - Get bids for an event
 export const GET = withErrorHandler(async (request: NextRequest) => {

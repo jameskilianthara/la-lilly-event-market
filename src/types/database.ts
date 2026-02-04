@@ -11,6 +11,7 @@ export type ForgeStatus =
   | 'SHORTLIST_REVIEW'
   | 'FINAL_BIDDING_OPEN'
   | 'FINAL_BIDDING_CLOSED'
+  | 'WINNER_SELECTED'
   | 'COMMISSIONED'
   | 'IN_FORGE'
   | 'COMPLETED'
@@ -178,9 +179,11 @@ export interface Bid {
   vendor_id: string; // UUID, references vendors(id)
   craft_specialties: string[];
   forge_items: any; // JSONB
+  bid_data?: any; // Legacy JSONB field (for backward compatibility)
   subtotal: number; // Decimal(12,2)
   taxes: number; // Decimal(12,2), default 0.00
   total_forge_cost: number; // Decimal(12,2)
+  total_amount?: number; // Alias for total_forge_cost
   craft_attachments: string[];
   vendor_notes: string | null;
   estimated_forge_time: string | null;
