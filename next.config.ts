@@ -1,16 +1,9 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  typedRoutes: false,
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '/**',
-      },
-    ],
+    domains: ['images.unsplash.com'],
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

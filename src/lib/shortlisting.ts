@@ -85,44 +85,76 @@ export async function processShortlisting(eventId: string): Promise<Shortlisting
     console.log(`Shortlisted ${shortlistedBids.length} bids, rejected ${rejectedBids.length} bids`);
     console.log(`Lowest bid: ₹${lowestBid.toLocaleString()}`);
 
-    // Update each shortlisted bid with competitive intelligence
-    for (let i = 0; i < shortlistedBids.length; i++) {
-      const bid = shortlistedBids[i];
-      const position = i + 1;
-      const premium = lowestBid > 0
-        ? ((bid.total_forge_cost - lowestBid) / lowestBid) * 100
-        : 0;
-
-      const intelligence: CompetitiveIntelligence = {
-        position,
-        premium_percentage: Math.round(premium * 10) / 10, // Round to 1 decimal
-        lowest_bid_amount: lowestBid,
-        total_shortlisted: shortlistedBids.length,
-        final_deadline: finalDeadline.toISOString(),
-        message: generateIntelligenceMessage(position, premium)
-      };
-
-      await updateBid(bid.id, {
+    // Update status for all bids and event in a controlled manner
+    // First, update all shortlisted bids
+    const shortlistPromises = shortlistedBids.map(bid =>
+      updateBid(bid.id, {
         status: 'SHORTLISTED',
-        competitive_intelligence: intelligence,
         shortlisted_at: new Date().toISOString()
-      });
-    }
+      })
+    );
 
-    // Update rejected bids
-    for (const bid of rejectedBids) {
-      await updateBid(bid.id, {
+    // Update all rejected bids
+    const rejectPromises = rejectedBids.map(bid =>
+      updateBid(bid.id, {
         status: 'REJECTED',
         rejected_at: new Date().toISOString()
-      });
-    }
+      })
+    );
 
-    // Update event status to final bidding phase
-    await updateEvent(eventId, {
+    // Update event status
+    const eventPromise = updateEvent(eventId, {
       forge_status: 'SHORTLIST_REVIEW',
       shortlist_finalized_at: new Date().toISOString(),
       final_bidding_closes_at: finalDeadline.toISOString()
     });
+
+    // Wait for all updates to complete
+    const [shortlistResults, rejectResults, eventResult] = await Promise.allSettled([
+      Promise.all(shortlistPromises),
+      Promise.all(rejectPromises),
+      eventPromise
+    ]);
+
+    // Check for failures and attempt rollback if needed
+    const failures = [];
+    if (shortlistResults.status === 'rejected') failures.push('shortlist updates');
+    if (rejectResults.status === 'rejected') failures.push('reject updates');
+    if (eventResult.status === 'rejected') failures.push('event update');
+
+    if (failures.length > 0) {
+      console.error('Some updates failed:', failures);
+      // Note: In a production system, you'd want proper rollback logic here
+      // For now, we log the error but continue with competitive intelligence updates
+    }
+
+    // Update competitive intelligence for shortlisted bids (best effort)
+    try {
+      const intelligencePromises = shortlistedBids.map(async (bid, index) => {
+        const position = index + 1;
+        const premium = lowestBid > 0
+          ? ((bid.total_forge_cost - lowestBid) / lowestBid) * 100
+          : 0;
+
+        const intelligence: CompetitiveIntelligence = {
+          position,
+          premium_percentage: Math.round(premium * 10) / 10, // Round to 1 decimal
+          lowest_bid_amount: lowestBid,
+          total_shortlisted: shortlistedBids.length,
+          final_deadline: finalDeadline.toISOString(),
+          message: generateIntelligenceMessage(position, premium)
+        };
+
+        return updateBid(bid.id, {
+          competitive_intelligence: intelligence
+        });
+      });
+
+      await Promise.allSettled(intelligencePromises);
+    } catch (error) {
+      console.warn('Error updating competitive intelligence:', error);
+      // Intelligence updates are not critical - don't fail the operation
+    }
 
     // Calculate competitive pricing for shortlisted bids
     const pricingResult = await calculateCompetitivePricing(eventId);

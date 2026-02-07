@@ -270,12 +270,19 @@ export default function VendorSignupPage() {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep4()) return;
+    console.log('[Vendor Signup] Starting submission...');
+
+    if (!validateStep4()) {
+      console.log('[Vendor Signup] Validation failed');
+      return;
+    }
+
     setIsSubmitting(true);
+    console.log('[Vendor Signup] Validation passed, submitting set to true');
 
     try {
       // Step 1: Create Supabase Auth account
-      console.log('Creating auth account...');
+      console.log('[Vendor Signup] Step 1: Creating auth account for:', contactInfo.email);
       const authResult = await signup(
         contactInfo.email,
         contactInfo.password,
@@ -286,39 +293,60 @@ export default function VendorSignupPage() {
         }
       );
 
+      console.log('[Vendor Signup] Auth result:', authResult);
+
       if (!authResult.success) {
+        console.error('[Vendor Signup] Auth failed:', authResult.error);
         setErrors({ submit: authResult.error || 'Failed to create account. Please try again.' });
         setIsSubmitting(false);
         return;
       }
 
+      console.log('[Vendor Signup] ✅ Auth account created, userId:', authResult.userId);
+
       // Get the created user ID from auth
       // The signup function creates the public.users record automatically
       // We need to wait a moment for it to propagate
+      console.log('[Vendor Signup] Waiting 1 second for user profile to propagate...');
       await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('[Vendor Signup] Wait complete');
 
       // Step 2: Upload portfolio images to Supabase Storage
-      console.log('Uploading portfolio images...');
+      console.log('[Vendor Signup] Step 2: Uploading portfolio images...');
+      console.log('[Vendor Signup] Number of image files to upload:', portfolio.imageFiles.length);
       const portfolioUrls: string[] = [];
 
+      // TEMPORARY: Skip image upload to debug signup issue
+      console.log('[Vendor Signup] ⚠️ TEMPORARY: Skipping image upload for debugging');
+
+      // TODO: Re-enable after fixing signup
+      /*
       for (let i = 0; i < portfolio.imageFiles.length; i++) {
         const file = portfolio.imageFiles[i];
+        console.log(`[Vendor Signup] Uploading image ${i + 1}/${portfolio.imageFiles.length}:`, file.name);
+
         const uploadResult = await uploadVendorPortfolioImage(
           file,
           authResult.userId || contactInfo.email, // Use email as fallback
           'signup'
         );
 
+        console.log(`[Vendor Signup] Upload result for image ${i + 1}:`, uploadResult);
+
         if (uploadResult.success && uploadResult.url) {
           portfolioUrls.push(uploadResult.url);
+          console.log(`[Vendor Signup] ✅ Image ${i + 1} uploaded successfully`);
         } else {
-          console.warn(`Failed to upload image ${i + 1}:`, uploadResult.error);
+          console.warn(`[Vendor Signup] ⚠️ Failed to upload image ${i + 1}:`, uploadResult.error);
           // Continue with other images even if one fails
         }
       }
+      */
+
+      console.log('[Vendor Signup] ✅ All images processed. Uploaded URLs:', portfolioUrls.length);
 
       // Step 3: Create vendor profile in database
-      console.log('Creating vendor profile...');
+      console.log('[Vendor Signup] Step 3: Creating vendor profile...');
 
       // Combine all service types
       const allSpecialties = [
@@ -326,6 +354,8 @@ export default function VendorSignupPage() {
         ...services.eventTypes.filter(t => t !== 'Other'),
         ...(services.otherEventType ? [services.otherEventType] : [])
       ];
+
+      console.log('[Vendor Signup] All specialties:', allSpecialties);
 
       const vendorData = {
         user_id: authResult.userId || contactInfo.email, // This should be the auth user ID
@@ -348,10 +378,20 @@ export default function VendorSignupPage() {
         verified: false, // Admin approval required
       };
 
+      console.log('[Vendor Signup] Vendor data prepared:', {
+        user_id: vendorData.user_id,
+        company_name: vendorData.company_name,
+        specialties_count: vendorData.specialties.length,
+        portfolio_urls_count: vendorData.portfolio_urls.length
+      });
+
+      console.log('[Vendor Signup] Calling createVendor API...');
       const vendorResult = await createVendor(vendorData);
 
+      console.log('[Vendor Signup] Vendor creation result:', vendorResult);
+
       if (vendorResult.error) {
-        console.error('Vendor creation error:', vendorResult.error);
+        console.error('[Vendor Signup] ❌ Vendor creation error:', vendorResult.error);
         setErrors({
           submit: 'Account created but profile setup failed. Please contact support at kerala@eventfoundry.com'
         });
@@ -359,9 +399,10 @@ export default function VendorSignupPage() {
         return;
       }
 
-      console.log('Vendor profile created successfully:', vendorResult.data);
+      console.log('[Vendor Signup] ✅ Vendor profile created successfully:', vendorResult.data);
 
       // Step 4: Success! Show confirmation
+      console.log('[Vendor Signup] Step 4: Showing success confirmation');
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
 

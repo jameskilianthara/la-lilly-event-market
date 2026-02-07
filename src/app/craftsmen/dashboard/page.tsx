@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -31,26 +31,30 @@ export default function VendorDashboardPage() {
   // Stats
   const [stats, setStats] = useState({
     openEvents: 0,
+    newEvents: 0,
     activeBids: 0,
     shortlisted: 0,
     totalBids: 0
   });
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [isAuthenticated, user]);
+  const loadDashboardData = useCallback(async () => {
+    console.log('[Vendor Dashboard] loadDashboardData called', { authLoading, isAuthenticated, isVendor, userId: user?.userId });
 
-  const loadDashboardData = async () => {
-    if (authLoading) return;
+    if (authLoading) {
+      console.log('[Vendor Dashboard] Auth still loading, skipping...');
+      return;
+    }
 
     // Check authentication
     if (!isAuthenticated || !user) {
+      console.log('[Vendor Dashboard] Not authenticated, redirecting to login');
       router.push('/craftsmen/login');
       return;
     }
 
     // Check if user is vendor
     if (!isVendor) {
+      console.log('[Vendor Dashboard] User is not a vendor');
       setError('Access denied. Vendor account required.');
       setIsLoading(false);
       return;
@@ -58,12 +62,16 @@ export default function VendorDashboardPage() {
 
     try {
       setIsLoading(true);
+      console.log('[Vendor Dashboard] Loading vendor profile for userId:', user.userId);
 
       // Load vendor profile
       const { data: vendorData, error: vendorError } = await getVendorByUserId(user.userId);
 
+      console.log('[Vendor Dashboard] Vendor profile result:', { vendorData, vendorError });
+
       if (vendorError || !vendorData) {
-        setError('Vendor profile not found. Please complete your registration.');
+        console.error('[Vendor Dashboard] Vendor profile not found:', vendorError);
+        setError('Vendor profile not found. Please complete your registration at /craftsmen/signup');
         setIsLoading(false);
         return;
       }
@@ -94,13 +102,19 @@ export default function VendorDashboardPage() {
       }
 
       // Calculate stats
+      const now = new Date();
       const openEventsCount = eventsData?.length || 0;
+      const newEventsCount = eventsData?.filter(e => {
+        const hoursSinceCreation = (now.getTime() - new Date(e.created_at).getTime()) / (1000 * 60 * 60);
+        return hoursSinceCreation <= 24;
+      }).length || 0;
       const activeBidsCount = bidsData?.filter(b => b.status === 'SUBMITTED').length || 0;
       const shortlistedCount = bidsData?.filter(b => b.status === 'SHORTLISTED').length || 0;
       const totalBidsCount = bidsData?.length || 0;
 
       setStats({
         openEvents: openEventsCount,
+        newEvents: newEventsCount,
         activeBids: activeBidsCount,
         shortlisted: shortlistedCount,
         totalBids: totalBidsCount
@@ -112,7 +126,11 @@ export default function VendorDashboardPage() {
       setError('Failed to load dashboard data');
       setIsLoading(false);
     }
-  };
+  }, [authLoading, isAuthenticated, isVendor, user?.userId, router]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const formatTimeRemaining = (closesAt: string | null) => {
     if (!closesAt) return 'No deadline';
@@ -133,6 +151,14 @@ export default function VendorDashboardPage() {
 
   const hasBidOnEvent = (eventId: string) => {
     return myBids.some(bid => bid.event_id === eventId);
+  };
+
+  // Check if event is new (created in last 24 hours)
+  const isNewEvent = (createdAt: string) => {
+    const now = new Date();
+    const eventCreated = new Date(createdAt);
+    const hoursSinceCreation = (now.getTime() - eventCreated.getTime()) / (1000 * 60 * 60);
+    return hoursSinceCreation <= 24;
   };
 
   // Loading state
@@ -214,9 +240,18 @@ export default function VendorDashboardPage() {
             <p className="text-slate-400 text-sm">Open Events</p>
           </div>
 
+          <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/20 backdrop-blur-lg rounded-xl border-2 border-orange-500/50 p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/10 rounded-full blur-2xl"></div>
+            <div className="flex items-center justify-between mb-2 relative">
+              <SparklesIcon className="w-8 h-8 text-orange-400 animate-pulse" />
+              <span className="text-3xl font-bold text-white">{stats.newEvents}</span>
+            </div>
+            <p className="text-orange-200 text-sm font-medium">New Events (24h)</p>
+          </div>
+
           <div className="bg-slate-800/90 backdrop-blur-lg rounded-xl border border-slate-700 p-6">
             <div className="flex items-center justify-between mb-2">
-              <SparklesIcon className="w-8 h-8 text-orange-400" />
+              <TrophyIcon className="w-8 h-8 text-blue-400" />
               <span className="text-3xl font-bold text-white">{stats.activeBids}</span>
             </div>
             <p className="text-slate-400 text-sm">Active Bids</p>
@@ -253,6 +288,7 @@ export default function VendorDashboardPage() {
             <div className="space-y-4">
               {events.map((event) => {
                 const alreadyBid = hasBidOnEvent(event.id);
+                const isNew = isNewEvent(event.created_at);
 
                 return (
                   <div
@@ -261,7 +297,15 @@ export default function VendorDashboardPage() {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-white mb-2">{event.title}</h3>
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-xl font-bold text-white">{event.title}</h3>
+                          {isNew && (
+                            <span className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full text-white text-xs font-bold shadow-lg animate-pulse">
+                              <SparklesIcon className="w-3.5 h-3.5" />
+                              NEW
+                            </span>
+                          )}
+                        </div>
                         <div className="flex flex-wrap gap-4 text-sm text-slate-300">
                           <div className="flex items-center space-x-2">
                             <CalendarIcon className="w-4 h-4 text-slate-400" />

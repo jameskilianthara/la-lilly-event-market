@@ -42,9 +42,8 @@ describe('Authentication System', () => {
     it('should render login form', () => {
       render(<ClientLoginPage />);
       
-      // Use placeholder text to find inputs since labels may not be properly associated
-      expect(screen.getByPlaceholderText(/your@email.com/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /login to your account/i })).toBeInTheDocument();
     });
 
@@ -62,24 +61,22 @@ describe('Authentication System', () => {
     it('should validate email format', async () => {
       render(<ClientLoginPage />);
       
-      const emailInput = screen.getByPlaceholderText(/your@email.com/i);
+      const emailInput = screen.getByLabelText(/email address/i);
       const submitButton = screen.getByRole('button', { name: /login to your account/i });
 
       fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
       fireEvent.click(submitButton);
 
-      // Wait for validation to run - the error message should appear
       await waitFor(() => {
-        const errorMessage = screen.queryByText(/valid email/i);
-        expect(errorMessage || screen.queryByText(/email/i)).toBeTruthy();
-      }, { timeout: 3000 });
+        expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument();
+      });
     });
 
     it('should accept valid email and password inputs', async () => {
       render(<ClientLoginPage />);
       
-      const emailInput = screen.getByPlaceholderText(/your@email.com/i);
-      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/password/i);
 
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'password123' } });

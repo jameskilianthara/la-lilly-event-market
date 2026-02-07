@@ -474,7 +474,7 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
 
         // Update checklist with auto-populated items
         if (optimizedData.auto_populated_items) {
-          const updatedAnswers = { ...venueAnswers };
+          const updatedAnswers: Record<string, any> = { ...venueAnswers };
           optimizedData.auto_populated_items.forEach((item: any) => {
             updatedAnswers[item.item_id] = item.value;
           });
@@ -537,8 +537,11 @@ export const ComprehensiveBlueprint: React.FC<ComprehensiveBlueprintProps> = ({
 
       const pdfData = {
         blueprint: {
+          id: blueprintId,
           eventType: clientBrief.event_type || 'Event',
           displayName: `${clientBrief.event_type || 'Event'} Blueprint`,
+          version: '1.0',
+          forgeComplexity: 'craftsman' as const,
           sections: blueprintSections
         },
         clientBrief: {

@@ -257,16 +257,38 @@ export default function VendorEventDetailPage() {
       { words: ['flexible', 'optional', 'bonus'], className: 'keyword-flexible' }
     ];
 
-    let result = text;
+    // Sanitize text to prevent XSS - only allow safe characters
+    const sanitizedText = text.replace(/[<>]/g, '').trim();
 
-    keywords.forEach(({ words, className }) => {
-      words.forEach(word => {
-        const regex = new RegExp(`\\b(${word})\\b`, 'gi');
-        result = result.replace(regex, `<span class="${className}">$1</span>`);
-      });
+    // Split text into words and highlight keywords safely
+    const words = sanitizedText.split(/\s+/);
+    const highlightedWords = words.map((word, index) => {
+      const cleanWord = word.replace(/[^\w\s-]/g, ''); // Remove special chars except hyphens
+      const keyword = keywords.find(k =>
+        k.words.some(w => cleanWord.toLowerCase() === w.toLowerCase())
+      );
+
+      if (keyword) {
+        return (
+          <span key={index} className={keyword.className}>
+            {cleanWord}
+          </span>
+        );
+      }
+
+      return <span key={index}>{cleanWord}</span>;
     });
 
-    return <div dangerouslySetInnerHTML={{ __html: result }} className="leading-relaxed" />;
+    // Add spaces between words
+    const result = [];
+    for (let i = 0; i < highlightedWords.length; i++) {
+      result.push(highlightedWords[i]);
+      if (i < highlightedWords.length - 1) {
+        result.push(' ');
+      }
+    }
+
+    return <div className="leading-relaxed">{result}</div>;
   };
 
   const getKeyRequirements = (): KeyRequirement[] => {

@@ -1,7 +1,7 @@
 // EventFoundry Database Utilities
 // Supabase CRUD operations with TypeScript type safety
 
-import { supabase } from '../../lib/supabase';
+import { supabase } from './supabase';
 import type {
   Vendor,
   VendorInsert,
@@ -373,6 +373,161 @@ export async function updateBid(bidId: string, updates: BidUpdate) {
  */
 export async function updateBidStatus(bidId: string, status: string) {
   return updateBid(bidId, { status: status as any });
+}
+
+/**
+ * Update bid status with optimistic updates
+ * @param bidId - Bid UUID
+ * @param status - New bid status
+ * @param enableOptimistic - Whether to apply optimistic updates
+ * @returns Updated bid or error
+ */
+export async function updateBidStatusOptimistic(bidId: string, status: string, enableOptimistic = true) {
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase client not initialized' } };
+  }
+
+  try {
+    // Get current bid status for optimistic update
+    const { data: currentBid, error: fetchError } = await supabase
+      .from('bids')
+      .select('status')
+      .eq('id', bidId)
+      .single();
+
+    if (fetchError) {
+      return { data: null, error: fetchError };
+    }
+
+    // Apply optimistic update if enabled
+    if (enableOptimistic) {
+      const { realtimeService } = await import('./realtime');
+      const optimisticUpdate = realtimeService.createOptimisticBidStatusUpdate(
+        bidId,
+        status,
+        currentBid.status
+      );
+      realtimeService.applyOptimisticUpdate(optimisticUpdate);
+    }
+
+    // Perform the actual update
+    const result = await updateBid(bidId, { status: status as any });
+
+    if (result.error) {
+      // Rollback optimistic update on failure
+      if (enableOptimistic) {
+        const { realtimeService } = await import('./realtime');
+        realtimeService.confirmOptimisticUpdate(`bid_status_${bidId}_${Date.now()}`);
+      }
+      return result;
+    }
+
+    // Confirm optimistic update on success
+    if (enableOptimistic) {
+      const { realtimeService } = await import('./realtime');
+      // Find and confirm the optimistic update
+      const updateId = Array.from(realtimeService['optimisticUpdates'].keys())
+        .find(id => id.startsWith(`bid_status_${bidId}`));
+      if (updateId) {
+        realtimeService.confirmOptimisticUpdate(updateId);
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error in optimistic bid status update:', error);
+    return {
+      data: null,
+      error: error instanceof Error ? error : { message: 'Unknown error' }
+    };
+  }
+}
+
+/**
+ * Accept a bid and update related statuses atomically
+ * @param bidId - Bid UUID to accept
+ * @returns Result with accepted bid and updated event info
+ */
+export async function acceptBid(bidId: string) {
+  if (!supabase) {
+    return { success: false, error: 'Supabase client not initialized' };
+  }
+
+  try {
+    // Get bid details with event info
+    const { data: bid, error: bidError } = await supabase
+      .from('bids')
+      .select('*, events(*)')
+      .eq('id', bidId)
+      .single();
+
+    if (bidError || !bid) {
+      return { success: false, error: 'Bid not found' };
+    }
+
+    const eventId = bid.event_id;
+
+    // Start transaction-like operations
+    const operations = [];
+
+    // 1. Accept the winning bid
+    operations.push(
+      updateBid(bidId, {
+        status: 'ACCEPTED' as const
+      })
+    );
+
+    // 2. Reject all other bids for this event
+    operations.push(
+      supabase
+        .from('bids')
+        .update({
+          status: 'REJECTED',
+          rejected_at: new Date().toISOString()
+        })
+        .eq('event_id', eventId)
+        .neq('id', bidId)
+    );
+
+    // 3. Update event status to commissioned
+    operations.push(
+      updateEvent(eventId, {
+        forge_status: 'COMMISSIONED' as const
+      })
+    );
+
+    // Execute all operations
+    const results = await Promise.allSettled(operations);
+
+    // Check for failures
+    const failures = results.filter(result => result.status === 'rejected');
+    if (failures.length > 0) {
+      console.error('Some operations failed during bid acceptance:', failures);
+      return {
+        success: false,
+        error: 'Failed to complete bid acceptance process'
+      };
+    }
+
+    console.log(`Bid ${bidId} accepted for event ${eventId}`);
+
+    return {
+      success: true,
+      data: {
+        acceptedBid: bid,
+        eventId: eventId,
+        rejectedBidsCount: results[1].status === 'fulfilled' ?
+          (results[1] as PromiseFulfilledResult<any>).value.count || 0 : 0
+      }
+    };
+
+  } catch (error) {
+    console.error('Error accepting bid:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
 }
 
 // ===== CONTRACT OPERATIONS =====

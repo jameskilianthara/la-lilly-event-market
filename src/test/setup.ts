@@ -2,6 +2,10 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Mock environment variables
+process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+
 // Mock Next.js router (for next/navigation)
 vi.mock('next/navigation', () => ({
   useRouter() {
@@ -31,9 +35,11 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
+      getSession: vi.fn(),
       signUp: vi.fn(),
       signInWithPassword: vi.fn(),
       signOut: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
       getUser: vi.fn(),
       onAuthStateChange: vi.fn(() => ({
         data: { subscription: { unsubscribe: vi.fn() } },
@@ -58,6 +64,8 @@ vi.mock('@/lib/supabase', () => ({
     })),
   },
 }));
+
+
 
 
 

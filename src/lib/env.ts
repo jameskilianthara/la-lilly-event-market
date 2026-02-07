@@ -6,8 +6,11 @@ const requiredEnvVars = [
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
 ] as const;
 
+const serverRequiredEnvVars = [
+  'SUPABASE_SERVICE_ROLE_KEY', // Required for API routes
+] as const;
+
 const optionalEnvVars = [
-  'SUPABASE_SERVICE_ROLE_KEY',
   'RAZORPAY_KEY_ID',
   'RAZORPAY_KEY_SECRET',
   'RAZORPAY_WEBHOOK_SECRET',
@@ -21,16 +24,43 @@ const optionalEnvVars = [
 export function validateEnvironment(): void {
   const missing: string[] = [];
 
+  // Always validate public env vars
   for (const varName of requiredEnvVars) {
     if (!process.env[varName]) {
       missing.push(varName);
     }
   }
 
+  // Validate server-only vars (only in Node.js environment)
+  if (typeof window === 'undefined') {
+    for (const varName of serverRequiredEnvVars) {
+      if (!process.env[varName]) {
+        missing.push(varName);
+      }
+    }
+  }
+
   if (missing.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missing.join(', ')}\n` +
-      'Please check your .env file and ensure all required variables are set.'
+      'Please check your .env.local file and ensure all required variables are set.\n' +
+      'Note: SUPABASE_SERVICE_ROLE_KEY is required for API routes (server-side only).'
+    );
+  }
+}
+
+/**
+ * Validates payment environment variables (Razorpay)
+ * Call this only when payment features are needed
+ */
+export function validatePaymentEnv(): void {
+  const required = ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET'];
+  const missing = required.filter(v => !process.env[v]);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing payment environment variables: ${missing.join(', ')}\n` +
+      'Payment features will not work without these variables.'
     );
   }
 }
@@ -52,10 +82,26 @@ export function getEnvVar(name: string, defaultValue?: string): string {
   return value;
 }
 
-// Auto-validate on module import (only in server-side code)
-if (typeof window === 'undefined') {
-  validateEnvironment();
+// Auto-validate on module import (only in server-side code, not during build)
+if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
+  // Only validate in development - production build doesn't have service key yet
+  try {
+    validateEnvironment();
+  } catch (error) {
+    console.warn('Environment validation warning:', error instanceof Error ? error.message : error);
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

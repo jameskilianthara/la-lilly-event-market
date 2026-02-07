@@ -43,8 +43,61 @@ export default function BlueprintReviewPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    loadEvent();
+    // Check if this is a resumed draft from external source
+    const isResumedDraft = sessionStorage.getItem('resume_from_external') === 'true';
+    const draftShortCode = sessionStorage.getItem('draft_short_code');
+
+    if (isResumedDraft && draftShortCode === eventId) {
+      // This is a draft resume - load from sessionStorage
+      loadDraftEvent();
+    } else {
+      // Normal event load
+      loadEvent();
+    }
   }, [eventId, isAuthenticated]);
+
+  const loadDraftEvent = async () => {
+    console.log('[Blueprint] Loading draft event from external source');
+
+    try {
+      setIsLoading(true);
+
+      // Get draft data from sessionStorage
+      const draftBriefStr = sessionStorage.getItem('draft_client_brief');
+      const draftEventId = sessionStorage.getItem('draft_event_id');
+
+      if (!draftBriefStr || !draftEventId) {
+        console.error('[Blueprint] Missing draft data in sessionStorage');
+        setError('Draft data not found. Please start over.');
+        setIsLoading(false);
+        return;
+      }
+
+      const clientBrief = JSON.parse(draftBriefStr);
+      console.log('[Blueprint] Loaded draft client brief:', clientBrief);
+
+      // Load the actual event from database to get full details
+      const { data: eventData, error: fetchError } = await getEventById(draftEventId);
+
+      if (fetchError || !eventData) {
+        console.error('[Blueprint] Error fetching draft event:', fetchError);
+        setError('Failed to load draft event');
+        setIsLoading(false);
+        return;
+      }
+
+      setEvent(eventData);
+      setIsLoading(false);
+
+      // Clear the resume flag so page refreshes work normally
+      sessionStorage.removeItem('resume_from_external');
+
+    } catch (err) {
+      console.error('[Blueprint] Error loading draft:', err);
+      setError('Failed to load draft event');
+      setIsLoading(false);
+    }
+  };
 
   const loadEvent = async () => {
     console.log('[Blueprint] loadEvent called - authLoading:', authLoading, 'isAuthenticated:', isAuthenticated);

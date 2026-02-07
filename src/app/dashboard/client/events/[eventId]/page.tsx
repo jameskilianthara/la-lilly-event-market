@@ -15,6 +15,9 @@ import {
   SparklesIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../../../../../contexts/AuthContext';
+import { getEventById, getBidsByEventId } from '../../../../../lib/database';
+import type { Event as DBEvent, Bid as DBBid } from '../../../../../types/database';
 
 interface Bid {
   bidId: string;
@@ -33,7 +36,7 @@ interface Bid {
   status: 'pending' | 'shortlisted' | 'selected' | 'rejected';
 }
 
-interface Event {
+interface EventDisplay {
   eventId: string;
   eventMemory: {
     event_type: string;
@@ -51,26 +54,112 @@ interface Event {
 export default function ClientEventDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const eventId = params.eventId as string;
 
-  const [event, setEvent] = useState<Event | null>(null);
+  const [event, setEvent] = useState<EventDisplay | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [contractId, setContractId] = useState<string | null>(null);
+  const [generatingContract, setGeneratingContract] = useState(false);
 
   useEffect(() => {
-    loadEvent();
-  }, [eventId]);
+    if (!authLoading) {
+      loadEvent();
+    }
+  }, [eventId, authLoading, isAuthenticated]);
 
-  const loadEvent = () => {
+  const loadEvent = async () => {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+      return;
+    }
+
     try {
-      const postedEvents = JSON.parse(localStorage.getItem('posted_events') || '[]');
-      const foundEvent = postedEvents.find((e: Event) => e.eventId === eventId);
+      setLoading(true);
 
-      if (foundEvent) {
-        setEvent(foundEvent);
+      // Fetch event from database
+      const { data: eventData, error: eventError } = await getEventById(eventId);
+
+      if (eventError) {
+        console.error('Error loading event:', eventError);
+        setError('Failed to load event');
+        setLoading(false);
+        return;
       }
+
+      if (!eventData) {
+        setError('Event not found');
+        setLoading(false);
+        return;
+      }
+
+      // Check if user owns this event
+      if (eventData.owner_user_id !== user.userId) {
+        setError('You do not have permission to view this event');
+        setLoading(false);
+        return;
+      }
+
+      // Fetch bids for this event
+      const { data: bidsData } = await getBidsByEventId(eventId);
+
+      // Check if there's a contract for this event
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { data: contractData } = await supabase
+        .from('contracts')
+        .select('id')
+        .eq('event_id', eventId)
+        .single();
+
+      if (contractData) {
+        setContractId(contractData.id);
+      }
+
+      // Transform data to match component format
+      const clientBrief = (eventData.client_brief as any) || {};
+      const transformedEvent: EventDisplay = {
+        eventId: eventData.id,
+        eventMemory: {
+          event_type: eventData.event_type || 'Event',
+          date: eventData.date || '',
+          location: eventData.city || '',
+          guest_count: eventData.guest_count?.toString() || '0',
+          venue_status: clientBrief.venue_status || eventData.venue_status || 'TBD'
+        },
+        checklistData: clientBrief.checklist || null,
+        postedAt: eventData.created_at || new Date().toISOString(),
+        status: eventData.forge_status || 'OPEN_FOR_BIDS',
+        bids: (bidsData || []).map(bid => ({
+          bidId: bid.id,
+          vendorId: bid.vendor_id,
+          vendorName: (bid.bid_data as any)?.vendorName || 'Vendor',
+          vendorEmail: (bid.bid_data as any)?.vendorEmail || '',
+          pricing: (bid.bid_data as any)?.pricing || {},
+          subtotals: (bid.bid_data as any)?.subtotals || {},
+          total: bid.total_forge_cost || bid.total_amount || 0,
+          coverLetter: (bid.bid_data as any)?.coverLetter || '',
+          whyPerfect: (bid.bid_data as any)?.whyPerfect || '',
+          timeline: (bid.bid_data as any)?.timeline || '',
+          advancePayment: (bid.bid_data as any)?.advancePayment || 0,
+          portfolio: (bid.bid_data as any)?.portfolio || [],
+          submittedAt: bid.created_at || new Date().toISOString(),
+          status: (bid.status === 'ACCEPTED' ? 'selected' :
+                  bid.status === 'SHORTLISTED' ? 'shortlisted' :
+                  bid.status === 'REJECTED' ? 'rejected' : 'pending') as 'pending' | 'shortlisted' | 'selected' | 'rejected'
+        }))
+      };
+
+      setEvent(transformedEvent);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading event:', error);
-    } finally {
+      setError('An unexpected error occurred');
       setLoading(false);
     }
   };
@@ -107,7 +196,41 @@ export default function ClientEventDetailPage() {
     );
   };
 
-  if (loading) {
+  const handleCreateContract = async () => {
+    try {
+      setGeneratingContract(true);
+
+      const response = await fetch('/api/contracts/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: eventId,
+          initiatedBy: 'client'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (data.alreadyExists) {
+          // Contract already exists, just navigate to it
+          router.push(`/dashboard/client/contracts/${data.contractId}`);
+        } else {
+          // New contract created, navigate to it
+          router.push(`/dashboard/client/contracts/${data.contract?.id || data.contractId}`);
+        }
+      } else {
+        alert(data.error || 'Failed to generate contract');
+        setGeneratingContract(false);
+      }
+    } catch (error) {
+      console.error('Error generating contract:', error);
+      alert('Failed to generate contract. Please try again.');
+      setGeneratingContract(false);
+    }
+  };
+
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center">
         <div className="text-center">
@@ -118,13 +241,25 @@ export default function ClientEventDetailPage() {
     );
   }
 
-  if (!event) {
+  if (error || !event) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Event Not Found</h1>
-          <Link href="/dashboard/client" className="text-orange-400 hover:text-orange-300">
-            Return to Dashboard
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <DocumentTextIcon className="w-10 h-10 text-red-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">{error || 'Event Not Found'}</h1>
+          <p className="text-slate-400 mb-6">
+            {error === 'You do not have permission to view this event'
+              ? 'This event belongs to another user.'
+              : 'The event you\'re looking for doesn\'t exist or has been removed.'}
+          </p>
+          <Link
+            href="/dashboard/client"
+            className="inline-flex items-center space-x-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+          >
+            <ArrowLeftIcon className="w-5 h-5" />
+            <span>Return to Dashboard</span>
           </Link>
         </div>
       </div>
@@ -234,17 +369,66 @@ export default function ClientEventDetailPage() {
 
           {selectedBid && (
             <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-6 mb-6">
-              <div className="flex items-start space-x-3">
-                <SparklesIcon className="w-6 h-6 text-green-400 mt-1" />
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-green-300 mb-1">Winner Selected! 🎉</h3>
-                  <p className="text-slate-300">
-                    You've selected <span className="font-semibold text-white">{selectedBid.vendorName}</span> as your event partner
-                  </p>
-                  <p className="text-sm text-slate-400 mt-2">
-                    Winning bid: ₹{selectedBid.total.toLocaleString('en-IN')}
-                  </p>
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-start space-x-3">
+                  <SparklesIcon className="w-6 h-6 text-green-400 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-green-300 mb-1">Winner Selected! 🎉</h3>
+                    <p className="text-slate-300 mb-2">
+                      You've selected <span className="font-semibold text-white">{selectedBid.vendorName}</span> as your event partner
+                    </p>
+                    <p className="text-sm text-slate-400">
+                      Winning bid: ₹{selectedBid.total.toLocaleString('en-IN')}
+                    </p>
+                  </div>
                 </div>
+
+                {contractId ? (
+                  <div className="flex items-start space-x-3 bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
+                    <DocumentTextIcon className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-white font-semibold mb-2">Contract Ready for Review</p>
+                      <p className="text-sm text-slate-400 mb-3">
+                        The contract has been generated and is ready for your signature.
+                      </p>
+                      <Link
+                        href={`/dashboard/client/contracts/${contractId}`}
+                        className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all shadow-md text-sm"
+                      >
+                        <span>View Contract</span>
+                        <ChevronRightIcon className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start space-x-3 bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
+                    <DocumentTextIcon className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-white font-semibold mb-2">Ready to Create Contract</p>
+                      <p className="text-sm text-slate-400 mb-3">
+                        You or the vendor can now initiate the contract. Once created, both parties will need to sign before work begins.
+                      </p>
+                      <button
+                        onClick={handleCreateContract}
+                        disabled={generatingContract}
+                        className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {generatingContract ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Creating Contract...</span>
+                          </>
+                        ) : (
+                          <>
+                            <DocumentTextIcon className="w-4 h-4" />
+                            <span>Create Contract</span>
+                            <ChevronRightIcon className="w-4 h-4" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

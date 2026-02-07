@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/bidding/close-expired",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

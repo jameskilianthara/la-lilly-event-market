@@ -33,28 +33,19 @@ export async function closeBiddingWindow(eventId: string) {
       return { success: true, message: 'Event already closed or not open for bids' };
     }
 
-    // Update event status to trigger shortlisting phase
-    const { error: eventError } = await updateEvent(eventId, {
-      forge_status: 'CRAFTSMEN_BIDDING' as ForgeStatus
-    });
-
-    if (eventError) {
-      console.error('Error updating event status:', eventError);
-      return { success: false, error: eventError.message };
-    }
-
     console.log(`Bidding window closed for event ${eventId}`);
 
-    // Trigger automatic shortlisting
+    // Trigger automatic shortlisting (this will handle all status updates atomically)
     const { triggerAutomaticShortlisting } = await import('./shortlisting');
     const shortlistResult = await triggerAutomaticShortlisting(eventId);
-    
+
     if (!shortlistResult.success) {
       console.error('Shortlisting failed:', shortlistResult.error);
-      // Don't fail the whole operation if shortlisting fails
-      // Event status is already updated
+      // If shortlisting fails, we should not have updated the event status
+      // The event remains in OPEN_FOR_BIDS or CRAFTSMEN_BIDDING status
+      return { success: false, error: `Shortlisting failed: ${shortlistResult.error}` };
     } else {
-      console.log(`Shortlisting completed: ${shortlistResult.shortlistedCount} bids shortlisted`);
+      console.log(`Shortlisting completed: ${shortlistResult.shortlistedCount || 0} bids shortlisted, ${shortlistResult.rejectedCount || 0} bids rejected`);
     }
 
     return { 

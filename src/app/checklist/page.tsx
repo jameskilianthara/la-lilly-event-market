@@ -22,6 +22,7 @@ import {
   PhotoIcon
 } from '@heroicons/react/24/outline';
 import { updateEvent } from '../../lib/database';
+import { useToast } from '../../components/ui/Toast';
 
 interface ChecklistItem {
   id: string;
@@ -73,6 +74,8 @@ function ChecklistPageContent() {
   const router = useRouter();
   const eventType = searchParams?.get('type') || 'wedding';
   const eventId = searchParams?.get('eventId'); // Get eventId from URL
+  const fromWhatsApp = searchParams?.get('fromWhatsApp') === 'true'; // Check if coming from WhatsApp
+  const { showSuccess } = useToast(); // Toast notifications
 
   const [checklist, setChecklist] = useState<ChecklistData | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
@@ -91,7 +94,15 @@ function ChecklistPageContent() {
     } else {
       loadFromLocalStorage();
     }
-  }, [eventType, eventId]);
+
+    // Show welcome toast if coming from WhatsApp
+    if (fromWhatsApp && sessionStorage.getItem('show_welcome_toast') === 'true') {
+      setTimeout(() => {
+        showSuccess("Hi! We've pre-filled your details from WhatsApp. Now, let's make your event grand!");
+        sessionStorage.removeItem('show_welcome_toast'); // Clear flag after showing
+      }, 800);
+    }
+  }, [eventType, eventId, fromWhatsApp]);
 
   const loadForgeData = async () => {
     try {

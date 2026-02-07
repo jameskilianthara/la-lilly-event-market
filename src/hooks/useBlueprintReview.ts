@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { ForgeBlueprint, ClientBrief, ClientNotes, ReferenceImage, ForgeProject } from '../types/blueprint';
 import { getBlueprintById } from '../services/blueprintSelector';
+import { supabase } from '../lib/supabase';
 
 export const useBlueprintReview = (blueprintId: string, clientBrief: ClientBrief) => {
   const [blueprint, setBlueprint] = useState<ForgeBlueprint | null>(null);
@@ -104,11 +105,22 @@ export const useBlueprintReview = (blueprintId: string, clientBrief: ClientBrief
 
     // Call actual API to create project
     try {
+      // Get Supabase auth token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        throw new Error('Authentication required. Please log in to create an event.');
+      }
+
+      console.log('[Blueprint Review] Creating forge project with auth token');
+
       const response = await fetch('/api/forge/projects', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
-          userId: 'temp_user_' + Date.now(), // TODO: Get from actual auth
           clientBrief,
           blueprintId: blueprint.id || blueprintId,
           title: `${clientBrief.event_type} - ${clientBrief.date}`,
@@ -116,10 +128,13 @@ export const useBlueprintReview = (blueprintId: string, clientBrief: ClientBrief
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create project');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to create project' }));
+        console.error('[Blueprint Review] Create error:', errorData);
+        throw new Error(errorData.error || 'Failed to create project');
       }
 
       const { forgeProject } = await response.json();
+      console.log('[Blueprint Review] Forge project created:', forgeProject);
       return forgeProject;
     } catch (error) {
       console.error('API Error:', error);

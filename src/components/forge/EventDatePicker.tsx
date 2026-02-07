@@ -14,6 +14,12 @@ export const EventDatePicker: React.FC<EventDatePickerProps> = ({
 }) => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [error, setError] = useState('');
+  const dateInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Function to open the date picker
+  const openDatePicker = () => {
+    dateInputRef.current?.showPicker?.();
+  };
 
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
@@ -125,19 +131,28 @@ export const EventDatePicker: React.FC<EventDatePickerProps> = ({
           Select your event date
         </label>
 
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <CalendarIcon className="h-5 w-5 text-slate-400" />
-          </div>
+        <div className="relative group">
+          {/* Clickable calendar button */}
+          <button
+            type="button"
+            onClick={openDatePicker}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center z-20 cursor-pointer"
+          >
+            <div className="bg-gradient-to-br from-orange-500/30 to-orange-600/30 rounded-lg p-2.5 group-hover:from-orange-500/40 group-hover:to-orange-600/40 transition-all shadow-lg hover:scale-105">
+              <CalendarIcon className="h-6 w-6 text-orange-400 group-hover:text-orange-300 transition-colors" />
+            </div>
+          </button>
 
           <input
+            ref={dateInputRef}
             type="date"
             value={selectedDate}
             onChange={handleDateChange}
             min={getTodayDate()}
             max={getMaxDate()}
-            className="w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-base"
+            className="w-full pl-4 pr-20 py-4 bg-slate-700 border-2 border-slate-600 hover:border-orange-500/50 rounded-lg text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-base cursor-pointer hover:bg-slate-700/80 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
             style={{ fontSize: '16px' }} // Prevents zoom on iOS
+            placeholder="Click anywhere to select date"
           />
         </div>
 

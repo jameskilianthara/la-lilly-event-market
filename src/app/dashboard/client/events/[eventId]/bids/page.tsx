@@ -162,27 +162,93 @@ export default function BidReviewDashboard() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{ type: string; bidId: string } | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [isShortlisting, setIsShortlisting] = useState(false);
+  const [selectedBids, setSelectedBids] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadEvent();
   }, [eventId]);
 
-  const loadEvent = () => {
+  const loadEvent = async () => {
     try {
-      const postedEvents = JSON.parse(localStorage.getItem('posted_events') || '[]');
-      const foundEvent = postedEvents.find((e: Event) => e.eventId === eventId);
+      setLoading(true);
 
-      if (foundEvent) {
-        setEvent(foundEvent);
+      // Import the database functions dynamically
+      const { getEventById, getBidsByEventId } = await import('@/lib/database');
+
+      // Fetch event from database
+      const { data: eventData, error: eventError } = await getEventById(eventId);
+
+      if (eventError || !eventData) {
+        console.error('Error loading event:', eventError);
+        setLoading(false);
+        return;
       }
+
+      // Fetch bids for this event
+      const { data: bidsData } = await getBidsByEventId(eventId);
+
+      // Transform data to match component format
+      const clientBrief = (eventData.client_brief as any) || {};
+      const transformedEvent: Event = {
+        eventId: eventData.id,
+        eventMemory: {
+          event_type: eventData.event_type || 'Event',
+          date: eventData.date || '',
+          location: eventData.city || '',
+          guest_count: eventData.guest_count?.toString() || '0',
+          venue_status: clientBrief.venue_status || eventData.venue_status || 'TBD'
+        },
+        checklistData: clientBrief.checklist || null,
+        postedAt: eventData.created_at || new Date().toISOString(),
+        status: eventData.forge_status || 'OPEN_FOR_BIDS',
+        bids: (bidsData || []).map((bid: any) => ({
+          bidId: bid.id,
+          vendorId: bid.vendor_id,
+          vendorName: bid.vendor?.user?.name || bid.vendor?.company_name || 'Vendor',
+          vendorEmail: bid.vendor?.user?.email || '',
+          pricing: {},
+          subtotals: {},
+          total: bid.total_forge_cost || 0,
+          grandTotal: bid.total_forge_cost || 0,
+          subtotal: bid.subtotal || 0,
+          gst: bid.taxes || 0,
+          itemizedPricing: Array.isArray(bid.forge_items) ? bid.forge_items.map((item: any, idx: number) => ({
+            id: `item-${idx}`,
+            description: item.description || item.name || 'Item',
+            quantity: item.quantity || 1,
+            unit: item.unit || 'piece',
+            unitPrice: item.unitPrice || item.craft_price || 0,
+            lineTotal: item.lineTotal || (item.quantity * (item.unitPrice || item.craft_price)) || 0,
+            notes: item.notes || ''
+          })) : [],
+          coverLetter: bid.vendor_notes || '',
+          whyPerfect: bid.vendor_notes || '',
+          timeline: bid.estimated_forge_time || '',
+          advancePayment: 30,
+          portfolio: bid.craft_attachments || [],
+          submittedAt: bid.created_at || new Date().toISOString(),
+          status: bid.status === 'SUBMITTED' ? 'pending' : bid.status === 'SHORTLISTED' ? 'shortlisted' : bid.status === 'ACCEPTED' ? 'selected' : bid.status === 'REJECTED' ? 'rejected' : 'pending',
+          shortlistedAt: bid.shortlisted_at,
+          selectedAt: bid.status === 'ACCEPTED' ? bid.created_at : undefined,
+          rejectedAt: bid.rejected_at,
+          vendorRating: bid.vendor?.rating || undefined,
+          vendorStats: {
+            eventsCompleted: bid.vendor?.events_completed || 0
+          }
+        }))
+      };
+
+      setEvent(transformedEvent);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading event:', error);
-    } finally {
       setLoading(false);
     }
   };
 
   const saveEvent = (updatedEvent: Event) => {
+    // TEMP: Using localStorage
     try {
       const postedEvents = JSON.parse(localStorage.getItem('posted_events') || '[]');
       const eventIndex = postedEvents.findIndex((e: Event) => e.eventId === eventId);
@@ -196,6 +262,66 @@ export default function BidReviewDashboard() {
       console.error('Error saving event:', error);
       showToast('Error updating bid status', 'error');
     }
+  };
+
+  // NEW: Bulk shortlist functionality
+  const handleShortlistSelected = async () => {
+    if (!event || selectedBids.size === 0) {
+      showToast('Please select bids to shortlist', 'error');
+      return;
+    }
+
+    if (selectedBids.size > 5) {
+      showToast('Maximum 5 bids can be shortlisted', 'error');
+      return;
+    }
+
+    setIsShortlisting(true);
+
+    try {
+      const response = await fetch(`/api/events/${eventId}/shortlist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bidIds: Array.from(selectedBids) })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to shortlist bids');
+      }
+
+      showToast(data.message, 'success');
+      setSelectedBids(new Set());
+
+      // Reload event to get updated bid statuses
+      loadEvent();
+
+      // Optionally redirect to a shortlist review page
+      setTimeout(() => {
+        router.push(`/dashboard/client/events/${eventId}`);
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('Error shortlisting bids:', error);
+      showToast(error.message || 'Failed to shortlist bids', 'error');
+    } finally {
+      setIsShortlisting(false);
+    }
+  };
+
+  // NEW: Auto-select top 5 lowest bids
+  const handleAutoSelectTop5 = () => {
+    if (!event || !event.bids || event.bids.length === 0) return;
+
+    const sortedBids = [...event.bids]
+      .filter(b => b.status === 'pending') // Only pending bids
+      .sort((a, b) => a.total - b.total)
+      .slice(0, 5);
+
+    const top5Ids = new Set(sortedBids.map(b => b.bidId));
+    setSelectedBids(top5Ids);
+    showToast(`Selected top 5 lowest bids (₹${sortedBids[0]?.total.toLocaleString('en-IN')} - ₹${sortedBids[sortedBids.length - 1]?.total.toLocaleString('en-IN')})`, 'success');
   };
 
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -245,28 +371,70 @@ export default function BidReviewDashboard() {
     setShowConfirmModal(true);
   };
 
-  const confirmActionHandler = () => {
+  const confirmActionHandler = async () => {
     if (!event || !confirmAction) return;
 
     const { type, bidId } = confirmAction;
 
     if (type === 'reject') {
-      const updatedBids = event.bids.map(b =>
-        b.bidId === bidId
-          ? { ...b, status: 'rejected' as const, rejectedAt: new Date().toISOString() }
-          : b
-      );
-      saveEvent({ ...event, bids: updatedBids });
-      showToast('Proposal rejected', 'success');
+      try {
+        // Call API to reject bid
+        const response = await fetch(`/api/bids/${bidId}/reject`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to reject bid');
+        }
+
+        showToast('Proposal rejected', 'success');
+        // Reload event to get updated status
+        await loadEvent();
+      } catch (error) {
+        console.error('Error rejecting bid:', error);
+        showToast('Failed to reject proposal', 'error');
+      }
     } else if (type === 'select') {
-      // Set one as selected, reject all others
-      const updatedBids = event.bids.map(b =>
-        b.bidId === bidId
-          ? { ...b, status: 'selected' as const, selectedAt: new Date().toISOString() }
-          : { ...b, status: 'rejected' as const, rejectedAt: new Date().toISOString() }
-      );
-      saveEvent({ ...event, bids: updatedBids, status: 'winner_selected' });
-      showToast('Winner selected! 🎉 We\'ll notify the vendor.', 'success');
+      try {
+        // Step 1: Accept the bid (rejects all others automatically)
+        const { acceptBid } = await import('@/lib/database');
+        const acceptResult = await acceptBid(bidId);
+
+        if (!acceptResult.success) {
+          throw new Error(acceptResult.error || 'Failed to accept bid');
+        }
+
+        showToast('Winner selected! Generating contract...', 'success');
+
+        // Step 2: Generate contract
+        const contractResponse = await fetch('/api/contracts/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId: event.eventId,
+            bidId: bidId
+          })
+        });
+
+        if (!contractResponse.ok) {
+          const errorData = await contractResponse.json();
+          throw new Error(errorData.error || 'Failed to generate contract');
+        }
+
+        const contractData = await contractResponse.json();
+
+        showToast('Contract generated! Redirecting...', 'success');
+
+        // Step 3: Redirect to contract review page
+        setTimeout(() => {
+          router.push(`/dashboard/client/contracts/${contractData.contract.id}`);
+        }, 1500);
+
+      } catch (error) {
+        console.error('Error selecting winner:', error);
+        showToast(error instanceof Error ? error.message : 'Failed to select winner', 'error');
+      }
     }
 
     setShowConfirmModal(false);
@@ -380,6 +548,38 @@ export default function BidReviewDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Shortlist Action Bar - NEW */}
+        {!hasWinner && shortlistedCount < 5 && event.bids.length > 0 && (
+          <div className="bg-gradient-to-r from-orange-500/10 to-pink-500/10 border-2 border-orange-500/30 rounded-xl p-5 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1">Ready to Shortlist?</h3>
+                <p className="text-slate-300 text-sm">
+                  Select up to 5 vendors for the final round. {selectedBids.size > 0 ? `${selectedBids.size} selected` : 'Select vendors below or auto-select top 5'}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleAutoSelectTop5}
+                  disabled={isShortlisting}
+                  className="flex items-center space-x-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-slate-600 disabled:to-slate-700 text-white font-semibold rounded-lg transition-all shadow-lg"
+                >
+                  <SparklesIcon className="w-5 h-5" />
+                  <span>Auto-Select Top 5</span>
+                </button>
+                <button
+                  onClick={handleShortlistSelected}
+                  disabled={isShortlisting || selectedBids.size === 0}
+                  className="flex items-center space-x-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-slate-600 disabled:to-slate-700 text-white font-semibold rounded-lg transition-all shadow-lg"
+                >
+                  <CheckCircleIcon className="w-5 h-5" />
+                  <span>{isShortlisting ? 'Shortlisting...' : `Shortlist ${selectedBids.size > 0 ? selectedBids.size : 'Selected'}`}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Winner Banner */}
         {hasWinner && selectedBid && (
@@ -495,6 +695,9 @@ export default function BidReviewDashboard() {
                   const isSelected = bid.status === 'selected';
                   const isRejected = bid.status === 'rejected';
 
+                  const isSelectedForShortlist = selectedBids.has(bid.bidId);
+                  const canSelectForShortlist = bid.status === 'pending' && !hasWinner;
+
                   return (
                     <div
                       key={bid.bidId}
@@ -503,9 +706,40 @@ export default function BidReviewDashboard() {
                           ? 'border-green-500/50 shadow-lg shadow-green-500/20'
                           : isRejected
                           ? 'border-red-500/30 opacity-60'
+                          : isSelectedForShortlist
+                          ? 'border-orange-500 shadow-lg shadow-orange-500/20'
                           : 'border-slate-700/50 hover:border-orange-500/50'
                       }`}
                     >
+                      {/* Selection Checkbox - NEW */}
+                      {canSelectForShortlist && (
+                        <div className="flex items-center justify-end mb-3">
+                          <label className="flex items-center space-x-2 cursor-pointer group">
+                            <input
+                              type="checkbox"
+                              checked={isSelectedForShortlist}
+                              onChange={() => {
+                                const newSelected = new Set(selectedBids);
+                                if (isSelectedForShortlist) {
+                                  newSelected.delete(bid.bidId);
+                                } else {
+                                  if (newSelected.size >= 5) {
+                                    showToast('Maximum 5 vendors can be shortlisted', 'error');
+                                    return;
+                                  }
+                                  newSelected.add(bid.bidId);
+                                }
+                                setSelectedBids(newSelected);
+                              }}
+                              className="w-5 h-5 rounded border-2 border-slate-500 bg-slate-700 checked:bg-orange-500 checked:border-orange-500 transition-colors cursor-pointer"
+                            />
+                            <span className="text-sm text-slate-400 group-hover:text-white transition-colors">
+                              {isSelectedForShortlist ? 'Selected for shortlist' : 'Select for shortlist'}
+                            </span>
+                          </label>
+                        </div>
+                      )}
+
                       {/* Vendor Info */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">

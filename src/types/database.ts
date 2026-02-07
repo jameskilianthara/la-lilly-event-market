@@ -5,6 +5,7 @@
 export type UserType = 'client' | 'vendor' | 'admin';
 
 export type ForgeStatus =
+  | 'DRAFT'                     // External import, not finalized
   | 'BLUEPRINT_READY'
   | 'OPEN_FOR_BIDS'
   | 'CRAFTSMEN_BIDDING'
@@ -16,6 +17,14 @@ export type ForgeStatus =
   | 'IN_FORGE'
   | 'COMPLETED'
   | 'ARCHIVED';
+
+export type DraftSource =
+  | 'whatsapp_bot'
+  | 'web_form'
+  | 'api'
+  | 'facebook'
+  | 'instagram'
+  | 'manual';
 
 export type BidStatus =
   | 'DRAFT'
@@ -87,6 +96,8 @@ export interface Vendor {
   rating: number; // Decimal(3,2), default 0.00
   total_projects: number; // Default 0
   verified: boolean; // Default false
+  phone: string | null; // WhatsApp number (format: +91XXXXXXXXXX)
+  last_notified_at: string | null; // ISO timestamp - rate limiting
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
 }
@@ -117,12 +128,50 @@ export interface VendorUpdate {
   portfolio_urls?: string[];
   description?: string | null;
   verified?: boolean;
+  phone?: string | null;
+  last_notified_at?: string | null;
+}
+
+// Table: public.vendor_notifications
+export type NotificationType = 'whatsapp' | 'email' | 'sms';
+export type NotificationStatus = 'pending' | 'sent' | 'delivered' | 'failed';
+
+export interface VendorNotification {
+  id: string; // UUID
+  vendor_id: string; // UUID, references vendors(id)
+  event_id: string; // UUID, references events(id)
+  notification_type: NotificationType;
+  phone_number: string | null;
+  message_content: string;
+  status: NotificationStatus;
+  provider_response: any; // JSONB
+  sent_at: string | null; // ISO timestamp
+  delivered_at: string | null; // ISO timestamp
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface VendorNotificationInsert {
+  vendor_id: string;
+  event_id: string;
+  notification_type: NotificationType;
+  phone_number?: string | null;
+  message_content: string;
+  status?: NotificationStatus;
+  provider_response?: any;
+}
+
+export interface VendorNotificationUpdate {
+  status?: NotificationStatus;
+  provider_response?: any;
+  sent_at?: string | null;
+  delivered_at?: string | null;
 }
 
 // Table: public.events (Forge Projects)
 export interface Event {
   id: string; // UUID
-  owner_user_id: string; // UUID, references users(id)
+  owner_user_id: string | null; // UUID, references users(id) - nullable for drafts
   title: string;
   event_type: string;
   date: string | null; // Date
@@ -135,6 +184,10 @@ export interface Event {
   forge_blueprint: any; // JSONB
   forge_status: ForgeStatus; // Default 'BLUEPRINT_READY'
   bidding_closes_at: string | null; // ISO timestamp
+  short_code: string | null; // Unique 8-char code for draft access
+  draft_source: DraftSource | null; // Where draft came from
+  draft_expires_at: string | null; // ISO timestamp for cleanup
+  external_reference_id: string | null; // ID in external system
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
 }
@@ -377,4 +430,39 @@ export interface ContractWithDetails extends Contract {
   client: User;
   event: Event;
   bid: Bid;
+}
+
+// Table: public.draft_event_sessions
+export interface DraftEventSession {
+  id: string; // UUID
+  short_code: string; // Unique 8-char code
+  event_id: string; // UUID, references events(id)
+  source: DraftSource;
+  external_reference_id: string | null;
+  client_data: any; // JSONB - metadata from source
+  ip_address: string | null;
+  user_agent: string | null;
+  access_count: number; // How many times accessed
+  last_accessed_at: string | null; // ISO timestamp
+  expires_at: string; // ISO timestamp
+  completed_at: string | null; // ISO timestamp when finalized
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+export interface DraftEventSessionInsert {
+  short_code: string;
+  event_id: string;
+  source: DraftSource;
+  external_reference_id?: string | null;
+  client_data?: any;
+  ip_address?: string | null;
+  user_agent?: string | null;
+  expires_at: string;
+}
+
+export interface DraftEventSessionUpdate {
+  access_count?: number;
+  last_accessed_at?: string | null;
+  completed_at?: string | null;
 }

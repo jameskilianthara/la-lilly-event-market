@@ -1,117 +1,151 @@
 // POST /api/forge/projects - Create Forge Project
+// GET /api/forge/projects - List all forge projects
 // Aligned with CLAUDE.md Section 12: API Spec
+// Uses Supabase SDK exclusively
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db, forgeProjects, forgeBlueprints } from '../../../../db';
-import { eq } from 'drizzle-orm';
-import { nanoid } from 'nanoid';
+import { createClient } from '@supabase/supabase-js';
 import type { ClientBrief } from '../../../../types/blueprint';
+import { withErrorHandler, validateRequired } from '../../../../lib/api-handler';
+import { withAuth, type AuthenticatedUser } from '../../../../lib/api-auth';
+import { ValidationError } from '../../../../lib/errors';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 interface CreateForgeProjectRequest {
-  userId: string;
   clientBrief: ClientBrief;
   blueprintId?: string;
   title?: string;
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body: CreateForgeProjectRequest = await request.json();
-    const { userId, clientBrief, blueprintId, title } = body;
-
-    // Validate required fields
-    if (!userId || !clientBrief) {
-      return NextResponse.json(
-        { error: 'userId and clientBrief are required' },
-        { status: 400 }
-      );
-    }
-
-    // Get blueprint (either provided or select default)
-    let blueprint;
-    if (blueprintId) {
-      const blueprintResult = await db.query.forgeBlueprints.findFirst({
-        where: eq(forgeBlueprints.eventTypeKey, blueprintId),
-      });
-      blueprint = blueprintResult;
-    }
-
-    // If no blueprint found, use master blueprint
-    if (!blueprint) {
-      const masterBlueprint = await db.query.forgeBlueprints.findFirst({
-        where: eq(forgeBlueprints.eventTypeKey, 'master_forge_blueprint'),
-      });
-      blueprint = masterBlueprint;
-    }
-
-    // Generate project title if not provided
-    const projectTitle = title || `${clientBrief.event_type} Forge - ${clientBrief.date}`;
-
-    // Create forge project
-    const [newProject] = await db.insert(forgeProjects).values({
-      ownerUserId: userId,
-      title: projectTitle,
-      clientBriefJson: clientBrief,
-      blueprintId: blueprint?.id,
-      blueprintSnapshotJson: blueprint?.blueprintContentJson || {},
-      forgeStatus: 'BLUEPRINT_READY',
-    }).returning();
-
-    return NextResponse.json({
-      success: true,
-      forgeProjectId: newProject.id,
-      forgeProject: newProject,
-    }, { status: 201 });
-
-  } catch (error) {
-    console.error('Error creating forge project:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
+const handleCreateForgeProject = withErrorHandler(async (request: NextRequest, user: AuthenticatedUser) => {
+  // Only clients can create forge projects
+  if (user.user_type !== 'client') {
+    throw new ValidationError('Only clients can create forge projects. Vendors can only view and bid on events.');
   }
-}
+
+  const body: CreateForgeProjectRequest = await request.json();
+  const { clientBrief, blueprintId, title } = body;
+
+  // Validate required fields
+  validateRequired(body, ['clientBrief']);
+
+  // Use authenticated user's ID as the owner
+  const userId = user.id;
+
+  // Create Supabase client with service role for admin operations
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  // Get blueprint (either provided or select default)
+  let blueprint = null;
+  if (blueprintId) {
+    const { data } = await supabase
+      .from('blueprints')
+      .select('*')
+      .eq('event_type_key', blueprintId)
+      .single();
+    blueprint = data;
+  }
+
+  // If no blueprint found, use master blueprint
+  if (!blueprint) {
+    const { data } = await supabase
+      .from('blueprints')
+      .select('*')
+      .eq('event_type_key', 'master_forge_blueprint')
+      .single();
+    blueprint = data;
+  }
+
+  // Generate project title if not provided
+  const projectTitle = title || `${clientBrief.event_type} Forge - ${clientBrief.date || 'TBD'}`;
+
+  // Parse guest count if it's a string
+  const guestCount = typeof clientBrief.guest_count === 'string'
+    ? parseInt(clientBrief.guest_count, 10)
+    : clientBrief.guest_count;
+
+  // Create forge project with OPEN_FOR_BIDS status to immediately show to vendors
+  const { data: newProject, error } = await supabase
+    .from('events')
+    .insert({
+      owner_user_id: userId,
+      title: projectTitle,
+      event_type: clientBrief.event_type || 'General Event',
+      date: clientBrief.date || null,
+      city: clientBrief.city || null,
+      venue_status: clientBrief.venue_status || null,
+      guest_count: guestCount || null,
+      client_brief: clientBrief,
+      forge_blueprint: blueprint?.content || blueprint || {},
+      forge_status: 'OPEN_FOR_BIDS', // Changed from BLUEPRINT_READY to make visible to vendors
+      bidding_closes_at: null, // Can be set later by admin or after 7 days default
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating forge project:', error);
+    throw new Error(`Failed to create forge project: ${error.message}`);
+  }
+
+  // TODO: Future integration - Notify matching vendors via WhatsApp/Email API
+  // For now, vendors will see the event in their dashboard automatically
+  // await notifyMatchingVendors(newProject.id, newProject.city, newProject.event_type);
+
+  return NextResponse.json({
+    success: true,
+    forgeProjectId: newProject.id,
+    forgeProject: newProject,
+  }, { status: 201 });
+});
+
+// Wrap with authentication
+export const POST = withAuth(handleCreateForgeProject);
 
 // GET /api/forge/projects - List all forge projects (with optional filters)
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const status = searchParams.get('status');
+export const GET = withErrorHandler(async (request: NextRequest) => {
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('userId');
+  const status = searchParams.get('status');
 
-    let query = db.query.forgeProjects.findMany({
-      with: {
-        owner: true,
-        blueprint: true,
-        craftProposals: true,
-      },
-      orderBy: (forgeProjects, { desc }) => [desc(forgeProjects.createdAt)],
-    });
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Note: Drizzle query builder doesn't allow dynamic where clauses easily
-    // For production, implement proper filtering
-    const allProjects = await query;
+  // Build query with filters
+  let query = supabase
+    .from('events')
+    .select(`
+      *,
+      owner:users!owner_user_id(id, email, name),
+      blueprint:blueprints(id, event_type_key, content),
+      bids(
+        id,
+        total_amount,
+        status,
+        vendor:vendors!vendor_id(id, company_name)
+      )
+    `)
+    .order('created_at', { ascending: false });
 
-    // Filter in memory for now (not ideal for large datasets)
-    let filteredProjects = allProjects;
-    if (userId) {
-      filteredProjects = filteredProjects.filter(p => p.ownerUserId === userId);
-    }
-    if (status) {
-      filteredProjects = filteredProjects.filter(p => p.forgeStatus === status);
-    }
-
-    return NextResponse.json({
-      success: true,
-      projects: filteredProjects,
-      count: filteredProjects.length,
-    });
-
-  } catch (error) {
-    console.error('Error fetching forge projects:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  // Apply filters
+  if (userId) {
+    query = query.eq('owner_user_id', userId);
   }
-}
+  if (status) {
+    query = query.eq('forge_status', status);
+  }
+
+  const { data: projects, error } = await query;
+
+  if (error) {
+    console.error('Error fetching forge projects:', error);
+    throw new Error(`Failed to fetch forge projects: ${error.message}`);
+  }
+
+  return NextResponse.json({
+    success: true,
+    projects: projects || [],
+    count: projects?.length || 0,
+  });
+});

@@ -175,46 +175,76 @@ export default function BidDetailPage() {
     loadBid();
   }, [eventId, bidId]);
 
-  const loadBid = () => {
+  const loadBid = async () => {
     try {
-      const postedEvents = JSON.parse(localStorage.getItem('posted_events') || '[]');
-      const foundEvent = postedEvents.find((e: Event) => e.eventId === eventId);
+      setLoading(true);
 
-      if (foundEvent) {
-        const foundBid = foundEvent.bids?.find((b: Bid) => b.bidId === bidId);
-        if (foundBid) {
-          setEvent(foundEvent);
-          setBid(foundBid);
-          // Auto-expand all categories on load
-          const items = normalizeItemizedPricing(foundBid);
-          const grouped = groupByCategory(items);
-          setExpandedCategories(new Set(Object.keys(grouped)));
-        }
+      // Fetch bid data from API
+      const bidResponse = await fetch(`/api/bids/${bidId}`);
+      if (!bidResponse.ok) {
+        throw new Error('Failed to fetch bid');
+      }
+
+      const bidData = await bidResponse.json();
+      if (bidData.success && bidData.bid) {
+        setBid(bidData.bid);
+
+        // Auto-expand all categories on load
+        const items = normalizeItemizedPricing(bidData.bid);
+        const grouped = groupByCategory(items);
+        setExpandedCategories(new Set(Object.keys(grouped)));
+      }
+
+      // Fetch event data from API
+      const eventResponse = await fetch(`/api/forge/projects/${eventId}`);
+      if (!eventResponse.ok) {
+        throw new Error('Failed to fetch event');
+      }
+
+      const eventData = await eventResponse.json();
+      if (eventData.success && eventData.forgeProject) {
+        // Transform forge project to event format
+        const transformedEvent: Event = {
+          eventId: eventData.forgeProject.id,
+          eventMemory: eventData.forgeProject.client_brief,
+          checklistData: eventData.forgeProject.forge_blueprint,
+          postedAt: eventData.forgeProject.created_at,
+          status: eventData.forgeProject.forge_status,
+          bids: eventData.forgeProject.bids || []
+        };
+        setEvent(transformedEvent);
       }
     } catch (error) {
       console.error('Error loading bid:', error);
+      showToast('Failed to load bid details', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const saveEvent = (updatedEvent: Event) => {
+  const updateBidStatus = async (newStatus: string) => {
     try {
-      const postedEvents = JSON.parse(localStorage.getItem('posted_events') || '[]');
-      const eventIndex = postedEvents.findIndex((e: Event) => e.eventId === eventId);
+      const response = await fetch(`/api/bids/${bidId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
 
-      if (eventIndex !== -1) {
-        postedEvents[eventIndex] = updatedEvent;
-        localStorage.setItem('posted_events', JSON.stringify(postedEvents));
-        setEvent(updatedEvent);
-
-        // Update local bid state
-        const updatedBid = updatedEvent.bids.find((b: Bid) => b.bidId === bidId);
-        if (updatedBid) setBid(updatedBid);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update bid status');
       }
+
+      const data = await response.json();
+      if (data.success) {
+        // Reload bid data to reflect changes
+        await loadBid();
+        return true;
+      }
+      return false;
     } catch (error) {
-      console.error('Error saving event:', error);
-      showToast('Error updating bid status', 'error');
+      console.error('Error updating bid status:', error);
+      throw error;
     }
   };
 
@@ -223,32 +253,21 @@ export default function BidDetailPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleShortlist = () => {
-    if (!event || !bid) return;
+  const handleShortlist = async () => {
+    if (!bid) return;
 
-    if (bid.status === 'shortlisted') {
-      // Remove from shortlist
-      const updatedBids = event.bids.map(b =>
-        b.bidId === bidId ? { ...b, status: 'pending' as const, shortlistedAt: undefined } : b
-      );
-      saveEvent({ ...event, bids: updatedBids });
-      showToast('Vendor removed from shortlist', 'success');
-    } else {
-      // Add to shortlist
-      const shortlistedCount = event.bids.filter(b => b.status === 'shortlisted').length;
-
-      if (shortlistedCount >= 5) {
-        showToast('Maximum 5 vendors can be shortlisted', 'error');
-        return;
+    try {
+      if (bid.status === 'shortlisted') {
+        // Remove from shortlist
+        await updateBidStatus('SUBMITTED');
+        showToast('Vendor removed from shortlist', 'success');
+      } else {
+        // Add to shortlist
+        await updateBidStatus('SHORTLISTED');
+        showToast('Vendor shortlisted! ⭐', 'success');
       }
-
-      const updatedBids = event.bids.map(b =>
-        b.bidId === bidId
-          ? { ...b, status: 'shortlisted' as const, shortlistedAt: new Date().toISOString() }
-          : b
-      );
-      saveEvent({ ...event, bids: updatedBids });
-      showToast('Vendor shortlisted! ⭐', 'success');
+    } catch (error: any) {
+      showToast(error.message || 'Error updating shortlist', 'error');
     }
   };
 
@@ -262,31 +281,44 @@ export default function BidDetailPage() {
     setShowConfirmModal(true);
   };
 
-  const confirmActionHandler = () => {
-    if (!event || !confirmAction) return;
+  const confirmActionHandler = async () => {
+    if (!confirmAction) return;
 
-    if (confirmAction === 'reject') {
-      const updatedBids = event.bids.map(b =>
-        b.bidId === bidId
-          ? { ...b, status: 'rejected' as const, rejectedAt: new Date().toISOString() }
-          : b
-      );
-      saveEvent({ ...event, bids: updatedBids });
-      showToast('Proposal rejected', 'success');
-      setTimeout(() => router.push(`/dashboard/client/events/${eventId}/bids`), 1500);
-    } else if (confirmAction === 'select') {
-      // Set one as selected, reject all others
-      const updatedBids = event.bids.map(b =>
-        b.bidId === bidId
-          ? { ...b, status: 'selected' as const, selectedAt: new Date().toISOString() }
-          : { ...b, status: 'rejected' as const, rejectedAt: new Date().toISOString() }
-      );
-      saveEvent({ ...event, bids: updatedBids, status: 'winner_selected' });
-      showToast('Winner selected! 🎉 We\'ll notify the vendor.', 'success');
+    try {
+      if (confirmAction === 'reject') {
+        await updateBidStatus('REJECTED');
+        showToast('Proposal rejected', 'success');
+        setTimeout(() => router.push(`/dashboard/client/events/${eventId}/bids`), 1500);
+      } else if (confirmAction === 'select') {
+        showToast('Selecting winner and generating contract...', 'success');
+
+        // Use the select winner API endpoint
+        const response = await fetch(`/api/events/${eventId}/select-winner`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bidId })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to select winner');
+        }
+
+        const data = await response.json();
+
+        showToast('Winner selected! Contract generated. Redirecting...', 'success');
+
+        // Redirect to contracts dashboard after a brief delay
+        setTimeout(() => {
+          router.push(`/dashboard/client/contracts`);
+        }, 2000);
+      }
+    } catch (error: any) {
+      showToast(error.message || 'Error processing action', 'error');
+    } finally {
+      setShowConfirmModal(false);
+      setConfirmAction(null);
     }
-
-    setShowConfirmModal(false);
-    setConfirmAction(null);
   };
 
   const formatCategoryName = (key: string) => {
@@ -375,6 +407,45 @@ export default function BidDetailPage() {
           <ArrowLeftIcon className="w-5 h-5" />
           <span>Back to All Proposals</span>
         </Link>
+
+        {/* Winner Selected Banner */}
+        {isSelected && (
+          <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-6 mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-3 flex-1">
+                <SparklesIcon className="w-6 h-6 text-green-400 mt-1 flex-shrink-0" />
+                <div>
+                  <h3 className="text-lg font-bold text-green-300 mb-1">This Vendor Won! 🎉</h3>
+                  <p className="text-slate-300 mb-3">
+                    You've selected this proposal as the winner. A contract has been generated and is ready for signing.
+                  </p>
+                  <Link
+                    href="/dashboard/client/contracts"
+                    className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all text-sm"
+                  >
+                    <DocumentTextIcon className="w-4 h-4" />
+                    <span>View Contract</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rejected Banner */}
+        {isRejected && (
+          <div className="bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl p-6 mb-6">
+            <div className="flex items-start space-x-3">
+              <XMarkIcon className="w-6 h-6 text-red-400 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="text-lg font-bold text-red-300 mb-1">Proposal Rejected</h3>
+                <p className="text-slate-300">
+                  This proposal was not selected. The vendor has been notified.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">

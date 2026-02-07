@@ -41,3 +41,25 @@ yarn-error.log*
 next-env.d.ts
 .env.local
 .env*.local
+
+# Test artifacts and debug files
+archive/
+test-results/
+playwright-report/
+*.sql
+*_test.js
+*_fix.js
+debug-*.html
+test_*.js
+*_debug.js
+quick_*.js
+working_*.sql
+working_*.js
+simple_*.sql
+check_*.sql
+fix_*.sql
+create_*.sql
+seed*.sql
+*_seed*.sql
+dummy_*.js
+*_credentials.js

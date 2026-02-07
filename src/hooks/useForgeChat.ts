@@ -6,7 +6,7 @@ import type { ForgeMessageData } from '../components/forge/ForgeMessage';
 import { selectForgeBlueprint } from '../services/blueprintSelector';
 import { useForgeSession } from './useForgeSession';
 import { useAuth } from '../contexts/AuthContext';
-import { createEvent } from '../lib/database';
+import { supabase } from '../lib/supabase';
 import type { ClientBrief } from '../types/blueprint';
 import { mapEventTypeToChecklist } from '../lib/checklistMapper';
 import { parseEventDate } from '../lib/dateParser';
@@ -80,13 +80,24 @@ export const useForgeChat = () => {
 
   // Extract event creation logic to reusable function
   const triggerEventCreation = useCallback(async () => {
-    if (isCreatingEvent) return;
+    console.log('[Forge Chat] triggerEventCreation called:', {
+      isCreatingEvent,
+      isAuthenticated,
+      user: user?.email,
+      clientBrief
+    });
+
+    if (isCreatingEvent) {
+      console.log('[Forge Chat] Already creating event, skipping...');
+      return;
+    }
 
     setIsCreatingEvent(true);
 
     try {
       // Check authentication
       if (!isAuthenticated || !user) {
+        console.log('[Forge Chat] Not authenticated, showing auth message...');
         // Save state before redirecting to auth
         localStorage.setItem('forgeChat_pendingAuth', JSON.stringify({
           timestamp: Date.now(),
@@ -116,7 +127,7 @@ export const useForgeChat = () => {
 
       // Parse date to SQL-compatible format
       const parsedDate = parseEventDate(clientBrief.date);
-      console.log('Date parsing:', {
+      console.log('[Forge Chat] Date parsing:', {
         original: clientBrief.date,
         parsed: parsedDate
       });
@@ -124,54 +135,35 @@ export const useForgeChat = () => {
       // Create event title
       const eventTitle = `${clientBrief.event_type || 'Event'} - ${clientBrief.city || 'TBD'} - ${clientBrief.date || 'Date TBD'}`;
 
-      // Prepare event data for database
-      const eventData = {
-        owner_user_id: user.userId,
-        title: eventTitle,
-        event_type: clientBrief.event_type || 'General Event',
-        date: parsedDate, // Use parsed SQL-compatible date
-        city: clientBrief.city || null,
-        guest_count: parseInt(clientBrief.guest_count || '0') || null,
-        client_brief: {
-          event_type: clientBrief.event_type,
-          date: clientBrief.date, // Keep original human-readable format in brief
-          date_parsed: parsedDate, // Also store parsed version
-          city: clientBrief.city,
-          guest_count: clientBrief.guest_count,
-          venue_status: clientBrief.venue_status,
-          conversation: messages.slice(-10), // Last 10 messages for context
-          reference_images: []
-        },
-        forge_blueprint: selectedBlueprint,
-        forge_status: 'BLUEPRINT_READY' as const,
+      // Prepare client brief with all details
+      const enrichedClientBrief = {
+        event_type: clientBrief.event_type,
+        date: clientBrief.date, // Keep original human-readable format
+        date_parsed: parsedDate, // Also store parsed version
+        city: clientBrief.city,
+        guest_count: clientBrief.guest_count,
+        venue_status: clientBrief.venue_status,
+        conversation: messages.slice(-10), // Last 10 messages for context
+        reference_images: []
       };
 
-      console.log('Creating event in database:', eventData);
+      console.log('[Forge Chat] ========================================');
+      console.log('[Forge Chat] CREATING EVENT - Full State Dump');
+      console.log('[Forge Chat] ========================================');
+      console.log('[Forge Chat] clientBrief state:', JSON.stringify(clientBrief, null, 2));
+      console.log('[Forge Chat] enrichedClientBrief:', JSON.stringify(enrichedClientBrief, null, 2));
+      console.log('[Forge Chat] eventTitle:', eventTitle);
+      console.log('[Forge Chat] ========================================');
 
-      // Create event in database
-      const result = await createEvent(eventData);
+      // Get Supabase auth token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      if (result.error) {
-        console.error('Error creating event:', result.error);
-        console.error('Error details:', {
-          message: result.error.message,
-          code: (result.error as any).code,
-          details: (result.error as any).details,
-          hint: (result.error as any).hint
-        });
-
-        // Check if it's a date-related error
-        const isDateError = result.error.message?.includes('invalid input syntax for type date') ||
-                           result.error.message?.includes('date');
-
-        const errorContent = isDateError
-          ? `I had trouble with the date format you provided ("${clientBrief.date}"). Please make sure to provide the event date in a format like "December 2025" or "June 15, 2025". Let's try creating your event again with the correct date format.`
-          : `I encountered an issue creating your event: ${result.error.message || 'Database error'}. Please try again or contact support at kerala@eventfoundry.com`;
-
+      if (sessionError || !session) {
+        console.error('[Forge Chat] No active session:', sessionError);
         const errorMessage: ForgeMessageData = {
           id: `error-${Date.now()}`,
           type: 'assistant',
-          content: errorContent,
+          content: 'Authentication error. Please log in again.',
           timestamp: new Date()
         };
         addMessage(errorMessage);
@@ -179,12 +171,41 @@ export const useForgeChat = () => {
         return;
       }
 
-      if (!result.data) {
-        console.error('Event creation returned no data');
+      // Create event via API (with authentication)
+      const response = await fetch('/api/forge/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          clientBrief: enrichedClientBrief,
+          blueprintId: selectedBlueprint.id,
+          title: eventTitle,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to create event' }));
+        console.error('[Forge Chat] Create error:', errorData);
+
+        // Check for vendor restriction error
+        if (response.status === 403 || errorData.error?.includes('Only clients')) {
+          const errorMessage: ForgeMessageData = {
+            id: `error-${Date.now()}`,
+            type: 'assistant',
+            content: `⚠️ **Vendor accounts cannot create events.** \n\nYou're logged in as a vendor (${user.email}). Only client accounts can create and post events. Vendors can view events and submit bids.\n\nIf you need to create an event, please log out and create a client account instead.`,
+            timestamp: new Date()
+          };
+          addMessage(errorMessage);
+          setIsCreatingEvent(false);
+          return;
+        }
+
         const errorMessage: ForgeMessageData = {
           id: `error-${Date.now()}`,
           type: 'assistant',
-          content: `Event creation completed but returned no data. Please try again or contact support.`,
+          content: `I encountered an issue creating your event: ${errorData.error || 'Unknown error'}. Please try again or contact support.`,
           timestamp: new Date()
         };
         addMessage(errorMessage);
@@ -192,8 +213,8 @@ export const useForgeChat = () => {
         return;
       }
 
-      const createdEvent = result.data;
-      console.log('Event created successfully:', createdEvent);
+      const { forgeProject: createdEvent } = await response.json();
+      console.log('[Forge Chat] Event created successfully:', createdEvent);
 
       // Map event type to appropriate checklist
       const checklistType = mapEventTypeToChecklist(clientBrief.event_type || '');
@@ -239,14 +260,29 @@ export const useForgeChat = () => {
     // Check if user just authenticated and has pending ForgeChat session
     const pendingAuth = localStorage.getItem('forgeChat_pendingAuth');
 
-    if (pendingAuth && user && isAuthenticated && currentStep === 5 && !isComplete) {
+    if (pendingAuth && user && isAuthenticated && !postAuthWelcome && !isCreatingEvent) {
       const pendingData = JSON.parse(pendingAuth);
 
+      console.log('[Forge Chat] Post-auth resumption detected:', {
+        pendingData,
+        currentStep,
+        isComplete,
+        clientBrief
+      });
+
+      // Restore the saved state if current state is empty
+      if (!clientBrief.event_type && pendingData.briefSnapshot) {
+        console.log('[Forge Chat] Restoring client brief from pending auth');
+        setClientBrief(pendingData.briefSnapshot);
+        setCurrentStep(pendingData.step || 5);
+      }
+
       // Show welcome message
+      const briefToUse = clientBrief.event_type ? clientBrief : pendingData.briefSnapshot;
       const welcomeBackMessage: ForgeMessageData = {
         id: `welcome-back-${Date.now()}`,
         type: 'assistant',
-        content: `🎉 Welcome to EventFoundry, ${(user.userType === 'client' ? user.name : undefined) || 'friend'}!\n\nThank you for joining us! I've saved all your event details:\n\n• **Event Type:** ${clientBrief.event_type}\n• **Date:** ${clientBrief.date}\n• **Location:** ${clientBrief.city}\n• **Guest Count:** ${clientBrief.guest_count}\n• **Venue:** ${clientBrief.venue_status}\n\nPerfect! Let me now create your personalized event checklist...`,
+        content: `🎉 Welcome to EventFoundry, ${(user.userType === 'client' ? user.name : undefined) || 'friend'}!\n\nThank you for joining us! I've saved all your event details:\n\n• **Event Type:** ${briefToUse.event_type}\n• **Date:** ${briefToUse.date}\n• **Location:** ${briefToUse.city}\n• **Guest Count:** ${briefToUse.guest_count}\n• **Venue:** ${briefToUse.venue_status}\n\nPerfect! Let me now create your personalized event checklist...`,
         timestamp: new Date(),
         metadata: {
           isWelcomeBack: true
@@ -261,10 +297,11 @@ export const useForgeChat = () => {
 
       // Trigger event creation after short delay
       setTimeout(() => {
+        console.log('[Forge Chat] Triggering event creation after post-auth welcome');
         triggerEventCreation();
       }, 2000);
     }
-  }, [user, isAuthenticated, currentStep, isComplete, clientBrief, addMessage, triggerEventCreation]);
+  }, [user, isAuthenticated, postAuthWelcome, isCreatingEvent, currentStep, isComplete, clientBrief, addMessage, triggerEventCreation]);
 
   const getStepField = (step: number): keyof ClientBrief => {
     const stepFields: (keyof ClientBrief)[] = ['event_type', 'date', 'city', 'guest_count', 'venue_status'];
@@ -285,8 +322,17 @@ export const useForgeChat = () => {
       // Guest count
       (answer: string) => `${answer} guests - that helps me understand the scale perfectly. One final question: do you already have a venue secured, or do you need help finding the perfect space?`,
 
-      // Venue status
-      (answer: string) => `Wonderful! ${answer}. I now have everything I need to create your custom blueprint. Let me select the perfect template for your event...`
+      // Venue status - contextual response
+      (answer: string) => {
+        const answerLower = answer.toLowerCase();
+        const needsHelp = answerLower.includes('no') || answerLower.includes('need') || answerLower.includes('help');
+
+        if (needsHelp) {
+          return `Got it! I'll make sure to include venue recommendations in your blueprint. I now have everything I need to create your custom event plan. Let me select the perfect template for your event...`;
+        } else {
+          return `Excellent! Having your venue secured is a great start. I now have everything I need to create your custom blueprint. Let me select the perfect template for your event...`;
+        }
+      }
     ];
 
     return responses[step - 1](userAnswer);
@@ -298,6 +344,14 @@ export const useForgeChat = () => {
     // Update client brief
     const updatedBrief = { ...clientBrief, [stepField]: answer };
     setClientBrief(updatedBrief);
+
+    console.log('[Forge Chat] handleAnswer:', {
+      currentStep,
+      stepField,
+      answer,
+      updatedBrief,
+      isComplete
+    });
 
     // Add assistant response
     const assistantResponse: ForgeMessageData = {
@@ -316,14 +370,17 @@ export const useForgeChat = () => {
 
     // Move to next step or complete
     if (currentStep >= 5) {
+      console.log('[Forge Chat] Step 5 completed! Triggering event creation in 1.5s...');
       // Complete the chat and trigger event creation
       setTimeout(() => {
+        console.log('[Forge Chat] Now calling triggerEventCreation()');
         triggerEventCreation();
       }, 1500);
     } else {
+      console.log('[Forge Chat] Moving to next step:', currentStep + 1);
       setCurrentStep(prev => prev + 1);
     }
-  }, [currentStep, clientBrief, addMessage, triggerEventCreation]);
+  }, [currentStep, clientBrief, addMessage, triggerEventCreation, isComplete]);
 
   const resetChat = useCallback(() => {
     clearSession();

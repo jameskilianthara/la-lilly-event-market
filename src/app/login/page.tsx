@@ -11,58 +11,53 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
+import { loginSchema, type LoginForm } from '../../lib/validation';
+import { useFormValidation } from '../../hooks/useFormValidation';
 
 export default function ClientLoginPage() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState<Partial<LoginForm>>({
+    email: '',
+    password: '',
+  });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
-  const validateForm = (): boolean => {
-    const errors: { email?: string; password?: string } = {};
-
-    // Email validation
-    if (!email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Please enter a valid email address';
-    }
-
-    // Password validation
-    if (!password.trim()) {
-      errors.password = 'Password is required';
-    }
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  const validation = useFormValidation({
+    schema: loginSchema,
+    onError: (errors) => {
+      setError('');
+    },
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setFieldErrors({});
 
-    if (!validateForm()) {
+    // Validate form
+    const validationResult = validation.validate(formData);
+    if (!validationResult.success || !validationResult.data) {
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const result = await login(email, password, true);
+      const result = await login(validationResult.data.email, validationResult.data.password, true);
 
       if (result.success) {
         // Successful login - redirect to forge (event creation)
+        console.log('[Login] Success, redirecting to /forge');
         router.push('/forge');
       } else {
-        setError(result.error || 'Invalid email or password. Please check your credentials and try again.');
+        const errorMessage = result.error || 'Invalid email or password. Please check your credentials and try again.';
+        console.error('[Login] Failed:', errorMessage);
+        setError(errorMessage);
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('[Login] Exception:', error);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -107,22 +102,22 @@ export default function ClientLoginPage() {
                 </div>
                 <input
                   type="email"
-                  value={email}
+                  value={formData.email || ''}
                   onChange={(e) => {
-                    setEmail(e.target.value);
-                    setFieldErrors({ ...fieldErrors, email: undefined });
+                    setFormData(prev => ({ ...prev, email: e.target.value }));
+                    validation.clearFieldError('email');
                     setError('');
                   }}
                   placeholder="your@email.com"
                   className={`w-full pl-10 pr-4 py-3 bg-slate-900/50 border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
-                    fieldErrors.email
+                    validation.errors.email
                       ? 'border-red-500 focus:ring-red-500'
                       : 'border-slate-700 focus:ring-pink-500 focus:border-transparent'
                   }`}
                 />
               </div>
-              {fieldErrors.email && (
-                <p className="mt-1 text-sm text-red-400">{fieldErrors.email}</p>
+              {validation.errors.email && (
+                <p className="mt-1 text-sm text-red-400">{validation.errors.email}</p>
               )}
             </div>
 
@@ -137,22 +132,22 @@ export default function ClientLoginPage() {
                 </div>
                 <input
                   type="password"
-                  value={password}
+                  value={formData.password || ''}
                   onChange={(e) => {
-                    setPassword(e.target.value);
-                    setFieldErrors({ ...fieldErrors, password: undefined });
+                    setFormData(prev => ({ ...prev, password: e.target.value }));
+                    validation.clearFieldError('password');
                     setError('');
                   }}
                   placeholder="Enter your password"
                   className={`w-full pl-10 pr-4 py-3 bg-slate-900/50 border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
-                    fieldErrors.password
+                    validation.errors.password
                       ? 'border-red-500 focus:ring-red-500'
                       : 'border-slate-700 focus:ring-pink-500 focus:border-transparent'
                   }`}
                 />
               </div>
-              {fieldErrors.password && (
-                <p className="mt-1 text-sm text-red-400">{fieldErrors.password}</p>
+              {validation.errors.password && (
+                <p className="mt-1 text-sm text-red-400">{validation.errors.password}</p>
               )}
             </div>
 
