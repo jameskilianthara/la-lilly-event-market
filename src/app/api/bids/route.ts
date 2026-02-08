@@ -16,10 +16,20 @@ const handleCreateBid = withErrorHandler(async (request: NextRequest, user: Auth
   }
 
   const body = await request.json();
-  const { event_id, ...bidData } = body;
+  const { event_id, vendor_id: _ignored_vendor_id, ...bidData } = body;
 
-  // Use authenticated user's ID
-  const vendor_id = user.id;
+  // Look up vendor ID from vendors table using auth user ID
+  const { data: vendor, error: vendorError } = await supabase
+    .from('vendors')
+    .select('id')
+    .eq('user_id', user.id)
+    .single();
+
+  if (vendorError || !vendor) {
+    throw new ValidationError('Vendor profile not found. Please complete your vendor registration.');
+  }
+
+  const vendor_id = vendor.id;
 
   // Validate required fields
   validateRequired({ event_id, vendor_id }, ['event_id', 'vendor_id']);
