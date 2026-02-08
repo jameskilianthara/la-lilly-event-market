@@ -1,1 +1,7 @@
-# Force Vercel redeploy - Sun Feb  8 18:02:30 IST 2026
+# Vercel ignore patterns
+archive/
+scripts/
+*.test.ts
+*.test.tsx
+vitest.config.ts
+playwright.config.ts
