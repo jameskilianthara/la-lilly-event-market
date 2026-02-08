@@ -5,10 +5,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import type { ClientBrief } from '../../../../types/blueprint';
-import { withErrorHandler, validateRequired } from '../../../../lib/api-handler';
-import { withAuth, type AuthenticatedUser } from '../../../../lib/api-auth';
-import { ValidationError } from '../../../../lib/errors';
+
+// ✅ Fixed Imports using Path Aliases
+import type { ClientBrief } from '@/types/blueprint';
+import { withErrorHandler, validateRequired } from '@/lib/api-handler';
+import { withAuth, type AuthenticatedUser } from '@/lib/api-auth';
+import { ValidationError } from '@/lib/errors';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -79,8 +81,8 @@ const handleCreateForgeProject = withErrorHandler(async (request: NextRequest, u
       guest_count: guestCount || null,
       client_brief: clientBrief,
       forge_blueprint: blueprint?.content || blueprint || {},
-      forge_status: 'OPEN_FOR_BIDS', // Changed from BLUEPRINT_READY to make visible to vendors
-      bidding_closes_at: null, // Can be set later by admin or after 7 days default
+      forge_status: 'OPEN_FOR_BIDS',
+      bidding_closes_at: null,
     })
     .select()
     .single();
@@ -89,10 +91,6 @@ const handleCreateForgeProject = withErrorHandler(async (request: NextRequest, u
     console.error('Error creating forge project:', error);
     throw new Error(`Failed to create forge project: ${error.message}`);
   }
-
-  // TODO: Future integration - Notify matching vendors via WhatsApp/Email API
-  // For now, vendors will see the event in their dashboard automatically
-  // await notifyMatchingVendors(newProject.id, newProject.city, newProject.event_type);
 
   return NextResponse.json({
     success: true,
