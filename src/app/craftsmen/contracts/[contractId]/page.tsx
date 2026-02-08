@@ -119,7 +119,7 @@ export default function VendorContractReviewPage() {
 
       setContract(contractData as Contract);
       setSignatureData({
-        fullName: ('name' in user ? user.name : user.companyName) || '',
+        fullName: ('name' in user ? user.name : (user as any).companyName) || '',
         email: user.email || '',
         agreedToTerms: false
       });

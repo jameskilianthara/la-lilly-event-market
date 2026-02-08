@@ -107,7 +107,7 @@ export default function ClientContractReviewPage() {
 
       setContract(contractData as Contract);
       setSignatureData({
-        fullName: user.name || '',
+        fullName: ('name' in user ? user.name : '') || '',
         email: user.email || '',
         agreedToTerms: false
       });

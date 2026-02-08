@@ -40,6 +40,8 @@
     "node_modules",
     "archive",
     "dist",
-    ".next"
+    ".next",
+    "vitest.config.ts",
+    "playwright.config.ts"
   ]
 }

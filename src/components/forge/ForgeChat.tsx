@@ -113,7 +113,7 @@ export const ForgeChat: React.FC<ForgeChatProps> = () => {
             <div className="flex items-center justify-center space-x-2 text-sm">
               <CheckCircleIcon className="h-4 w-4 text-green-400" />
               <span className="text-green-300">
-                Welcome back, <span className="font-semibold">{user.name || user.email}</span>!
+                Welcome back, <span className="font-semibold">{('name' in user ? user.name : undefined) || user.email}</span>!
               </span>
             </div>
           </div>
