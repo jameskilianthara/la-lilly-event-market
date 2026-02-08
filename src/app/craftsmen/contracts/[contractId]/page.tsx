@@ -119,7 +119,7 @@ export default function VendorContractReviewPage() {
 
       setContract(contractData as Contract);
       setSignatureData({
-        fullName: user.name || '',
+        fullName: ('name' in user ? user.name : user.companyName) || '',
         email: user.email || '',
         agreedToTerms: false
       });
@@ -384,7 +384,7 @@ export default function VendorContractReviewPage() {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-slate-400 mb-1">Name</p>
-                  <p className="text-white font-medium">{clientUser?.name || 'Client'}</p>
+                  <p className="text-white font-medium">{('name' in (clientUser || {}) ? (clientUser as any).name : (clientUser as any)?.companyName) || 'Client'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400 mb-1">Email</p>

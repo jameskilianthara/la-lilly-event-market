@@ -2,8 +2,11 @@
 
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import type { Contract, User } from '@/types/database';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 interface ContractPageProps {
   params: Promise<{ contractId: string }>;
@@ -12,7 +15,7 @@ interface ContractPageProps {
 export default function ContractPage({ params }: ContractPageProps) {
   const resolvedParams = use(params);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const [contract, setContract] = useState<Contract | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);

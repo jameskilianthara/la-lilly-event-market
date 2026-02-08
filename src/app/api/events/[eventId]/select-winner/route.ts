@@ -107,6 +107,8 @@ export async function POST(
       if (craftsmanData) {
         const userData = Array.isArray(craftsmanData.users) ? craftsmanData.users[0] : craftsmanData.users;
 
+        const contractUrl = `/contracts/${event.id}`; // Contract URL for winner
+
         const emailTemplate = generateWinnerEmail({
           craftsmanName: craftsmanData.business_name || 'Vendor',
           craftsmanEmail: userData?.email || '',

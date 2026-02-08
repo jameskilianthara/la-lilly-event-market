@@ -139,7 +139,8 @@ const handleNotifyVendors = withErrorHandler(async (request: NextRequest) => {
     console.log('[Notify Vendors] Starting WhatsApp notification process...');
 
     for (const vendor of eligibleVendors) {
-      const vendorName = vendor.company_name || vendor.users?.full_name || 'Vendor';
+      const userData = Array.isArray(vendor.users) ? vendor.users[0] : vendor.users;
+      const vendorName = vendor.company_name || userData?.full_name || 'Vendor';
       const bidLink = `${APP_URL}/craftsmen/events/${eventId}/bid`;
 
       // Check if vendor has phone number
