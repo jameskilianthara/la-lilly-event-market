@@ -8,17 +8,10 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
-    // Query craftsmen table (vendors are stored as craftsmen in the schema)
+    // Query vendors table
     const { data: vendors, error } = await supabase
-      .from('craftsmen')
-      .select(`
-        *,
-        users:user_id (
-          id,
-          email,
-          name
-        )
-      `)
+      .from('vendors')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -29,40 +22,39 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Transform the craftsmen schema to match the frontend vendor interface
-    const transformedVendors = (vendors || []).map((craftsman: any) => {
-      const userData = Array.isArray(craftsman.users) ? craftsman.users[0] : craftsman.users;
-      const businessName = craftsman.business_name || userData?.name || 'Professional Craftsman';
-      const slug = craftsman.slug || businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    // Transform the vendors schema to match the frontend vendor interface
+    const transformedVendors = (vendors || []).map((vendor: any) => {
+      const businessName = vendor.business_name || 'Professional Vendor';
+      const slug = vendor.slug || businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
       return {
-        id: craftsman.id,
+        id: vendor.id,
         businessName,
-        serviceType: (craftsman.specialties && craftsman.specialties[0]) || 'Event Services',
+        serviceType: vendor.service_type || 'Event Services',
         profile: {
           slug,
-          logo: craftsman.logo || '',
-          tagline: craftsman.tagline || 'Professional event craftsman',
-          bio: craftsman.description || '',
-          serviceTypes: craftsman.services || [],
-          specializations: craftsman.specialties || [],
-          primaryCity: craftsman.city || 'Mumbai',
-          serviceAreas: [craftsman.city || 'Mumbai', craftsman.state || 'Maharashtra'],
-          portfolioImages: craftsman.portfolio_images || [],
+          logo: vendor.logo || '',
+          tagline: vendor.tagline || 'Professional event services',
+          bio: vendor.bio || '',
+          serviceTypes: vendor.service_types || [],
+          specializations: vendor.specializations || [],
+          primaryCity: vendor.primary_city || 'Mumbai',
+          serviceAreas: vendor.service_areas || [vendor.primary_city || 'Mumbai'],
+          portfolioImages: vendor.portfolio_images || [],
           pricingDisplay: {
-            showPricing: craftsman.show_pricing || false,
-            startingPrice: craftsman.starting_price || 0
+            showPricing: vendor.show_pricing || false,
+            startingPrice: vendor.starting_price || 0
           },
           stats: {
-            eventsCompleted: craftsman.completed_events || 0,
-            avgRating: craftsman.rating || 0,
-            totalReviews: craftsman.total_reviews || 0
+            eventsCompleted: vendor.events_completed || 0,
+            avgRating: vendor.avg_rating || 0,
+            totalReviews: vendor.total_reviews || 0
           },
-          isPublic: true,
-          isVerified: craftsman.verified || false,
-          isPremium: craftsman.is_premium || false,
+          isPublic: vendor.is_public !== false, // default to true
+          isVerified: vendor.is_verified || false,
+          isPremium: vendor.is_premium || false,
         },
-        createdAt: craftsman.created_at,
+        createdAt: vendor.created_at,
       };
     });
 
