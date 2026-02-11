@@ -24,35 +24,40 @@ export async function GET(request: NextRequest) {
 
     // Transform the vendors schema to match the frontend vendor interface
     const transformedVendors = (vendors || []).map((vendor: any) => {
-      const businessName = vendor.business_name || 'Professional Vendor';
-      const slug = vendor.slug || businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const businessName = vendor.company_name || 'Professional Vendor';
+      const slug = businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
       return {
         id: vendor.id,
         businessName,
-        serviceType: vendor.service_type || 'Event Services',
+        serviceType: (vendor.specialties && vendor.specialties[0]) || 'Event Services',
         profile: {
           slug,
           logo: vendor.logo || '',
-          tagline: vendor.tagline || 'Professional event services',
-          bio: vendor.bio || '',
-          serviceTypes: vendor.service_types || [],
-          specializations: vendor.specializations || [],
-          primaryCity: vendor.primary_city || 'Mumbai',
-          serviceAreas: vendor.service_areas || [vendor.primary_city || 'Mumbai'],
-          portfolioImages: vendor.portfolio_images || [],
+          tagline: vendor.location || 'Professional event services',
+          bio: vendor.description || '',
+          serviceTypes: vendor.business_type ? [vendor.business_type] : [],
+          specializations: vendor.specialties || [],
+          primaryCity: vendor.city || 'Mumbai',
+          serviceAreas: [vendor.city || 'Mumbai', vendor.state || 'Maharashtra'],
+          portfolioImages: vendor.portfolio_urls ? vendor.portfolio_urls.map((url: string, idx: number) => ({
+            id: `img-${idx}`,
+            url,
+            title: `${businessName} Portfolio ${idx + 1}`,
+            eventType: 'Event'
+          })) : [],
           pricingDisplay: {
-            showPricing: vendor.show_pricing || false,
-            startingPrice: vendor.starting_price || 0
+            showPricing: false,
+            startingPrice: 0
           },
           stats: {
-            eventsCompleted: vendor.events_completed || 0,
-            avgRating: vendor.avg_rating || 0,
-            totalReviews: vendor.total_reviews || 0
+            eventsCompleted: vendor.total_projects || 0,
+            avgRating: vendor.rating || 0,
+            totalReviews: 0
           },
-          isPublic: vendor.is_public !== false, // default to true
-          isVerified: vendor.is_verified || false,
-          isPremium: vendor.is_premium || false,
+          isPublic: true,
+          isVerified: vendor.verified || false,
+          isPremium: false,
         },
         createdAt: vendor.created_at,
       };
