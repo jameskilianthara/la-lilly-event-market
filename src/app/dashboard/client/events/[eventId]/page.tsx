@@ -16,7 +16,7 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../../../../contexts/AuthContext';
-import { getEventById, getBidsByEventId } from '../../../../../lib/database';
+import { getBidsByEventId } from '../../../../../lib/database';
 import type { Event as DBEvent, Bid as DBBid } from '../../../../../types/database';
 
 interface Bid {
@@ -78,15 +78,17 @@ export default function ClientEventDetailPage() {
     try {
       setLoading(true);
 
-      // Fetch event from database
-      const { data: eventData, error: eventError } = await getEventById(eventId);
+      // Fetch event via API to avoid RLS issues
+      const eventResponse = await fetch(`/api/forge/projects/${eventId}`);
 
-      if (eventError) {
-        console.error('Error loading event:', eventError);
+      if (!eventResponse.ok) {
+        console.error('Error loading event:', eventResponse.status);
         setError('Failed to load event');
         setLoading(false);
         return;
       }
+
+      const { forgeProject: eventData } = await eventResponse.json();
 
       if (!eventData) {
         setError('Event not found');
