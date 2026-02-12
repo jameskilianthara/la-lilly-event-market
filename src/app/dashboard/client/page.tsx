@@ -197,24 +197,15 @@ export default function ClientDashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-800/95 to-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50 shadow-xl">
+      <div className="bg-gradient-to-r from-slate-800/95 to-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 sticky top-[72px] z-40 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-                My Events
-              </h1>
-              <p className="text-slate-300 mt-2 text-sm sm:text-base">
-                Track and manage your posted events
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/forge')}
-              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-orange-500/30 hover:scale-105"
-            >
-              <PlusCircleIcon className="h-5 w-5" />
-              <span>Plan New Event</span>
-            </button>
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+              My Forge Projects
+            </h1>
+            <p className="text-slate-300 mt-2 text-sm sm:text-base">
+              Track and manage your events
+            </p>
           </div>
         </div>
       </div>

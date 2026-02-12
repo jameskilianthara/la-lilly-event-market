@@ -125,7 +125,7 @@ export default function Navbar() {
                       </button>
 
                       {vendorDropdownOpen && (
-                        <div className="absolute left-0 mt-4 w-64 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden">
+                        <div className="absolute left-0 mt-4 w-64 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden z-[60]">
                           {vendorMenuItems.map((item) => (
                             <Link
                               key={item.name}
@@ -187,7 +187,7 @@ export default function Navbar() {
                     </button>
 
                     {userMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden">
+                      <div className="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden z-[60]">
                         <Link
                           href={user?.userType === 'vendor' ? '/craftsmen/dashboard' : '/dashboard/client'}
                           className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
@@ -235,7 +235,7 @@ export default function Navbar() {
                     </button>
 
                     {loginDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden">
+                      <div className="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-xl shadow-black/20 overflow-hidden z-[60]">
                         <Link
                           href="/login"
                           className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200"
