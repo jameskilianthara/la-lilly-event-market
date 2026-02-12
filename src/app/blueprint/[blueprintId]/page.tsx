@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
-import { getEventById, updateEvent } from '../../../lib/database';
+import { updateEvent } from '../../../lib/database';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ComprehensiveBlueprint } from '../../../components/blueprint/ComprehensiveBlueprint';
 import { BlueprintReview } from '../../../components/blueprint/BlueprintReview';
@@ -76,17 +76,27 @@ export default function BlueprintReviewPage() {
       const clientBrief = JSON.parse(draftBriefStr);
       console.log('[Blueprint] Loaded draft client brief:', clientBrief);
 
-      // Load the actual event from database to get full details
-      const { data: eventData, error: fetchError } = await getEventById(draftEventId);
+      // Load the actual event from API
+      const response = await fetch(`/api/forge/projects/${draftEventId}`);
 
-      if (fetchError || !eventData) {
-        console.error('[Blueprint] Error fetching draft event:', fetchError);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[Blueprint] Error fetching draft event:', errorData);
         setError('Failed to load draft event');
         setIsLoading(false);
         return;
       }
 
-      setEvent(eventData);
+      const { forgeProject } = await response.json();
+
+      if (!forgeProject) {
+        console.error('[Blueprint] No draft event data found');
+        setError('Failed to load draft event');
+        setIsLoading(false);
+        return;
+      }
+
+      setEvent(forgeProject);
       setIsLoading(false);
 
       // Clear the resume flag so page refreshes work normally
@@ -102,60 +112,39 @@ export default function BlueprintReviewPage() {
   const loadEvent = async () => {
     console.log('[Blueprint] loadEvent called - authLoading:', authLoading, 'isAuthenticated:', isAuthenticated);
 
-    // TEMPORARY: Skip auth check to fix loading issue
-    // TODO: Re-enable authentication after debugging
-    /*
-    if (authLoading) {
-      console.log('[Blueprint] Auth still loading, skipping event load');
-      return;
-    }
-
-    if (!isAuthenticated) {
-      console.log('[Blueprint] Not authenticated, showing error');
-      setError('Please sign in to view your event');
-      setIsLoading(false);
-      return;
-    }
-    */
-
-    console.log('[Blueprint] Loading event:', eventId);
+    console.log('[Blueprint] Loading event via API:', eventId);
 
     try {
       setIsLoading(true);
-      const { data, error: fetchError } = await getEventById(eventId);
 
-      if (fetchError) {
-        console.error('[Blueprint] Error fetching event:', fetchError);
-        setError(`Failed to load event: ${fetchError.message || 'Unknown error'}`);
+      // Use API route instead of direct Supabase call to avoid RLS issues
+      const response = await fetch(`/api/forge/projects/${eventId}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[Blueprint] API error:', errorData);
+        setError(`Failed to load event: ${errorData.error || response.statusText}`);
         setIsLoading(false);
         return;
       }
 
-      if (!data) {
+      const { forgeProject } = await response.json();
+
+      if (!forgeProject) {
         console.error('[Blueprint] No event data found');
         setError('Event not found');
         setIsLoading(false);
         return;
       }
 
-      console.log('[Blueprint] Event loaded:', data.id, 'Owner:', data.owner_user_id, 'Current user:', user?.userId);
+      console.log('[Blueprint] Event loaded:', forgeProject.id, 'Owner:', forgeProject.owner_user_id);
 
-      // TEMPORARY: Skip ownership check
-      /*
-      if (data.owner_user_id !== user?.userId) {
-        console.error('[Blueprint] Permission denied - user does not own event');
-        setError('You do not have permission to view this event');
-        setIsLoading(false);
-        return;
-      }
-      */
-
-      setEvent(data);
+      setEvent(forgeProject);
       console.log('[Blueprint] Event set successfully');
 
       // Load checklist data based on event type
-      console.log('[Blueprint] Loading checklist for event type:', data.event_type);
-      await loadChecklistData(data.event_type || 'wedding');
+      console.log('[Blueprint] Loading checklist for event type:', forgeProject.event_type);
+      await loadChecklistData(forgeProject.event_type || 'wedding');
 
       console.log('[Blueprint] ✅ Blueprint page loaded successfully');
       setIsLoading(false);
