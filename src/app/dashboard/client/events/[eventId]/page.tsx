@@ -16,7 +16,6 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../../../../contexts/AuthContext';
-import { getBidsByEventId } from '../../../../../lib/database';
 import type { Event as DBEvent, Bid as DBBid } from '../../../../../types/database';
 
 interface Bid {
@@ -103,8 +102,10 @@ export default function ClientEventDetailPage() {
         return;
       }
 
-      // Fetch bids for this event
-      const { data: bidsData } = await getBidsByEventId(eventId);
+      // Fetch bids for this event via API
+      const bidsResponse = await fetch(`/api/bids?event_id=${eventId}`);
+      const bidsResult = await bidsResponse.json();
+      const bidsData = bidsResult.bids || [];
 
       // Check if there's a contract for this event
       const { createClient } = await import('@supabase/supabase-js');
