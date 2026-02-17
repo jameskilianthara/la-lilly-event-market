@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { SupabaseClient } from '@supabase/supabase-js';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
@@ -53,37 +52,20 @@ interface AuthProviderProps {
 }
 
 // Helper: Convert Supabase user + metadata to our User type
-// VERIFIED: Only queries existing fields from users table (user_type, full_name)
-async function mapSupabaseUserToAppUser(supabaseClient: SupabaseClient, supabaseUser: SupabaseUser): Promise<User | null> {
-  if (!supabaseClient) {
-    console.error('mapSupabaseUserToAppUser: Supabase client not available');
-    return null;
-  }
-
+// Uses API route to bypass RLS when fetching profile
+async function mapSupabaseUserToAppUser(_supabaseClient: any, supabaseUser: SupabaseUser): Promise<User | null> {
   try {
     console.log('mapSupabaseUserToAppUser: Fetching profile for user:', supabaseUser.id);
 
-    // Fetch user profile from public.users table
-    // Note: users table only has id, email, user_type, full_name, phone, created_at
-    const { data: profile, error } = await supabaseClient
-      .from('users')
-      .select('user_type, full_name')
-      .eq('id', supabaseUser.id)
-      .single() as { data: { user_type: string; full_name: string | null } | null; error: any };
+    // Fetch user profile via API route (bypasses RLS using service role key)
+    const response = await fetch(`/api/auth/profile?userId=${supabaseUser.id}`);
+    const result = await response.json();
 
-    if (error) {
-      console.error('Error fetching user profile:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        fullError: JSON.stringify(error)
-      });
+    if (!response.ok || !result.profile) {
+      console.warn('Profile fetch via API failed, falling back to auth metadata:', result.error);
 
-      // If RLS policy blocks read, try to use auth metadata as fallback
-      console.warn('Falling back to auth metadata for user type');
+      // Fallback: use auth metadata if available
       const userTypeFromMeta = supabaseUser.user_metadata?.user_type;
-
       if (userTypeFromMeta) {
         console.log('Using user_type from auth metadata:', userTypeFromMeta);
         const baseUser = {
@@ -94,30 +76,16 @@ async function mapSupabaseUserToAppUser(supabaseClient: SupabaseClient, supabase
           loginTime: new Date().toISOString(),
           expiresAt: null as null,
         };
-
         if (userTypeFromMeta === 'vendor') {
-          return {
-            ...baseUser,
-            userType: 'vendor',
-            companyName: undefined,
-            serviceType: undefined,
-          } as VendorUser;
+          return { ...baseUser, userType: 'vendor', companyName: undefined, serviceType: undefined } as VendorUser;
         } else {
-          return {
-            ...baseUser,
-            userType: 'client',
-            name: supabaseUser.user_metadata?.name || undefined,
-          } as ClientUser;
+          return { ...baseUser, userType: 'client', name: supabaseUser.user_metadata?.name || undefined } as ClientUser;
         }
       }
-
       return null;
     }
 
-    if (!profile) {
-      console.error('No profile found for user:', supabaseUser.id);
-      return null;
-    }
+    const profile = result.profile as { user_type: string; full_name: string | null };
 
     console.log('Profile fetched successfully:', {
       userId: supabaseUser.id,
