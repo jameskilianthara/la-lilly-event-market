@@ -49,10 +49,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Bid not found' }, { status: 404 });
     }
 
-    // Security: Verify bid is accepted before generating contract
-    if (bid.status !== 'ACCEPTED') {
+    // Security: Verify bid is in a valid state for contract generation
+    const validBidStatuses = ['ACCEPTED', 'SHORTLISTED', 'SUBMITTED'];
+    if (!validBidStatuses.includes(bid.status)) {
       return NextResponse.json(
-        { error: 'Bid must be accepted before generating contract' },
+        { error: `Bid status '${bid.status}' is not valid for contract generation` },
         { status: 400 }
       );
     }
@@ -95,8 +96,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
     }
 
-    // Generate contract ID
-    const contractId = `CNT-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+    // Generate contract ID as proper UUID
+    const contractId = crypto.randomUUID();
 
     // Prepare contract data
     const contractData: ContractData = {
@@ -127,11 +128,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create contract record in database
+    // Create contract record in database (let DB auto-generate UUID)
     const { data: contract, error: contractError } = await supabase
       .from('contracts')
       .insert({
-        id: contractId,
         event_id: eventId,
         bid_id: bidId,
         vendor_id: bid.vendor_id,
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       contract: {
-        id: contractId,
+        id: contract.id,
         pdfUrl,
         totalAmount: bid.total_forge_cost,
         depositAmount: contractJSON.depositAmount,
