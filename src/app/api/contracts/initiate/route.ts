@@ -36,22 +36,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    // Find the winning bid (status = ACCEPTED)
-    const { data: winningBid, error: bidError } = await supabase
-      .from('bids')
-      .select('id')
-      .eq('event_id', eventId)
-      .eq('status', 'ACCEPTED')
+    // Find the winning bid - check winner_bid_id on event first, then fall back to ACCEPTED status
+    let winningBidId: string | null = null;
+
+    // Check if event has a designated winner bid
+    const { data: fullEvent } = await supabase
+      .from('events')
+      .select('winner_bid_id')
+      .eq('id', eventId)
       .single();
 
-    if (bidError || !winningBid) {
-      return NextResponse.json(
-        { error: 'No winner selected for this event yet' },
-        { status: 400 }
-      );
+    if (fullEvent?.winner_bid_id) {
+      winningBidId = fullEvent.winner_bid_id;
+    } else {
+      // Fall back to finding bid with ACCEPTED status
+      const { data: acceptedBid } = await supabase
+        .from('bids')
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('status', 'ACCEPTED')
+        .single();
+
+      if (acceptedBid) winningBidId = acceptedBid.id;
     }
 
-    if (event.forge_status !== 'WINNER_SELECTED') {
+    // If still no winner, use the most recent SUBMITTED bid (for MVP flexibility)
+    if (!winningBidId) {
+      const { data: latestBid } = await supabase
+        .from('bids')
+        .select('id')
+        .eq('event_id', eventId)
+        .in('status', ['SUBMITTED', 'SHORTLISTED', 'ACCEPTED'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!latestBid) {
+        return NextResponse.json(
+          { error: 'No bids found for this event' },
+          { status: 400 }
+        );
+      }
+      winningBidId = latestBid.id;
+    }
+
+    // Allow contract generation for relevant forge statuses
+    const validStatuses = ['WINNER_SELECTED', 'COMMISSIONED', 'SHORTLIST_REVIEW', 'OPEN_FOR_BIDS', 'CRAFTSMEN_BIDDING'];
+    if (!validStatuses.includes(event.forge_status)) {
       return NextResponse.json(
         { error: `Cannot initiate contract. Event status is ${event.forge_status}` },
         { status: 400 }
@@ -81,7 +112,7 @@ export async function POST(request: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         eventId: eventId,
-        bidId: winningBid.id
+        bidId: winningBidId
       })
     });
 

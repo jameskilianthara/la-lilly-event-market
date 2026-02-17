@@ -47,6 +47,7 @@ export default function ClientContractReviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [signing, setSigning] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [signatureData, setSignatureData] = useState({
     fullName: '',
     email: '',
@@ -68,35 +69,16 @@ export default function ClientContractReviewPage() {
     try {
       setLoading(true);
 
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-
-      // Fetch contract with vendor and event details
-      const { data: contractData, error: contractError } = await supabase
-        .from('contracts')
-        .select(`
-          *,
-          event:events(*),
-          vendor:vendors(*, user:users(*))
-        `)
-        .eq('id', contractId)
-        .single();
-
-      if (contractError) {
-        console.error('Error loading contract:', contractError);
-        setError('Failed to load contract');
+      // Fetch contract via API route (uses service role key to bypass RLS)
+      const response = await fetch(`/api/contracts/${contractId}/details`);
+      if (!response.ok) {
+        const err = await response.json();
+        setError(err.error || 'Failed to load contract');
         setLoading(false);
         return;
       }
 
-      if (!contractData) {
-        setError('Contract not found');
-        setLoading(false);
-        return;
-      }
+      const { contract: contractData } = await response.json();
 
       // Check if user owns this contract
       if (contractData.client_id !== user.userId) {
@@ -116,6 +98,26 @@ export default function ClientContractReviewPage() {
       console.error('Error loading contract:', error);
       setError('An unexpected error occurred');
       setLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!contract) return;
+    setDownloading(true);
+    try {
+      const response = await fetch(`/api/contracts/${contractId}/download`);
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to get download link');
+      }
+      const { signedUrl } = await response.json();
+      // Open the signed URL in a new tab to trigger download
+      window.open(signedUrl, '_blank');
+    } catch (error) {
+      console.error('Download error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to download PDF');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -326,15 +328,14 @@ export default function ClientContractReviewPage() {
 
             {/* PDF Download */}
             {contract.pdf_url && (
-              <a
-                href={contract.pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center space-x-2 w-full px-6 py-4 bg-slate-700/50 hover:bg-slate-700 text-white font-semibold rounded-xl transition-all border border-slate-600"
+              <button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="flex items-center justify-center space-x-2 w-full px-6 py-4 bg-slate-700/50 hover:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all border border-slate-600"
               >
                 <ArrowDownTrayIcon className="w-5 h-5" />
-                <span>Download Contract PDF</span>
-              </a>
+                <span>{downloading ? 'Preparing download...' : 'Download Contract PDF'}</span>
+              </button>
             )}
           </div>
 

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '../../../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { generateWinnerEmail, generateRejectionEmail, sendEmail } from '../../../../../lib/notifications';
+
+// Use service role to bypass RLS
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(
   request: NextRequest,
@@ -37,10 +43,11 @@ export async function POST(
       return NextResponse.json({ error: 'Bid not found' }, { status: 404 });
     }
 
-    // Verify bid is shortlisted (handle both uppercase and lowercase)
+    // Verify bid is in a valid status to be selected as winner
     const bidStatus = winningBid.status.toUpperCase();
-    if (bidStatus !== 'SHORTLISTED') {
-      return NextResponse.json({ error: 'Only shortlisted bids can be selected as winner' }, { status: 400 });
+    const validBidStatuses = ['SHORTLISTED', 'SUBMITTED'];
+    if (!validBidStatuses.includes(bidStatus)) {
+      return NextResponse.json({ error: 'Only shortlisted or submitted bids can be selected as winner' }, { status: 400 });
     }
 
     // Update winning bid status to 'ACCEPTED'
@@ -132,7 +139,7 @@ export async function POST(
         .from('bids')
         .select('craftsman_id, craftsmen:craftsman_id(business_name, users:user_id(email))')
         .eq('event_id', eventId)
-        .eq('status', 'rejected')
+        .eq('status', 'REJECTED')
         .neq('id', bidId);
 
       for (const bid of otherBids || []) {
