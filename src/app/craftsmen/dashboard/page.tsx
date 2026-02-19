@@ -15,7 +15,6 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../../contexts/AuthContext';
-import { getOpenEvents, getVendorByUserId, getBidsByVendorId } from '../../../lib/database';
 import type { Event, Vendor, Bid } from '../../../types/database';
 
 export default function VendorDashboardPage() {
@@ -64,13 +63,28 @@ export default function VendorDashboardPage() {
       setIsLoading(true);
       console.log('[Vendor Dashboard] Loading vendor profile for userId:', user.userId);
 
-      // Load vendor profile
-      const { data: vendorData, error: vendorError } = await getVendorByUserId(user.userId);
+      // Load vendor profile via API (service role key bypasses RLS)
+      const vendorRes = await fetch(`/api/vendors?user_id=${user.userId}`);
+      const vendorResult = await vendorRes.json();
+      const rawVendors = vendorResult.vendors || vendorResult.data || [];
+      // API returns transformed vendors; we need the raw vendor with `id` and `verified`
+      // Re-fetch raw vendor data using a dedicated raw endpoint
+      const rawVendorRes = await fetch(`/api/vendors/me?user_id=${user.userId}`);
+      let vendorData: any = null;
+      if (rawVendorRes.ok) {
+        const rawResult = await rawVendorRes.json();
+        vendorData = rawResult.vendor;
+      }
 
-      console.log('[Vendor Dashboard] Vendor profile result:', { vendorData, vendorError });
+      // Fallback: if no dedicated raw endpoint, use first transformed vendor
+      if (!vendorData && rawVendors.length > 0) {
+        vendorData = { id: rawVendors[0].id, verified: rawVendors[0].profile?.isVerified };
+      }
 
-      if (vendorError || !vendorData) {
-        console.error('[Vendor Dashboard] Vendor profile not found:', vendorError);
+      console.log('[Vendor Dashboard] Vendor profile result:', vendorData);
+
+      if (!vendorData) {
+        console.error('[Vendor Dashboard] Vendor profile not found');
         setError('Vendor profile not found. Please complete your registration at /craftsmen/signup');
         setIsLoading(false);
         return;
@@ -83,23 +97,23 @@ export default function VendorDashboardPage() {
         setError('Your account is pending verification. You\'ll be able to bid once approved.');
       }
 
-      // Load open events
-      const { data: eventsData, error: eventsError } = await getOpenEvents();
-
-      if (eventsError) {
-        console.error('Error loading events:', eventsError);
-      } else {
-        setEvents(eventsData || []);
+      // Load open events via API
+      const eventsRes = await fetch('/api/forge/projects?status=OPEN_FOR_BIDS,CRAFTSMEN_BIDDING');
+      let eventsData: any[] = [];
+      if (eventsRes.ok) {
+        const eventsResult = await eventsRes.json();
+        eventsData = eventsResult.projects || eventsResult.events || eventsResult.data || [];
       }
+      setEvents(eventsData);
 
-      // Load vendor's bids
-      const { data: bidsData, error: bidsError } = await getBidsByVendorId(vendorData.id);
-
-      if (bidsError) {
-        console.error('Error loading bids:', bidsError);
-      } else {
-        setMyBids(bidsData || []);
+      // Load vendor's bids via API
+      const bidsRes = await fetch(`/api/bids?vendor_id=${vendorData.id}`);
+      let bidsData: any[] = [];
+      if (bidsRes.ok) {
+        const bidsResult = await bidsRes.json();
+        bidsData = bidsResult.bids || [];
       }
+      setMyBids(bidsData);
 
       // Calculate stats
       const now = new Date();
@@ -344,18 +358,18 @@ export default function VendorDashboardPage() {
                         <div className="flex items-center space-x-2 text-blue-400">
                           <span className="text-sm font-medium">Bid Submitted</span>
                           <Link
-                            href={`/craftsmen/events/${event.id}/bid`}
+                            href={`/craftsmen/events/${event.id}`}
                             className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-lg transition"
                           >
-                            View Bid
+                            View Blueprint
                           </Link>
                         </div>
                       ) : (
                         <Link
-                          href={`/craftsmen/events/${event.id}/bid`}
+                          href={`/craftsmen/events/${event.id}`}
                           className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition transform hover:scale-105"
                         >
-                          <span>Submit Bid</span>
+                          <span>View & Bid</span>
                           <ArrowRightIcon className="w-4 h-4" />
                         </Link>
                       )}

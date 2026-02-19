@@ -52,17 +52,20 @@ interface AuthProviderProps {
 }
 
 // Helper: Convert Supabase user + metadata to our User type
-// Uses API route to bypass RLS when fetching profile
-async function mapSupabaseUserToAppUser(_supabaseClient: any, supabaseUser: SupabaseUser): Promise<User | null> {
+// Queries users table directly — RLS allows authenticated users to read their own row
+async function mapSupabaseUserToAppUser(supabaseClient: any, supabaseUser: SupabaseUser): Promise<User | null> {
   try {
     console.log('mapSupabaseUserToAppUser: Fetching profile for user:', supabaseUser.id);
 
-    // Fetch user profile via API route (bypasses RLS using service role key)
-    const response = await fetch(`/api/auth/profile?userId=${supabaseUser.id}`);
-    const result = await response.json();
+    // Query users table directly using the authenticated client (RLS: user can read own row)
+    const { data: profileData, error: profileError } = await supabaseClient
+      .from('users')
+      .select('user_type, full_name')
+      .eq('id', supabaseUser.id)
+      .single();
 
-    if (!response.ok || !result.profile) {
-      console.warn('Profile fetch via API failed, falling back to auth metadata:', result.error);
+    if (profileError || !profileData) {
+      console.warn('Direct profile fetch failed, falling back to auth metadata:', profileError?.message);
 
       // Fallback: use auth metadata if available
       const userTypeFromMeta = supabaseUser.user_metadata?.user_type;
@@ -85,7 +88,7 @@ async function mapSupabaseUserToAppUser(_supabaseClient: any, supabaseUser: Supa
       return null;
     }
 
-    const profile = result.profile as { user_type: string; full_name: string | null };
+    const profile = profileData as { user_type: string; full_name: string | null };
 
     console.log('Profile fetched successfully:', {
       userId: supabaseUser.id,
@@ -200,24 +203,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
 
     // Listen for auth state changes
+    // Note: SIGNED_IN is handled by initializeAuth() and login() directly.
+    // Listening for it here causes infinite loops with Supabase v2's internal lock.
     if (supabase) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         console.log('Auth state changed:', event);
 
-        if (event === 'SIGNED_IN' && session?.user) {
-          const appUser = await mapSupabaseUserToAppUser(supabase, session.user);
-          if (appUser) {
-            setUser(appUser);
-            setIsAuthenticated(true);
-            localStorage.setItem('currentUser', JSON.stringify(appUser));
-          }
-        } else if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT') {
           setUser(null);
           setIsAuthenticated(false);
           localStorage.removeItem('currentUser');
           localStorage.removeItem('authToken');
           localStorage.removeItem('rememberMe');
         }
+        // TOKEN_REFRESHED: session is still valid, no action needed
+        // SIGNED_IN: handled by initializeAuth() on mount and login() on sign-in
       });
 
       return () => {

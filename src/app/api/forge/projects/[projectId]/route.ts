@@ -33,8 +33,9 @@ export async function GET(
       );
     }
 
-    // Return the forge project
+    // Return the forge project (use 'event' key for compatibility with smart-bid.tsx)
     return NextResponse.json({
+      event: forgeProject,
       forgeProject,
       success: true
     });
@@ -56,7 +57,7 @@ export async function PATCH(
     const { projectId } = await params;
     const body = await request.json();
 
-    const { client_brief, forge_blueprint } = body;
+    const { client_brief, forge_blueprint, forge_status, bidding_closes_at } = body;
 
     // Create Supabase client with service role
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -72,6 +73,14 @@ export async function PATCH(
 
     if (forge_blueprint) {
       updateData.forge_blueprint = forge_blueprint;
+    }
+
+    if (forge_status) {
+      updateData.forge_status = forge_status;
+    }
+
+    if (bidding_closes_at) {
+      updateData.bidding_closes_at = bidding_closes_at;
     }
 
     const { data: updatedProject, error } = await supabase

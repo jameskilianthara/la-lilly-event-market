@@ -2,12 +2,16 @@
 // POST /api/bids - Create a new bid with validation
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { createBid as createBidDb } from '@/lib/database';
+import { createClient } from '@supabase/supabase-js';
 import type { BidInsert } from '@/types/database';
 import { withErrorHandler, validateRequired } from '@/lib/api-handler';
 import { withAuth, type AuthenticatedUser } from '@/lib/api-auth';
 import { ValidationError, DatabaseError, ERROR_MESSAGES } from '@/lib/errors';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const handleCreateBid = withErrorHandler(async (request: NextRequest, user: AuthenticatedUser) => {
   // Only vendors can create bids
@@ -83,7 +87,7 @@ const handleCreateBid = withErrorHandler(async (request: NextRequest, user: Auth
     }
   }
 
-  // Create the bid
+  // Create the bid using service-role client
   const bidInsert: BidInsert = {
     event_id,
     vendor_id,
@@ -91,35 +95,40 @@ const handleCreateBid = withErrorHandler(async (request: NextRequest, user: Auth
     ...bidData
   };
 
-  const result = await createBidDb(bidInsert);
+  const { data: newBid, error: insertError } = await supabase
+    .from('bids')
+    .insert(bidInsert)
+    .select()
+    .single();
 
-  if (result.error) {
-    throw new DatabaseError(`Failed to create bid: ${result.error.message}`);
+  if (insertError) {
+    throw new DatabaseError(`Failed to create bid: ${insertError.message}`);
   }
 
   return NextResponse.json({
     success: true,
-    bid: result.data,
+    bid: newBid,
     message: 'Bid submitted successfully'
   }, { status: 201 });
 });
 
 export const POST = withAuth(handleCreateBid, { requiredUserType: ['vendor'] });
 
-// GET /api/bids?event_id=xxx - Get bids for an event
+// GET /api/bids?event_id=xxx OR ?vendor_id=xxx - Get bids
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
   const eventId = searchParams.get('event_id');
+  const vendorId = searchParams.get('vendor_id');
 
-  if (!eventId) {
-    throw new ValidationError('Missing required parameter: event_id');
+  if (!eventId && !vendorId) {
+    throw new ValidationError('Missing required parameter: event_id or vendor_id');
   }
 
-  const { data: bids, error } = await supabase
-    .from('bids')
-    .select('*')
-    .eq('event_id', eventId)
-    .order('created_at', { ascending: false });
+  let query = supabase.from('bids').select('*').order('created_at', { ascending: false });
+  if (eventId) query = query.eq('event_id', eventId);
+  if (vendorId) query = query.eq('vendor_id', vendorId);
+
+  const { data: bids, error } = await query;
 
   if (error) {
     throw new DatabaseError(`Failed to fetch bids: ${error.message}`);

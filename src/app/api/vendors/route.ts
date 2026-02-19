@@ -8,11 +8,17 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
-    // Query vendors table
-    const { data: vendors, error } = await supabase
-      .from('vendors')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('user_id');
+
+    // Query vendors table — optionally filter by user_id
+    let query = supabase.from('vendors').select('*');
+    if (userId) {
+      query = query.eq('user_id', userId);
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+    const { data: vendors, error } = await query;
 
     if (error) {
       console.error('Supabase error fetching vendors:', error);

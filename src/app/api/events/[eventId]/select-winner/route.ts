@@ -80,12 +80,12 @@ export async function POST(
       // Continue despite error - winner is already selected
     }
 
-    // Update event status to 'WINNER_SELECTED' (contract not yet created)
-    // Note: winner is identified by the ACCEPTED bid status, not a column
+    // Update event status to 'WINNER_SELECTED' and record the winning bid ID
     const { error: updateEventError } = await supabase
       .from('events')
       .update({
-        forge_status: 'WINNER_SELECTED'
+        forge_status: 'WINNER_SELECTED',
+        winner_bid_id: bidId
       })
       .eq('id', eventId);
 

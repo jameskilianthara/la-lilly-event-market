@@ -1,7 +1,13 @@
 // src/lib/api-auth.ts
 import { NextRequest } from 'next/server';
-import { supabase } from './supabase';
+import { createClient } from '@supabase/supabase-js';
 import { AuthenticationError } from './errors';
+
+// Use service role key for server-side auth verification (bypasses RLS)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export interface AuthenticatedUser {
   id: string;

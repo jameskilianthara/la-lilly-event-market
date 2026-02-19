@@ -112,20 +112,10 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  // Build query with filters
+  // Build query with filters — select only events columns (no cross-table joins to avoid schema errors)
   let query = supabase
     .from('events')
-    .select(`
-      *,
-      owner:users!owner_user_id(id, email, name),
-      blueprint:blueprints(id, event_type_key, content),
-      bids(
-        id,
-        total_amount,
-        status,
-        vendor:vendors!vendor_id(id, company_name)
-      )
-    `)
+    .select('*')
     .order('created_at', { ascending: false });
 
   // Apply filters
@@ -133,7 +123,12 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     query = query.eq('owner_user_id', userId);
   }
   if (status) {
-    query = query.eq('forge_status', status);
+    const statuses = status.split(',').map(s => s.trim());
+    if (statuses.length > 1) {
+      query = query.in('forge_status', statuses);
+    } else {
+      query = query.eq('forge_status', statuses[0]);
+    }
   }
 
   const { data: projects, error } = await query;

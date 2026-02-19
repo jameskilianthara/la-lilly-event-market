@@ -192,6 +192,22 @@ export const PATCH = withErrorHandler(async (
 
   console.log('[API PATCH] ✅ Bid status updated successfully');
 
+  // If bid is being accepted, write winner_bid_id on the parent event
+  if (normalizedStatus === 'ACCEPTED') {
+    const { error: eventUpdateError } = await supabase
+      .from('events')
+      .update({
+        winner_bid_id: bidId,
+        forge_status: 'WINNER_SELECTED'
+      })
+      .eq('id', existingBid.event_id);
+
+    if (eventUpdateError) {
+      console.error('[API PATCH] Failed to set winner_bid_id on event:', eventUpdateError);
+      // Non-fatal — bid is accepted, but log it for visibility
+    }
+  }
+
   return NextResponse.json({
     success: true,
     bid: updatedBid,
