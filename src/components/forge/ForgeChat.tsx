@@ -91,15 +91,19 @@ export const ForgeChat: React.FC<ForgeChatProps> = () => {
       },
       {
         placeholder: "e.g., 150 guests, Around 200 people...",
-        examples: ["50", "150", "200", "500+"]
+        examples: ["50–100", "100–200", "200–500", "500–1000", "1000+"]
       },
       {
         placeholder: "e.g., Yes we have booked, No we need help finding one...",
         examples: ["Yes, already booked", "No, need help finding one", "Considering options"]
+      },
+      {
+        placeholder: "Select your approximate budget...",
+        examples: ["Under ₹5L", "₹5L–₹15L", "₹15L–₹30L", "₹30L–₹50L", "Above ₹50L"]
       }
     ];
 
-    return step > 0 && step <= 5 ? stepData[step - 1] : { placeholder: "Tell me more...", examples: [] };
+    return step > 0 && step <= 6 ? stepData[step - 1] : { placeholder: "Tell me more...", examples: [] };
   };
 
   const currentStepData = getPlaceholderAndExamples(currentStep);
@@ -159,7 +163,7 @@ export const ForgeChat: React.FC<ForgeChatProps> = () => {
             <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl border border-slate-700/50 shadow-2xl overflow-hidden">
               {/* Progress */}
               <div className="border-b border-slate-700/50 p-4 bg-slate-900/50">
-                <ForgeProgress currentStep={currentStep} totalSteps={5} isComplete={isComplete} />
+                <ForgeProgress currentStep={currentStep} totalSteps={6} isComplete={isComplete} />
               </div>
 
               {/* Messages Area */}

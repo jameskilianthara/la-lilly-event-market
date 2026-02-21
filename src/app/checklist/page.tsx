@@ -86,6 +86,19 @@ function ChecklistPageContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [forgeData, setForgeData] = useState<any>(null); // Store Forge chat data
+  const [venueDetails, setVenueDetails] = useState<{
+    venue_name: string;
+    indoor_outdoor: string;
+    stage_dimensions: string;
+    function_areas: string;
+    setup_date: string;
+  }>({
+    venue_name: '',
+    indoor_outdoor: '',
+    stage_dimensions: '',
+    function_areas: '',
+    setup_date: '',
+  });
 
   useEffect(() => {
     loadChecklist();
@@ -148,7 +161,21 @@ function ChecklistPageContent() {
         setSelections(existingChecklist.selections || {});
         setCategoryNotes(existingChecklist.categoryNotes || {});
         setImageReferences(existingChecklist.imageReferences || {});
-      } else {
+      }
+
+      // Restore venue details if already saved
+      const savedVenueDetails = clientBrief.venue_details;
+      if (savedVenueDetails) {
+        setVenueDetails({
+          venue_name: savedVenueDetails.venue_name || '',
+          indoor_outdoor: savedVenueDetails.indoor_outdoor || '',
+          stage_dimensions: savedVenueDetails.stage_dimensions || '',
+          function_areas: savedVenueDetails.function_areas || '',
+          setup_date: savedVenueDetails.setup_date || '',
+        });
+      }
+
+      if (!existingChecklist) {
         // First time on checklist - load from localStorage as fallback
         loadFromLocalStorage();
       }
@@ -542,7 +569,10 @@ function ChecklistPageContent() {
       // Merge with existing client_brief to preserve Forge data
       const updatedClientBrief = {
         ...(forgeProject?.client_brief || {}),
-        checklist: checklistData
+        checklist: checklistData,
+        // Venue details: structured object + promote venue_name to top-level for flat column
+        venue_details: venueDetails,
+        ...(venueDetails.venue_name ? { venue_name: venueDetails.venue_name } : {}),
       };
 
       // Convert checklist template to blueprint format for bid template
@@ -728,6 +758,103 @@ function ChecklistPageContent() {
             </div>
           </div>
         )}
+
+        {/* ── Venue Details ── */}
+        <div className="mb-6 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-2xl border border-slate-700/50 shadow-2xl overflow-hidden">
+          <div className="flex items-center gap-4 px-6 py-5 border-b border-slate-700/50 bg-slate-900/40">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+              <BuildingOffice2Icon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white">Venue Details</h3>
+              <p className="text-sm text-slate-400">Helps craftsmen plan logistics and staging accurately</p>
+            </div>
+          </div>
+
+          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* Venue name */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-slate-300 mb-1.5">
+                Venue name
+              </label>
+              <input
+                type="text"
+                value={venueDetails.venue_name}
+                onChange={(e) => setVenueDetails((v) => ({ ...v, venue_name: e.target.value }))}
+                placeholder="e.g. Grand Hyatt Mumbai, The Leela Palace, or leave blank if not yet booked"
+                className="w-full bg-slate-700/60 border border-slate-600/60 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              />
+            </div>
+
+            {/* Indoor / Outdoor */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">
+                Indoor or outdoor?
+              </label>
+              <div className="flex gap-3">
+                {['Indoor', 'Outdoor', 'Both'].map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setVenueDetails((v) => ({ ...v, indoor_outdoor: opt }))}
+                    className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-all ${
+                      venueDetails.indoor_outdoor === opt
+                        ? 'bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/20'
+                        : 'bg-slate-700/50 border-slate-600/50 text-slate-300 hover:border-orange-500/50 hover:text-white'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Number of function areas */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-1.5">
+                Number of function areas
+              </label>
+              <select
+                value={venueDetails.function_areas}
+                onChange={(e) => setVenueDetails((v) => ({ ...v, function_areas: e.target.value }))}
+                className="w-full bg-slate-700/60 border border-slate-600/60 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              >
+                <option value="">Select...</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4+">4+</option>
+              </select>
+            </div>
+
+            {/* Stage dimensions */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-1.5">
+                Approximate main stage dimensions <span className="text-slate-500 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={venueDetails.stage_dimensions}
+                onChange={(e) => setVenueDetails((v) => ({ ...v, stage_dimensions: e.target.value }))}
+                placeholder="e.g. 30x20 ft, or leave blank if unknown"
+                className="w-full bg-slate-700/60 border border-slate-600/60 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              />
+            </div>
+
+            {/* Setup date */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-1.5">
+                Setup / load-in date
+              </label>
+              <input
+                type="date"
+                value={venueDetails.setup_date}
+                onChange={(e) => setVenueDetails((v) => ({ ...v, setup_date: e.target.value }))}
+                className="w-full bg-slate-700/60 border border-slate-600/60 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 [color-scheme:dark]"
+              />
+            </div>
+          </div>
+        </div>
 
         <div className="space-y-6">
           {checklist.categories.map((category, index) => {

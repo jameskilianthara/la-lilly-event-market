@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Load test credentials from .env.test before any test file runs
+dotenv.config({ path: path.resolve(__dirname, '.env.test') });
 
 export default defineConfig({
   testDir: './tests/e2e',

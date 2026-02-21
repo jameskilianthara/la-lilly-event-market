@@ -69,6 +69,15 @@ export async function PATCH(
 
     if (client_brief) {
       updateData.client_brief = client_brief;
+      // Promote flat queryable columns from client_brief JSONB
+      if (client_brief.budget_range !== undefined) updateData.budget_range = client_brief.budget_range;
+      if (client_brief.venue_name !== undefined)   updateData.venue_name   = client_brief.venue_name;
+      // Normalise guest_count: store lower-bound integer from range string or coerce plain strings
+      if (client_brief.guest_count !== undefined) {
+        const raw = String(client_brief.guest_count);
+        const lowerBound = parseInt(raw.replace(/[^0-9]/g, ''), 10);
+        updateData.guest_count = isNaN(lowerBound) ? null : lowerBound;
+      }
     }
 
     if (forge_blueprint) {

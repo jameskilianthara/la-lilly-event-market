@@ -27,8 +27,18 @@ export interface ClientBrief {
   date?: string;
   city?: string;
   guest_count?: string;
+  guest_count_range?: string;
   venue_status?: string;
-  [key: string]: string | undefined;
+  budget_range?: string;
+  venue_name?: string;
+  venue_details?: {
+    venue_name?: string;
+    indoor_outdoor?: string;
+    stage_dimensions?: string;
+    function_areas?: string;
+    setup_date?: string;
+  };
+  [key: string]: string | undefined | Record<string, string | undefined>;
 }
 
 export interface ClientNotes {

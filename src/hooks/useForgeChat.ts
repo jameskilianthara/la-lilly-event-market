@@ -141,8 +141,10 @@ export const useForgeChat = () => {
         date: clientBrief.date, // Keep original human-readable format
         date_parsed: parsedDate, // Also store parsed version
         city: clientBrief.city,
-        guest_count: clientBrief.guest_count,
+        guest_count: clientBrief.guest_count,         // lower-bound integer string
+        guest_count_range: clientBrief.guest_count_range, // display range string
         venue_status: clientBrief.venue_status,
+        budget_range: clientBrief.budget_range,
         conversation: messages.slice(-10), // Last 10 messages for context
         reference_images: []
       };
@@ -282,7 +284,7 @@ export const useForgeChat = () => {
       const welcomeBackMessage: ForgeMessageData = {
         id: `welcome-back-${Date.now()}`,
         type: 'assistant',
-        content: `🎉 Welcome to EventFoundry, ${(user.userType === 'client' ? user.name : undefined) || 'friend'}!\n\nThank you for joining us! I've saved all your event details:\n\n• **Event Type:** ${briefToUse.event_type}\n• **Date:** ${briefToUse.date}\n• **Location:** ${briefToUse.city}\n• **Guest Count:** ${briefToUse.guest_count}\n• **Venue:** ${briefToUse.venue_status}\n\nPerfect! Let me now create your personalized event checklist...`,
+        content: `🎉 Welcome to EventFoundry, ${(user.userType === 'client' ? user.name : undefined) || 'friend'}!\n\nThank you for joining us! I've saved all your event details:\n\n• **Event Type:** ${briefToUse.event_type}\n• **Date:** ${briefToUse.date}\n• **Location:** ${briefToUse.city}\n• **Guest Count:** ${briefToUse.guest_count}\n• **Venue:** ${briefToUse.venue_status}\n• **Budget:** ${briefToUse.budget_range || 'Not specified'}\n\nPerfect! Let me now create your personalized event checklist...`,
         timestamp: new Date(),
         metadata: {
           isWelcomeBack: true
@@ -304,7 +306,7 @@ export const useForgeChat = () => {
   }, [user, isAuthenticated, postAuthWelcome, isCreatingEvent, currentStep, isComplete, clientBrief, addMessage, triggerEventCreation]);
 
   const getStepField = (step: number): keyof ClientBrief => {
-    const stepFields: (keyof ClientBrief)[] = ['event_type', 'date', 'city', 'guest_count', 'venue_status'];
+    const stepFields: (keyof ClientBrief)[] = ['event_type', 'date', 'city', 'guest_count', 'venue_status', 'budget_range'];
     return stepFields[step - 1];
   };
 
@@ -328,21 +330,39 @@ export const useForgeChat = () => {
         const needsHelp = answerLower.includes('no') || answerLower.includes('need') || answerLower.includes('help');
 
         if (needsHelp) {
-          return `Got it! I'll make sure to include venue recommendations in your blueprint. I now have everything I need to create your custom event plan. Let me select the perfect template for your event...`;
+          return `Got it! I'll make sure to include venue recommendations in your blueprint. Last question: what's your approximate budget for this event?`;
         } else {
-          return `Excellent! Having your venue secured is a great start. I now have everything I need to create your custom blueprint. Let me select the perfect template for your event...`;
+          return `Excellent! Having your venue secured is a great start. Last question: what's your approximate budget for this event?`;
         }
-      }
+      },
+
+      // Budget range
+      (answer: string) => `${answer} — perfect, that gives our craftsmen a clear pricing target to forge around. Let me now create your custom blueprint!`,
     ];
 
     return responses[step - 1](userAnswer);
   };
 
+  // Parse the lower-bound integer from a guest count range string ("100–200" → 100, "1000+" → 1000)
+  const parseGuestCountLowerBound = (range: string): string => {
+    const match = range.match(/\d+/);
+    return match ? match[0] : range;
+  };
+
   const handleAnswer = useCallback(async (answer: string) => {
     const stepField = getStepField(currentStep);
 
-    // Update client brief
-    const updatedBrief = { ...clientBrief, [stepField]: answer };
+    // Step 4 is guest_count: store range string separately and lower-bound as guest_count
+    let updatedBrief: ClientBrief;
+    if (currentStep === 4) {
+      updatedBrief = {
+        ...clientBrief,
+        guest_count: parseGuestCountLowerBound(answer), // integer-compatible string for the flat column
+        guest_count_range: answer,                       // display string for vendors
+      };
+    } else {
+      updatedBrief = { ...clientBrief, [stepField]: answer };
+    }
     setClientBrief(updatedBrief);
 
     console.log('[Forge Chat] handleAnswer:', {
@@ -369,8 +389,8 @@ export const useForgeChat = () => {
     }, 500);
 
     // Move to next step or complete
-    if (currentStep >= 5) {
-      console.log('[Forge Chat] Step 5 completed! Triggering event creation in 1.5s...');
+    if (currentStep >= 6) {
+      console.log('[Forge Chat] Step 6 completed! Triggering event creation in 1.5s...');
       // Complete the chat and trigger event creation
       setTimeout(() => {
         console.log('[Forge Chat] Now calling triggerEventCreation()');

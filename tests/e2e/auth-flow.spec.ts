@@ -1,358 +1,271 @@
 /**
- * EventFoundry E2E Tests - Authentication Flow
+ * auth-flow.spec.ts — Authentication Flow
  *
- * Tests complete user experience for:
- * - Client signup
- * - Client login
- * - Login validation
- * - Logout
- * - Session persistence
+ * All assertions use expect() — no if (isVisible) console.log() soft checks.
+ * Credentials read from .env.test via auth.helper.
  *
- * This test suite validates UX, not just backend functionality
+ * Tags:
+ *   @smoke  — client login, vendor login, unauthenticated redirect
+ *   @regression — full suite including signup edge cases, session, form validation
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Browser } from '@playwright/test';
+import { loginAsClient, loginAsVendor, TEST_CREDS, BASE_URL } from '../helpers/auth.helper';
 
-const BASE_URL = 'http://localhost:3000';
+// ---------------------------------------------------------------------------
+// Client auth
+// ---------------------------------------------------------------------------
 
-test.describe('Authentication Flow - Complete UX Validation', () => {
+test.describe('Client auth @smoke', () => {
 
-  test.describe('Client Signup', () => {
-    const timestamp = Date.now();
-    const testClient = {
-      email: `e2e-client-${timestamp}@test.com`,
-      password: 'TestPassword123!',
-      name: 'E2E Test Client'
-    };
+  test('client login succeeds and redirects to /forge', async ({ page }) => {
+    await page.goto(`${BASE_URL}/login`);
+    await page.waitForLoadState('networkidle');
 
-    test('Client can signup with valid credentials and sees confirmation', async ({ page }) => {
-      console.log('🧪 Testing client signup UX');
+    await page.fill('input[type="email"]', TEST_CREDS.client.email);
+    await page.fill('input[type="password"]', TEST_CREDS.client.password);
+    await page.click('button[type="submit"]');
 
-      // Navigate to signup page
-      await page.goto(`${BASE_URL}/signup`);
+    await page.waitForURL('**/forge', { timeout: 10000 });
+    await expect(page).toHaveURL(/\/forge/);
+  });
 
-      // Verify page loaded correctly
-      await expect(page.locator('h1:has-text("Create"), h2:has-text("Create")')).toBeVisible({ timeout: 5000 });
+  test('client login shows success toast', async ({ page }) => {
+    await page.goto(`${BASE_URL}/login`);
+    await page.fill('input[type="email"]', TEST_CREDS.client.email);
+    await page.fill('input[type="password"]', TEST_CREDS.client.password);
+    await page.click('button[type="submit"]');
 
-      // Fill signup form with all required fields
-      await page.fill('input[name="fullName"]', testClient.name);
-      await page.fill('input[name="email"]', testClient.email);
-      await page.fill('input[name="password"]', testClient.password);
-      await page.fill('input[type="password"][placeholder*="Re-enter"]', testClient.password); // Confirm password
+    await expect(
+      page.getByText(/Welcome back|Successfully logged in/i)
+    ).toBeVisible({ timeout: 5000 });
+  });
 
-      // Submit form
-      await page.click('button[type="submit"]');
+  test('client login with wrong password shows error and stays on login', async ({ page }) => {
+    await page.goto(`${BASE_URL}/login`);
+    await page.fill('input[type="email"]', TEST_CREDS.client.email);
+    await page.fill('input[type="password"]', 'WrongPassword999!');
+    await page.click('button[type="submit"]');
 
-      // Verify success feedback (toast or redirect)
-      const successIndicators = [
-        page.locator('text=Account created'),
-        page.locator('text=Welcome'),
-        page.locator('text=Success')
-      ];
+    await expect(
+      page.getByText(/Invalid email or password|Invalid credentials|Incorrect password/i)
+    ).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(/\/login/);
+  });
 
-      // Wait for at least one success indicator
-      await Promise.race(successIndicators.map(loc =>
-        loc.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
-      ));
+  test('client login with non-existent email shows error', async ({ page }) => {
+    await page.goto(`${BASE_URL}/login`);
+    await page.fill('input[type="email"]', 'nobody@nowhere-test.com');
+    await page.fill('input[type="password"]', 'SomePassword123!');
+    await page.click('button[type="submit"]');
 
-      // Verify redirected to appropriate page
-      await expect(page).toHaveURL(/\/(forge|dashboard|events)/, { timeout: 5000 });
+    await expect(
+      page.getByText(/Invalid email or password|Invalid credentials/i)
+    ).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(/\/login/);
+  });
 
-      console.log('✅ Signup completed successfully');
-    });
+  test('empty login form stays on login page', async ({ page }) => {
+    await page.goto(`${BASE_URL}/login`);
+    await page.click('button[type="submit"]');
+    // Give time for any redirect
+    await page.waitForTimeout(1500);
+    await expect(page).toHaveURL(/\/login/);
+  });
 
-    test('Signup shows error for existing email', async ({ page }) => {
-      console.log('🧪 Testing duplicate email validation');
-
-      await page.goto(`${BASE_URL}/signup`);
-
-      // Try to signup with existing email - fill all required fields
-      await page.fill('input[name="fullName"]', 'Test User');
-      await page.fill('input[name="email"]', 'test@eventfoundry.com');
-      await page.fill('input[name="password"]', 'TestPassword123!');
-      await page.fill('input[type="password"][placeholder*="Re-enter"]', 'TestPassword123!');
-
-      await page.click('button[type="submit"]');
-
-      // Verify error message appears - actual message: "This email is already registered. Please login instead."
-      await expect(page.locator('text=/already registered|already exists|email is taken/i')).toBeVisible({ timeout: 5000 });
-
-      // Verify still on signup page (not redirected)
-      await expect(page).toHaveURL(/\/signup/);
-
-      console.log('✅ Duplicate email validation working');
+  test('session persists after page reload @regression', async ({ page }) => {
+    await loginAsClient(page);
+    await page.reload();
+    await page.waitForTimeout(2000);
+    // User menu button is only rendered when authenticated
+    await expect(page.locator('[data-testid="user-menu-button"]')).toBeVisible({
+      timeout: 5000,
     });
   });
 
-  test.describe('Client Login', () => {
+  test('logout clears session and protected route redirects to login @regression', async ({ page }) => {
+    await loginAsClient(page);
 
-    test('Client can login with correct credentials and sees confirmation', async ({ page }) => {
-      console.log('🧪 Testing client login UX with all feedback elements');
+    // Log out
+    await page.click('[data-testid="user-menu-button"]');
+    await page.click('[data-testid="logout-button"]');
+    await page.waitForURL(/\/(login|signup|\/)/, { timeout: 5000 });
 
-      // Navigate to login page
-      await page.goto(`${BASE_URL}/login`);
+    // Attempt to access protected route
+    await page.goto(`${BASE_URL}/dashboard/client`);
+    await page.waitForTimeout(1500);
+    await expect(page).toHaveURL(/\/login/, { timeout: 8000 });
+  });
+});
 
-      // Verify page loaded correctly
-      await expect(page.locator('h1:has-text("Welcome"), h1:has-text("Login"), h1:has-text("Sign")')).toBeVisible({ timeout: 5000 });
+// ---------------------------------------------------------------------------
+// Vendor auth
+// ---------------------------------------------------------------------------
 
-      // Fill login form
-      await page.fill('input[type="email"]', 'test@eventfoundry.com');
-      await page.fill('input[type="password"]', 'TestClient123!');
+test.describe('Vendor auth @smoke', () => {
 
-      // Submit
-      await page.click('button[type="submit"]');
+  test('vendor login succeeds and redirects to craftsmen dashboard', async ({ page }) => {
+    await page.goto(`${BASE_URL}/craftsmen/login`);
+    await page.waitForLoadState('networkidle');
 
-      // CRITICAL: Verify success toast appears
-      await expect(page.locator('text=Welcome back').or(page.locator('text=Successfully logged in'))).toBeVisible({ timeout: 3000 });
-      console.log('✅ Success toast displayed');
+    await page.fill('input[type="email"]', TEST_CREDS.vendor.email);
+    await page.fill('input[type="password"]', TEST_CREDS.vendor.password);
+    await page.click('button[type="submit"]');
 
-      // Verify redirect to forge
-      await page.waitForURL('**/forge', { timeout: 5000 });
-      console.log('✅ Redirected to /forge');
+    await page.waitForURL('**/craftsmen/dashboard', { timeout: 10000 });
+    await expect(page).toHaveURL(/\/craftsmen\/dashboard/);
+  });
 
-      // CRITICAL: Verify welcome banner shows user is logged in
-      // Use .first() to handle multiple "Test User" elements (navbar, banner, content)
-      await expect(page.locator('text=/Welcome back.*Test User/i').or(page.locator('text=Test User')).first()).toBeVisible({ timeout: 3000 });
-      console.log('✅ Welcome banner displayed');
+  test('vendor login with wrong password shows error', async ({ page }) => {
+    await page.goto(`${BASE_URL}/craftsmen/login`);
+    await page.fill('input[type="email"]', TEST_CREDS.vendor.email);
+    await page.fill('input[type="password"]', 'WrongPassword999!');
+    await page.click('button[type="submit"]');
 
-      // Verify user can navigate to dashboard (validates session)
-      await page.goto(`${BASE_URL}/dashboard/client`);
+    await expect(
+      page.getByText(/Invalid email or password|Invalid credentials|Incorrect password/i)
+    ).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(/\/craftsmen\/login|\/login/);
+  });
+});
 
-      // Should either load dashboard or show some user-specific content
-      const dashboardLoaded = await page.locator('text=My Events, text=Dashboard, text=Events').isVisible({ timeout: 5000 }).catch(() => false);
+// ---------------------------------------------------------------------------
+// Unauthenticated access redirects @smoke
+// ---------------------------------------------------------------------------
 
-      if (dashboardLoaded) {
-        console.log('✅ Dashboard accessible (session valid)');
-      } else {
-        console.log('⚠️ Dashboard may need implementation');
-      }
-    });
+test.describe('Unauthenticated redirects @smoke', () => {
 
-    test('Login with wrong password shows clear error message', async ({ page }) => {
-      console.log('🧪 Testing login error handling');
-
-      await page.goto(`${BASE_URL}/login`);
-
-      await page.fill('input[type="email"]', 'test@eventfoundry.com');
-      await page.fill('input[type="password"]', 'WrongPassword123!');
-
-      await page.click('button[type="submit"]');
-
-      // Verify error message appears - actual: "Invalid email or password. Please check your credentials and try again."
-      await expect(page.locator('text=/Invalid email or password|Incorrect password|Invalid credentials/i')).toBeVisible({ timeout: 5000 });
-      console.log('✅ Error message displayed');
-
-      // Verify still on login page (not redirected)
-      await expect(page).toHaveURL(/\/login/);
-      console.log('✅ User not redirected on failed login');
-    });
-
-    test('Login with non-existent email shows error', async ({ page }) => {
-      console.log('🧪 Testing non-existent user login');
-
-      await page.goto(`${BASE_URL}/login`);
-
-      await page.fill('input[type="email"]', 'nonexistent@example.com');
-      await page.fill('input[type="password"]', 'SomePassword123!');
-
-      await page.click('button[type="submit"]');
-
-      // Verify error message (should not reveal whether email exists for security) - actual: "Invalid email or password..."
-      await expect(page.locator('text=/Invalid email or password|Invalid credentials|not found/i')).toBeVisible({ timeout: 5000 });
-
-      await expect(page).toHaveURL(/\/login/);
+  test('/craftsmen/dashboard redirects to login when not authenticated', async ({ page }) => {
+    // Fresh page context — no session
+    await page.goto(`${BASE_URL}/craftsmen/dashboard`);
+    await page.waitForTimeout(2000);
+    await expect(page).toHaveURL(/\/login|\/craftsmen\/login/, {
+      timeout: 8000,
     });
   });
 
-  test.describe('Logout Flow', () => {
+  test('/dashboard/client redirects to login when not authenticated', async ({ page }) => {
+    await page.goto(`${BASE_URL}/dashboard/client`);
+    await page.waitForTimeout(2000);
+    await expect(page).toHaveURL(/\/login/, { timeout: 8000 });
+  });
+});
 
-    test('Client can logout and session is cleared', async ({ page }) => {
-      console.log('🧪 Testing logout flow');
+// ---------------------------------------------------------------------------
+// Client signup @regression
+// ---------------------------------------------------------------------------
 
-      // Login first
-      await page.goto(`${BASE_URL}/login`);
-      await page.fill('input[type="email"]', 'test@eventfoundry.com');
-      await page.fill('input[type="password"]', 'TestClient123!');
-      await page.click('button[type="submit"]');
+test.describe('Client signup @regression', () => {
 
-      await page.waitForURL('**/forge', { timeout: 5000 });
-      console.log('✅ Logged in successfully');
+  test('signup with valid new email succeeds', async ({ page }) => {
+    const uniqueEmail = `e2e-test-${Date.now()}@testfoundry.com`;
 
-      // Open user menu dropdown
-      await page.click('[data-testid="user-menu-button"]');
-      console.log('✅ User menu opened');
+    await page.goto(`${BASE_URL}/signup`);
+    await page.waitForLoadState('networkidle');
 
-      // Click logout button
-      await page.click('[data-testid="logout-button"]');
-      console.log('✅ Logout button clicked');
+    await page.fill('input[name="fullName"]', 'E2E Test User');
+    await page.fill('input[name="email"]', uniqueEmail);
+    await page.fill('input[type="password"]', 'TestPassword123!');
+    await page.locator('input[type="password"]').nth(1).fill('TestPassword123!');
+    await page.click('button[type="submit"]');
 
-      // Wait for logout to complete and state to clear
-      await page.waitForTimeout(1000);
-
-      // Verify redirected to public page
-      await expect(page).toHaveURL(/\/(login|signup|home|\/)/, { timeout: 5000 });
-      console.log('✅ Redirected to public page');
-
-      // CRITICAL: Try to access protected route
-      await page.goto(`${BASE_URL}/dashboard/client`);
-
-      // Should redirect back to login (may take time for client-side redirect)
-      await page.waitForTimeout(1000); // Wait for useEffect to run
-      await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
-      console.log('✅ Protected route redirects to login (session cleared)');
-    });
+    // Should redirect away from signup on success
+    await expect(page).not.toHaveURL(/\/signup/, { timeout: 8000 });
   });
 
-  test.describe('Session Persistence', () => {
+  test('signup with existing email shows error and stays on signup', async ({ page }) => {
+    await page.goto(`${BASE_URL}/signup`);
 
-    test('Session persists after page refresh', async ({ page }) => {
-      console.log('🧪 Testing session persistence');
+    await page.fill('input[name="fullName"]', 'Duplicate User');
+    await page.fill('input[name="email"]', TEST_CREDS.client.email); // already exists
+    await page.fill('input[type="password"]', 'TestPassword123!');
+    await page.locator('input[type="password"]').nth(1).fill('TestPassword123!');
+    await page.click('button[type="submit"]');
 
-      // Login
-      await page.goto(`${BASE_URL}/login`);
-      await page.fill('input[type="email"]', 'test@eventfoundry.com');
-      await page.fill('input[type="password"]', 'TestClient123!');
-      await page.click('button[type="submit"]');
-
-      await page.waitForURL('**/forge', { timeout: 5000 });
-      console.log('✅ Logged in');
-
-      // Refresh page
-      await page.reload();
-      console.log('🔄 Page refreshed');
-
-      // Wait for page to fully reload and auth to restore
-      await page.waitForTimeout(2000);
-
-      // Verify still logged in - check for user menu button (only visible when authenticated)
-      await expect(page.locator('[data-testid="user-menu-button"]')).toBeVisible({ timeout: 5000 });
-      console.log('✅ Session persisted after refresh - user menu visible');
-
-      // Navigate to different page
-      await page.goto(`${BASE_URL}/dashboard/client`);
-
-      // Should still be authenticated - check for dashboard content
-      await expect(page.locator('text=/My Events|Dashboard/i')).toBeVisible({ timeout: 5000 });
-      console.log('✅ Session persists across navigation');
-    });
-
-    test('Session persists after browser tab close and reopen', async ({ browser }) => {
-      console.log('🧪 Testing session persistence across tabs');
-
-      // Create new context (simulates new tab)
-      const context1 = await browser.newContext();
-      const page1 = await context1.newPage();
-
-      // Login in first tab
-      await page1.goto(`${BASE_URL}/login`);
-      await page1.fill('input[type="email"]', 'test@eventfoundry.com');
-      await page1.fill('input[type="password"]', 'TestClient123!');
-      await page1.click('button[type="submit"]');
-
-      await page1.waitForURL('**/forge', { timeout: 5000 });
-      console.log('✅ Logged in tab 1');
-
-      // Get cookies/storage from first context
-      const cookies = await context1.cookies();
-      const localStorage = await page1.evaluate(() => JSON.stringify(window.localStorage));
-
-      // Close first tab
-      await context1.close();
-      console.log('🔄 Tab 1 closed');
-
-      // Create new context (simulates reopening browser)
-      const context2 = await browser.newContext();
-      const page2 = await context2.newPage();
-
-      // Restore cookies
-      await context2.addCookies(cookies);
-
-      // Restore localStorage
-      await page2.goto(`${BASE_URL}`);
-      await page2.evaluate((storage) => {
-        const data = JSON.parse(storage);
-        for (const key in data) {
-          localStorage.setItem(key, data[key]);
-        }
-      }, localStorage);
-
-      // Navigate to protected page
-      await page2.goto(`${BASE_URL}/forge`);
-
-      // Verify still logged in
-      const isLoggedIn = await page2.locator('text=Welcome back, text=Test User').first().isVisible({ timeout: 5000 }).catch(() => false);
-
-      if (isLoggedIn) {
-        console.log('✅ Session persisted across tab close/reopen');
-      } else {
-        console.log('⚠️ Session may require re-login (depends on implementation)');
-      }
-
-      await context2.close();
-    });
+    await expect(
+      page.getByText(/already registered|already exists|email is taken/i)
+    ).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(/\/signup/);
   });
 
-  test.describe('Form Validation', () => {
+  test('signup with invalid email format shows validation error', async ({ page }) => {
+    await page.goto(`${BASE_URL}/signup`);
 
-    test('Signup rejects invalid email format', async ({ page }) => {
-      console.log('🧪 Testing email validation');
+    await page.fill('input[name="fullName"]', 'Test User');
+    await page.fill('input[name="email"]', 'not-an-email');
+    await page.fill('input[type="password"]', 'TestPassword123!');
+    await page.locator('input[type="password"]').nth(1).fill('TestPassword123!');
+    await page.click('button[type="submit"]');
+    await page.waitForTimeout(1000);
 
-      await page.goto(`${BASE_URL}/signup`);
+    await expect(
+      page.getByText(/valid email|Please enter a valid email/i)
+    ).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(/\/signup/);
+  });
 
-      // Fill all fields except use invalid email
-      await page.fill('input[name="fullName"]', 'Test User');
-      await page.fill('input[name="email"]', 'not-an-email'); // Invalid format
-      await page.fill('input[name="password"]', 'TestPassword123!');
-      await page.fill('input[type="password"][placeholder*="Re-enter"]', 'TestPassword123!');
+  test('signup with short password shows validation error', async ({ page }) => {
+    await page.goto(`${BASE_URL}/signup`);
 
-      await page.click('button[type="submit"]');
-      await page.waitForTimeout(1000); // Wait for validation to complete
+    await page.fill('input[name="fullName"]', 'Test User');
+    await page.fill('input[name="email"]', 'validtest@test.com');
+    await page.fill('input[type="password"]', '123');
+    await page.locator('input[type="password"]').nth(1).fill('123');
+    await page.click('button[type="submit"]');
 
-      // Verify error message appears (the actual error text: "Please enter a valid email address")
-      // Check for any visible error text containing "email"
-      await expect(page.locator('text=/Please enter a valid email|valid email address|Email.*valid/i')).toBeVisible({ timeout: 5000 });
+    await expect(
+      page.getByText(/at least 8 characters|too short|password.*8/i)
+    ).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(/\/signup/);
+  });
+});
 
-      // Should still be on signup page
-      await expect(page).toHaveURL(/\/signup/);
-    });
+// ---------------------------------------------------------------------------
+// Session persistence @regression
+// ---------------------------------------------------------------------------
 
-    test('Signup rejects weak password', async ({ page }) => {
-      console.log('🧪 Testing password validation');
+test.describe('Session persistence @regression', () => {
 
-      await page.goto(`${BASE_URL}/signup`);
+  test('session persists across navigation to different pages', async ({ page }) => {
+    await loginAsClient(page);
 
-      // Fill all fields except use weak password
-      await page.fill('input[name="fullName"]', 'Test User');
-      await page.fill('input[name="email"]', 'test@example.com');
-      await page.fill('input[name="password"]', '123'); // Too short
-      await page.fill('input[type="password"][placeholder*="Re-enter"]', '123');
+    // Navigate away and back
+    await page.goto(`${BASE_URL}/dashboard/client`);
+    await page.waitForLoadState('networkidle');
 
-      await page.click('button[type="submit"]');
+    // Should not redirect to login
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(
+      page.getByRole('heading', { name: /My Forge Projects/i })
+    ).toBeVisible({ timeout: 8000 });
+  });
 
-      // Verify error message about password requirements (actual error text)
-      await expect(page.locator('text=at least 8 characters')).toBeVisible({ timeout: 3000 });
+  test('session shared across tabs (cookie-based)', async ({ browser }: { browser: Browser }) => {
+    const context1 = await browser.newContext();
+    const page1 = await context1.newPage();
 
-      // Should still be on signup page
-      await expect(page).toHaveURL(/\/signup/);
-    });
+    // Login in context1
+    await page1.goto(`${BASE_URL}/login`);
+    await page1.fill('input[type="email"]', TEST_CREDS.client.email);
+    await page1.fill('input[type="password"]', TEST_CREDS.client.password);
+    await page1.click('button[type="submit"]');
+    await page1.waitForURL('**/forge', { timeout: 10000 });
 
-    test('Login form prevents empty submission', async ({ page }) => {
-      console.log('🧪 Testing required field validation');
+    // Copy session cookies
+    const cookies = await context1.cookies();
 
-      await page.goto(`${BASE_URL}/login`);
+    // Create new context with same cookies (simulates new tab)
+    const context2 = await browser.newContext();
+    await context2.addCookies(cookies);
+    const page2 = await context2.newPage();
 
-      // Try to submit without filling anything
-      await page.click('button[type="submit"]');
+    await page2.goto(`${BASE_URL}/dashboard/client`);
+    await page2.waitForLoadState('networkidle');
 
-      // Should still be on login page (not redirected)
-      await expect(page).toHaveURL(/\/login/);
+    // Should be accessible (session cookie transferred)
+    await expect(page2).not.toHaveURL(/\/login/, { timeout: 5000 });
 
-      // Should show validation error message (not redirect to forge)
-      await page.waitForTimeout(1000); // Wait for any potential redirect
-      await expect(page).toHaveURL(/\/login/); // Confirm still on login page
-
-      // Should NOT navigate to /forge
-      await expect(page).not.toHaveURL(/\/forge/);
-    });
+    await context1.close();
+    await context2.close();
   });
 });

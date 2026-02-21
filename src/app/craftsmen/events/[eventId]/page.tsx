@@ -55,7 +55,17 @@ interface ClientBrief {
   date: string;
   city: string;
   guest_count: number;
+  guest_count_range?: string;
   venue_status: string;
+  budget_range?: string;
+  venue_name?: string;
+  venue_details?: {
+    venue_name?: string;
+    indoor_outdoor?: string;
+    stage_dimensions?: string;
+    function_areas?: string;
+    setup_date?: string;
+  };
   checklist?: {
     selections: Record<string, any>;
     categoryNotes: Record<string, string>;
@@ -255,6 +265,20 @@ export default function VendorEventDetailPage() {
             </div>
           </div>
 
+          {/* Budget — primary pricing signal */}
+          {event.client_brief?.budget_range && (
+            <div className="mb-4 bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/40 rounded-xl p-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-orange-500/30 border border-orange-500/40 flex items-center justify-center flex-shrink-0">
+                <span className="text-orange-300 font-bold text-lg">₹</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-orange-300/70 font-medium uppercase tracking-wide">Client Budget</p>
+                <p className="text-xl font-bold text-orange-300">{event.client_brief.budget_range}</p>
+              </div>
+              <span className="text-xs text-orange-300/50 italic hidden sm:block">Primary pricing signal</span>
+            </div>
+          )}
+
           {/* Quick Facts */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-slate-700/30 rounded-xl p-4 border border-slate-600/50">
@@ -283,7 +307,9 @@ export default function VendorEventDetailPage() {
                 <UsersIcon className="h-5 w-5 text-orange-400" />
                 <p className="text-xs text-slate-400">Guests</p>
               </div>
-              <p className="font-semibold text-white text-sm">{event.client_brief?.guest_count || '—'}</p>
+              <p className="font-semibold text-white text-sm">
+                {event.client_brief?.guest_count_range || event.client_brief?.guest_count || '—'}
+              </p>
             </div>
 
             <div className="bg-slate-700/30 rounded-xl p-4 border border-slate-600/50">
@@ -338,6 +364,51 @@ export default function VendorEventDetailPage() {
         {/* ── FORGE BLUEPRINT (Primary Section) ── */}
         {activeTab === 'blueprint' && (
         <>
+
+        {/* ── Venue Card ── shown only when venue_details are present */}
+        {event.client_brief?.venue_details && Object.values(event.client_brief.venue_details).some(Boolean) && (
+          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-2xl border border-blue-500/30 shadow-2xl overflow-hidden">
+            <div className="flex items-center gap-3 px-6 py-4 border-b border-blue-500/20 bg-blue-500/10">
+              <BuildingOffice2Icon className="h-5 w-5 text-blue-400 flex-shrink-0" />
+              <h2 className="text-base font-bold text-white">Venue Details</h2>
+            </div>
+            <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+              {event.client_brief.venue_details.venue_name && (
+                <div className="sm:col-span-2">
+                  <p className="text-xs text-slate-400 mb-0.5">Venue name</p>
+                  <p className="font-semibold text-white">{event.client_brief.venue_details.venue_name}</p>
+                </div>
+              )}
+              {event.client_brief.venue_details.indoor_outdoor && (
+                <div>
+                  <p className="text-xs text-slate-400 mb-0.5">Setting</p>
+                  <p className="font-semibold text-white">{event.client_brief.venue_details.indoor_outdoor}</p>
+                </div>
+              )}
+              {event.client_brief.venue_details.function_areas && (
+                <div>
+                  <p className="text-xs text-slate-400 mb-0.5">Function areas</p>
+                  <p className="font-semibold text-white">{event.client_brief.venue_details.function_areas}</p>
+                </div>
+              )}
+              {event.client_brief.venue_details.stage_dimensions && (
+                <div>
+                  <p className="text-xs text-slate-400 mb-0.5">Stage dimensions</p>
+                  <p className="font-semibold text-white">{event.client_brief.venue_details.stage_dimensions}</p>
+                </div>
+              )}
+              {event.client_brief.venue_details.setup_date && (
+                <div>
+                  <p className="text-xs text-slate-400 mb-0.5">Setup / load-in date</p>
+                  <p className="font-semibold text-white">
+                    {new Date(event.client_brief.venue_details.setup_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-2xl border border-orange-500/30 shadow-2xl overflow-hidden">
           {/* Blueprint Header */}
           <div className="bg-gradient-to-r from-orange-500/20 to-orange-600/10 border-b border-orange-500/30 px-6 sm:px-8 py-5">
