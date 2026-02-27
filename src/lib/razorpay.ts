@@ -529,6 +529,10 @@ export function validateRazorpayConfig(): { valid: boolean; errors: string[] } {
     errors.push('RAZORPAY_WEBHOOK_SECRET is not configured');
   }
 
+  if (!process.env.RAZORPAY_ACCOUNT_NUMBER) {
+    errors.push('RAZORPAY_ACCOUNT_NUMBER is not configured');
+  }
+
   return {
     valid: errors.length === 0,
     errors,

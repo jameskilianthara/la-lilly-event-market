@@ -97,7 +97,7 @@ export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
                 <span className="text-sm text-slate-300 font-medium">{field.label}</span>
               </div>
               <div className="text-sm text-slate-100 font-semibold">
-                {clientBrief[field.key] || (
+                {(clientBrief[field.key as keyof ClientBrief] as string | undefined) || (
                   <span className="text-slate-500 italic font-normal">pending</span>
                 )}
               </div>

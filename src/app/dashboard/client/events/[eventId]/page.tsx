@@ -138,7 +138,7 @@ export default function ClientEventDetailPage() {
         checklistData: clientBrief.checklist || null,
         postedAt: eventData.created_at || new Date().toISOString(),
         status: eventData.forge_status || 'OPEN_FOR_BIDS',
-        bids: (bidsData || []).map(bid => ({
+        bids: (bidsData || []).map((bid: any) => ({
           bidId: bid.id,
           vendorId: bid.vendor_id,
           vendorName: (bid.bid_data as any)?.vendorName || 'Vendor',

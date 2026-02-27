@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { calculateCommission } from '@/lib/commission';
 import { createRazorpayOrder, validateRazorpayConfig } from '@/lib/razorpay';
 import { withErrorHandler, validateRequired } from '@/lib/api-handler';
@@ -26,10 +27,33 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   // 2. PARSE REQUEST BODY
   // =====================================================
 
-  const body = await request.json();
-  const { contractId, userId } = body;
+  // =====================================================
+  // 2. VERIFY JWT
+  // =====================================================
 
-  validateRequired(body, ['contractId', 'userId']);
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw new AuthenticationError('Missing or invalid Authorization header');
+  }
+  const token = authHeader.slice(7);
+  const authClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data: { user: jwtUser }, error: jwtError } = await authClient.auth.getUser(token);
+  if (jwtError || !jwtUser) {
+    throw new AuthenticationError('Invalid or expired token');
+  }
+  const userId = jwtUser.id;
+
+  // =====================================================
+  // 3. PARSE REQUEST BODY
+  // =====================================================
+
+  const body = await request.json();
+  const { contractId } = body;
+
+  validateRequired(body, ['contractId']);
 
     // =====================================================
     // 3. FETCH CONTRACT DETAILS

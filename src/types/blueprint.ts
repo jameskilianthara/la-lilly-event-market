@@ -38,7 +38,6 @@ export interface ClientBrief {
     function_areas?: string;
     setup_date?: string;
   };
-  [key: string]: string | undefined | Record<string, string | undefined>;
 }
 
 export interface ClientNotes {

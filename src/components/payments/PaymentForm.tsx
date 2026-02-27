@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { formatIndianCurrency } from '@/lib/commission';
+import { supabase } from '@/lib/supabase';
 
 interface PaymentFormProps {
   contractId: string;
@@ -22,6 +23,7 @@ interface PaymentFormProps {
     title: string;
     vendorName: string;
   };
+  userId: string;
   clientDetails: {
     name: string;
     email: string;
@@ -42,6 +44,7 @@ export default function PaymentForm({
   amount,
   commission,
   contractDetails,
+  userId,
   clientDetails,
   onSuccess,
   onFailure,
@@ -76,14 +79,16 @@ export default function PaymentForm({
 
   const createPaymentOrder = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch('/api/payments/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
         },
         body: JSON.stringify({
           contractId,
-          userId: clientDetails.email, // This should be actual userId from auth
+          userId,
         }),
       });
 
@@ -105,10 +110,12 @@ export default function PaymentForm({
 
   const verifyPayment = async (paymentResponse: any) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch('/api/payments/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
         },
         body: JSON.stringify({
           razorpay_order_id: paymentResponse.razorpay_order_id,

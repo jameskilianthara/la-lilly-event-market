@@ -344,7 +344,7 @@ async function handleRefundCreated(event: RazorpayWebhookEvent) {
 async function handlePayoutProcessed(event: RazorpayWebhookEvent) {
   try {
     // Extract payout details from event payload
-    const payout = event.payload as any; // Razorpay payout structure
+    const payout = (event.payload as any).payout.entity; // Razorpay payout webhook structure
 
     // Find vendor payout record
     const { data: vendorPayout, error: findError } = await supabase
@@ -398,7 +398,7 @@ async function handlePayoutProcessed(event: RazorpayWebhookEvent) {
  */
 async function handlePayoutReversed(event: RazorpayWebhookEvent) {
   try {
-    const payout = event.payload as any;
+    const payout = (event.payload as any).payout.entity;
 
     const { error } = await supabase
       .from('vendor_payouts')

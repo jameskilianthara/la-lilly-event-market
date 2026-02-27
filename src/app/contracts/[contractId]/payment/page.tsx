@@ -23,6 +23,7 @@ export default function ContractPaymentPage() {
   const [error, setError] = useState<string | null>(null);
   const [contract, setContract] = useState<any>(null);
   const [commission, setCommission] = useState<any>(null);
+  const [phone, setPhone] = useState<string>('');
 
   // =====================================================
   // LOAD CONTRACT DATA
@@ -101,12 +102,20 @@ export default function ContractPaymentPage() {
         return;
       }
 
+      // Fetch user phone for Razorpay prefill
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('phone')
+        .eq('id', user?.userId)
+        .single();
+
       // Calculate commission
       const projectValue = contractData.bids.total_forge_cost;
       const commissionData = calculateCommission(projectValue);
 
       setContract(contractData);
       setCommission(commissionData);
+      setPhone(userProfile?.phone || '');
       setLoading(false);
     } catch (err) {
       console.error('Error loading contract:', err);
@@ -214,6 +223,7 @@ export default function ContractPaymentPage() {
           contractId={contract.id}
           amount={contract.bids.total_forge_cost}
           commission={commission}
+          userId={user?.userId || ''}
           contractDetails={{
             title: contract.events.title,
             vendorName: contract.bids.vendors.company_name,
@@ -221,7 +231,7 @@ export default function ContractPaymentPage() {
           clientDetails={{
             name: (user?.userType === 'client' ? user.name : undefined) || '',
             email: user?.email || '',
-            phone: '', // Phone not available in User type, would need to fetch from database
+            phone: phone,
           }}
           onSuccess={handlePaymentSuccess}
           onFailure={handlePaymentFailure}

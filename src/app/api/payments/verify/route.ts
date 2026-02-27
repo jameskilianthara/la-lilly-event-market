@@ -7,12 +7,37 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { verifyPaymentSignature } from '@/lib/razorpay';
 
 export async function POST(request: NextRequest) {
   try {
     // =====================================================
-    // 1. PARSE REQUEST BODY
+    // 1. VERIFY JWT
+    // =====================================================
+
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    const token = authHeader.slice(7);
+    const authClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data: { user: jwtUser }, error: jwtError } = await authClient.auth.getUser(token);
+    if (jwtError || !jwtUser) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // =====================================================
+    // 2. PARSE REQUEST BODY
     // =====================================================
 
     const body = await request.json();

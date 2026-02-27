@@ -79,7 +79,7 @@ export const ClientBriefSummary: React.FC<ClientBriefSummaryProps> = ({
                 <span className="text-sm text-slate-400">{field.label}</span>
               </div>
               <div className="text-sm text-white font-medium text-right max-w-32 truncate">
-                {clientBrief[field.key as keyof ClientBrief] || (
+                {(clientBrief[field.key as keyof ClientBrief] as string | undefined) || (
                   <span className="text-slate-500 italic">pending</span>
                 )}
               </div>
